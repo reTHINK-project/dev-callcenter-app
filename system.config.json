@@ -1,0 +1,10 @@
+{
+  "development" : {
+    "development": true,
+    "domain": "matrix2.rethink.com"
+  },
+  "production" : {
+    "development": false,
+    "domain": "matrix2.rethink.com"
+  }
+}

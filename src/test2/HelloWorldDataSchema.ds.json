@@ -1,0 +1,18 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"id": "HelloObject",
+	"type": "object",
+	"required": ["hello", "slider"],
+	"additionalProperties": false,
+  	"properties": {
+		"scheme": {
+			"constant": "hello"
+		},
+		"hello": {
+			"type": "string"
+		},
+		"slider": {
+			"type": "string"
+		}
+	}
+}
