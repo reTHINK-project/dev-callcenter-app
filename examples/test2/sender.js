@@ -12,7 +12,6 @@ function hypertyLoaded(result) {
                    				'</form>');
   $('.say-hello').on('submit', connectToHyperty);
 	initListeners();
-
 }
 
 function showValue(v) {
