@@ -2,7 +2,7 @@ var hyperty;
 
 function hypertyLoaded(result) {
   hyperty = result.instance;
-  console.log(hyperty);
+  console.log("hypertyReporter: ", hyperty);
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.send-panel').append( '<form class="connect">Hyperty URL: ' +
@@ -27,9 +27,10 @@ function connectToHyperty(event) {
 
   hyperty.connect(toHyperty)
   .then(function(obj) {
-    console.log('Object: ', obj);
+    console.log('Slider obj: ', obj);
     $('.connect').hide();
-  }).catch(function(reason) {
+  })
+  .catch(function(reason) {
     console.error(reason);
     // reject(reason);
   });

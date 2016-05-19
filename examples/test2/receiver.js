@@ -6,7 +6,6 @@ function hypertyLoaded(result) {
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
 	initListeners();
-  console.log('Observer Waiting for Hello!!');
 }
 
 // send back methods
@@ -61,6 +60,7 @@ Handlebars.getTemplate = function(name) {
   });
 }
 
+// receiving code here
 function initListeners() {
 	hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
@@ -72,6 +72,7 @@ function initListeners() {
     $("#slider1").val(event.slider);
     $("#myrange").html(event.slider);
     $("#smth").html(event.reporter);
+    $("#smth").append(event);
     if (!hyperty.counterpart)
       hyperty.counterpart = event.reporter;
   });

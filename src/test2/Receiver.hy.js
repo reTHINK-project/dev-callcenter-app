@@ -16,19 +16,49 @@ class Receiver extends EventEmitter {
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     this._syncher = new Syncher(hypertyURL, bus, configuration);
 
+    // receiving starts here
     let _this = this;
     this._syncher.onNotification(function(event) {
       _this._onNotification(event);
     });
   }
 
+  connect(hypertyURL) {
+    let _this = this;
+    let syncher = _this._syncher;
+
+    return new Promise(function(resolve, reject) {
+      syncher.create(_this._objectDescURL, [hypertyURL], obj)
+      .then(function(objReporter) {
+        console.info('1. Return Created Data Object Reporter', objReporter);
+        _this.objReporter = objReporter;
+        objReporter.onSubscription(function(event) {
+          console.info('-------- Receiver received subscription request --------- \n');
+          event.accept(); // All subscription requested are accepted
+        });
+        resolve(objReporter);
+      })
+      .catch(function(reason) {
+        console.error(reason);
+        reject(reason);
+      });
+    });
+  }
+
+  // send data to the other hyperty
+  slideback(data) {
+    this.objReporter.data.slider = data;
+    console.log("[Receiver] [slideback] objReporter: ", this.objReporter);
+  }
+
+  // reveicing starts here
   _onNotification(event) {
     let _this = this;
     console.info( 'Event Received: ', event);
     this.trigger('invitation', event.identity);
     event.ack(); // Acknowledge reporter about the Invitation was received
 
-    // Subscribe Object
+    // Subscribe to Object
     this._syncher.subscribe(this._objectDescURL, event.url)
     .then(function(objObserver) {
       console.info(objObserver);
@@ -43,36 +73,6 @@ class Receiver extends EventEmitter {
     }).catch(function(reason) {
       console.error(reason);
     });
-  }
-
-  connect(hypertyURL) {
-    console.log("this is: ", this)
-    let _this = this;
-    let syncher = _this._syncher;
-
-    return new Promise(function(resolve, reject) {
-      syncher.create(_this._objectDescURL, [hypertyURL], obj)
-      .then(function(objReporter) {
-        console.info('1. Return Created Object', objReporter);
-        _this.objReporter = objReporter;
-        objReporter.onSubscription(function(event) {
-          console.info('-------- Receiver received subscription request --------- \n');
-          event.accept(); // All subscription requested are accepted
-        });
-        resolve(objReporter);
-      })
-      .catch(function(reason) {
-        console.error(reason);
-        reject(reason);
-      });
-
-    });
-  }
-
-  slideback(data) {
-    console.log("[Receiver] [slideback] has been called");
-    this.objReporter.data.slider = data;
-    console.log("[Receiver] [slideback] objReporter: ", this.objReporter);
   }
 }
 

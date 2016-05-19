@@ -16,7 +16,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     this._syncher = new Syncher(hypertyURL, bus, configuration);;
 
-    // receiving from here
+    // receiving starts here
     let _this = this;
     this._syncher.onNotification(function(event) {
       _this._onNotification(event);
@@ -47,33 +47,33 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
   // send data to the other hyperty
   slide(data) {
-    console.log('[Sender] [slide]: ', this.objReporter );
     this.objReporter.data.slider = data;
+    console.log("[Sender] [slide] objReporter: ", this.objReporter);
   }
 
   // reveicing starts here
   _onNotification(event) {
-      let _this = this;
-      console.info( 'Incoming event received on sender side: ', event);
-      this.trigger('invitation', event.identity);
-      event.ack(); // Acknowledge reporter about the Invitation was received
-      
-      // Subscribe to Object
-      this._syncher.subscribe(this._objectDescURL, event.url)
-      .then(function(objObserver) {
-        console.info(objObserver);
+    let _this = this;
+    console.info( 'Incoming event received on sender side: ', event);
+    this.trigger('invitation', event.identity);
+    event.ack(); // Acknowledge reporter about the Invitation was received
+    
+    // Subscribe to Object
+    this._syncher.subscribe(this._objectDescURL, event.url)
+    .then(function(objObserver) {
+      console.info(objObserver);
 
-        // lets notify the App the subscription was accepted with the most updated version of Object
-        _this.trigger('slideback', objObserver.data);
+      // lets notify the App the subscription was accepted with the most updated version of Object
+      _this.trigger('slideback', objObserver.data);
 
-        objObserver.onChange('slider', function(event) {
-          console.info('message received:',event); // Object was changed
-          _this.trigger('slideback', objObserver.data); // lets notify the App about the change
-        });
-      }).catch(function(reason) {
-        console.error(reason);
+      objObserver.onChange('slider', function(event) {
+        console.info('message received:',event); // Object was changed
+        _this.trigger('slideback', objObserver.data); // lets notify the App about the change
       });
-    }
+    }).catch(function(reason) {
+      console.error(reason);
+    });
+  }
 }
 
 export default function activate(hypertyURL, bus, configuration) {
