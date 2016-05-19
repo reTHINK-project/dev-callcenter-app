@@ -1,9 +1,5 @@
-
-
-let hello = {
-   hello : "Hello World 1234!!",
+let obj = {
    slider: 0
 };
 
-
-export default hello;
+export default obj;

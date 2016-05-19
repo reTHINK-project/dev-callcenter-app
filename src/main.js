@@ -102,7 +102,7 @@ function hypertyDeployed(hyperty) {
       script =  'test2/receiver.js';
       break;
     case 'Sender':
-      template = 'test2/receiver';
+      template = 'test2/sender';
       script =  'test2/sender.js';
       break;
 

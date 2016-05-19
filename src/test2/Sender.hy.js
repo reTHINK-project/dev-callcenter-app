@@ -2,13 +2,10 @@
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter'; // for receiving
-import hello from './hello';
+import obj from './obj';
 
 class Sender extends EventEmitter{ // extends EventEmitter because we need to recieve events
-  /**
-  * Create a new HelloWorldReporter
-  * @param  {Syncher} syncher - Syncher provided from the runtime core
-  */
+
   constructor(hypertyURL, bus, configuration) {
     if (!hypertyURL) throw new Error('The hypertyURL is a needed parameter');
     if (!bus) throw new Error('The MiniBus is a needed parameter');
@@ -16,7 +13,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     super(); // call event emitter constructor to be able to receive things
 
     this._domain = divideURL(hypertyURL).domain;
-    this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/HelloWorldDataSchema';
+    this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     this._syncher = new Syncher(hypertyURL, bus, configuration);;
 
     // receiving from here
@@ -31,71 +28,57 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     let syncher = _this._syncher;
 
     return new Promise(function(resolve, reject) {
-      syncher.create(_this._objectDescURL, [hypertyURL], hello)
-      .then(function(helloObjtReporter) {
-        console.info('1. Return Created Hello World Data Object Reporter', helloObjtReporter);
-        _this.helloObjtReporter = helloObjtReporter;
-        helloObjtReporter.onSubscription(function(event) {
-          console.info('-------- Hello World Reporter received subscription request --------- \n');
+      syncher.create(_this._objectDescURL, [hypertyURL], obj)
+      .then(function(objReporter) {
+        console.info('1. Return Created Data Object Reporter', objReporter);
+        _this.objReporter = objReporter;
+        objReporter.onSubscription(function(event) {
+          console.info('-------- Reporter received subscription request --------- \n');
           event.accept(); // All subscription requested are accepted
         });
-        resolve(helloObjtReporter);
+        resolve(objReporter);
       })
       .catch(function(reason) {
         console.error(reason);
         reject(reason);
       });
-
     });
   }
 
-  /**
-  * Update HelloWorld Data Object
-  *
-  */
-
+  // send data to the other hyperty
   slide(data) {
-    console.log('[Sender] [slide]: ', this.helloObjtReporter );
-    this.helloObjtReporter.data.slider = data;
+    console.log('[Sender] [slide]: ', this.objReporter );
+    this.objReporter.data.slider = data;
   }
 
   // reveicing starts here
-
   _onNotification(event) {
       let _this = this;
-      console.info( 'Event received on sender side: ', event);
+      console.info( 'Incoming event received on sender side: ', event);
       this.trigger('invitation', event.identity);
       event.ack(); // Acknowledge reporter about the Invitation was received
       
-      // Subscribe Hello World Object
+      // Subscribe to Object
       this._syncher.subscribe(this._objectDescURL, event.url)
-      .then(function(helloObjtObserver) {
+      .then(function(objObserver) {
+        console.info(objObserver);
 
-        // Hello World Object was subscribed
-        console.info(helloObjtObserver);
+        // lets notify the App the subscription was accepted with the most updated version of Object
+        _this.trigger('slideback', objObserver.data);
 
-        // lets notify the App the subscription was accepted with the most updated version of Hello World Object
-        _this.trigger('slideback', helloObjtObserver.data);
-
-        helloObjtObserver.onChange('slider', function(event) {
-          console.info('message received:',event); // Hello World Object was changed
-          _this.trigger('slideback', helloObjtObserver.data); // lets notify the App about the change
+        objObserver.onChange('slider', function(event) {
+          console.info('message received:',event); // Object was changed
+          _this.trigger('slideback', objObserver.data); // lets notify the App about the change
         });
       }).catch(function(reason) {
         console.error(reason);
       });
-
     }
-
-
 }
-
-
 
 export default function activate(hypertyURL, bus, configuration) {
   return {
     name: 'Sender',
     instance: new Sender(hypertyURL, bus, configuration)
   };
-
 }

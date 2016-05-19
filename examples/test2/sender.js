@@ -1,16 +1,16 @@
-var hyperty
+var hyperty;
 
 function hypertyLoaded(result) {
   hyperty = result.instance;
   console.log(hyperty);
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
-  $('.hello-panel').append( '<form class="say-hello">Hyperty URL: ' +
+  $('.send-panel').append( '<form class="connect">Hyperty URL: ' +
                    				'<input class="to-hyperty-input" type="text" name="toHyperty">' +
                    				'<br>' +
                    				'<input type="submit" value="connect">' +
                    				'</form>');
-  $('.say-hello').on('submit', connectToHyperty);
+  $('.connect').on('submit', connectToHyperty);
 	initListeners();
 }
 
@@ -19,7 +19,6 @@ function showValue(v) {
 	hyperty.slide(v);
 }
 
-
 function connectToHyperty(event) {
   event.preventDefault();
   let toHypertyForm = $(event.currentTarget);
@@ -27,9 +26,9 @@ function connectToHyperty(event) {
   console.log(toHyperty);
 
   hyperty.connect(toHyperty)
-  .then(function(helloObject) {
-    console.log('helloObject: ', helloObject);
-    $('.hello-panel').hide();
+  .then(function(obj) {
+    console.log('Object: ', obj);
+    $('.connect').hide();
   }).catch(function(reason) {
     console.error(reason);
     // reject(reason);
