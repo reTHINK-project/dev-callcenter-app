@@ -9,7 +9,6 @@ function hypertyLoaded(result) {
   console.log('Observer Waiting for Hello!!');
 }
 
-
 // send back methods
 function showValue(newValue) { // when slider is moved by the receiver
   $('#myrange').html(newValue);
