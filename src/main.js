@@ -98,50 +98,107 @@ function hypertyDeployed(hyperty) {
   switch (hyperty.name) {
 
     case 'Receiver':
-      template = 'test2/receiver';
-      script =  'test2/receiver.js';
-      break;
+    template = 'test2/receiver';
+    script =  'test2/receiver.js';
+    break;
     case 'Sender':
-      template = 'test2/sender';
-      script =  'test2/sender.js';
-      break;
+    template = 'test2/sender';
+    script =  'test2/sender.js';
+    break;
 
 
     case 'HypertyConnector':
-      template = 'hyperty-connector/HypertyConnector';
-      script =  'hyperty-connector/demo.js';
-      break;
+    template = 'hyperty-connector/HypertyConnector';
+    script =  'hyperty-connector/demo.js';
+    break;
 
     case 'HypertyChat':
-      template = 'hyperty-chat/HypertyChat';
-      script =  'hyperty-chat/demo.js';
-      break;
+    template = 'hyperty-chat/HypertyChat';
+    script =  'hyperty-chat/demo.js';
+    break;
 
     case 'HelloWorldObserver':
-      template = 'hello-world/helloWorld';
-      script =  'hello-world/helloObserver.js';
-      break;
+    template = 'hello-world/helloWorld';
+    script =  'hello-world/helloObserver.js';
+    break;
 
     case 'HelloWorldReporter':
-      template = 'hello-world/helloWorld';
-      script =  'hello-world/helloReporter.js';
-      break;
+    template = 'hello-world/helloWorld';
+    script =  'hello-world/helloReporter.js';
+    break;
   }
 
   if (!template) {
     throw Error('You must need specify the template for your example');
   }
 
-  getTemplate(template, script).then(function(template) {
-    let html = template();
-    $mainContent.html(html);
+  // var addContent = function addContent(place) {
+  //   var selectObjekt = document.createElement("div");
+  //   selectObjekt.className = "selection-panel";
 
-    if (typeof hypertyLoaded === 'function') {
-      hypertyLoaded(hyperty);
-    } else {
-      console.info('If you need pass the hyperty to your template, create a function called hypertyLoaded');
-    }
-  });
+  //   var hypertyObjekt = document.createElement("div");
+  //   hypertyObjekt.className = "hyperty-panel";
+
+  //   var inviteObjekt = document.createElement("div");
+  //   inviteObjekt.className = "invitation-panel";
+
+  //   var smthObjekt = document.createElement("div");
+  //   smthObjekt.id = "smth";
+
+  //   var myObjekt = document.createElement("div");
+  //   myObjekt.className = "my-panel";
+
+  //   var slider = document.createElement("input");
+  //   slider.id = "slider1";
+  //   slider.type = "range";
+  //   slider.setAttribute("min", "0");
+  //   slider.setAttribute("max", "100");
+  //   slider.setAttribute("step", "1");
+  //   slider.setAttribute("onchange", "showValue(this.value)");
+  //   var span = document.createElement("span");
+  //   span.id = "myrange";
+  //   myObjekt.appendChild(slider);
+  //   myObjekt.appendChild(span);
+
+  //   place.appendChild(selectObjekt);
+  //   place.appendChild(hypertyObjekt);
+  //   place.appendChild(myObjekt);
+  //   place.appendChild(inviteObjekt);
+  //   place.appendChild(smthObjekt);
+  // };
+
+  // var addContent = function addContent(place) {
+  //   $(place).empty();
+  //   $(place).append('<div class="selection-panel"></div><div class="hyperty-panel"></div><div class="my-panel"><input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" /><span id="myrange">0</span></div><div class="invitation-panel"></div><div id="smth"></div>');
+  // }
+
+  
+  
+
+
+// ######################################################
+//var blub = require('../examples/test2/receiver');
+//var test = '../examples/test2/receiver.js';
+  // var blub = require(test);
+  $.getScript(script)
+  .done(function (foo) {
+    console.log("<<<<<<<<<<<<<<<<<<<<<",foo);
+    hypertyLoaded(hyperty);
+  })
+  .fail((err) => {console.log(">>>>>>>>>>>>>>>", err)});
+// ###################################################
+console.log( "###########################");
+
+  // getTemplate(template, script).then(function(template) {
+  //   let html = template();
+  //   $mainContent.html(html);
+
+//   if (typeof blub.hypertyLoaded === 'function') {
+//    blub.hypertyLoaded(hyperty);
+//  } else {
+//   console.info('If you need pass the hyperty to your template, create a function called hypertyLoaded');
+// }
+  // });
 
 }
 
