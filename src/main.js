@@ -96,6 +96,14 @@ function hypertyDeployed(hyperty) {
   let script = '';
 
   switch (hyperty.name) {
+    case 'ReceiverDTWebRTC':
+    template = 'DTWebRTC3/DTreceiver';
+    script =  'DTWebRTC3/DTreceiver.js';
+    break;
+    case 'SenderDTWebRTC':
+    template = 'DTWebRTC3/DTsender';
+    script =  'DTWebRTC3/DTsender.js';
+    break;
 
     case 'Receiver':
     template = 'test2/receiver';
