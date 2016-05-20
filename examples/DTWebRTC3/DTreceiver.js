@@ -11,9 +11,20 @@ function hypertyLoaded(result) {
 
 function addContent() {
   var place = document.getElementById("box1");
-    $(place).empty();
-    $(place).append('<div class="selection-panel"></div><div class="hyperty-panel"></div><div class="my-panel"><input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" /><span id="myrange">0</span></div><div class="invitation-panel"></div><div id="smth"></div>');
-  }
+  $(place).empty();
+  $(place).append(' <div class="selection-panel"></div>
+                    <div class="hyperty-panel"></div>
+                    <div class="my-panel">
+                      <input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" />
+                      <span id="myrange">0</span>
+                    </div>
+                    <div class="invitation-panel"></div>
+                    <div id="smth">
+                      <video id="remoteVideo" autoplay style="width: 500px; float: left; margin-right: 20px; border: 1px solid grey;"></video>
+                      <video id="localVideo" autoplay style="width: 200px; border: 1px solid grey;">PENIS HIHII</video>
+                    </div>
+                    <div class="send-panel"></div>');
+}
 
 // send back methods
 function showValue(newValue) { // when slider is moved by the receiver
@@ -48,25 +59,6 @@ function connectBack(toHyperty) {
 }
 
 // helping functions
-Handlebars.getTemplate = function(name) {
-  return new Promise((resolve, reject) => {
-    if (Handlebars.templates === undefined || Handlebars.templates[name] === undefined)
-      Handlebars.templates = {};
-    else
-      resolve(Handlebars.templates[name]);
-    $.ajax({
-      url: 'templates/' + name + '.hbs',
-      success: function(data) {
-        Handlebars.templates[name] = Handlebars.compile(data);
-        resolve(Handlebars.templates[name]);
-      },
-      fail: function(reason) {
-        reject(reason);
-      }
-    });
-  });
-}
-
 // receiving code here
 function initListeners() {
 	hyperty.addEventListener('invitation', function(identity) {
@@ -83,44 +75,14 @@ function initListeners() {
     if (!hyperty.counterpart)
       hyperty.counterpart = event.reporter;
   });
+
+  hyperty.addEventListener('webrtcreceive', function(event) {
+    console.log('Webrtc receive event received:', event);
+    switch(event.webrtc.data.body.type){
+        case 'invitation':         handleInvite(event.webrtc.data); break;
+        case 'accepted':         handleAccepted(event.webrtc.data); break;
+        case 'icecandidate': handleIceCandidate(event.webrtc.data); break;
+    }
+  });
+
 }
-
-
-
-// var addContent = function addContent(place) {
-//     var selectObjekt = document.createElement("div");
-//     selectObjekt.className = "selection-panel";
-
-//     var hypertyObjekt = document.createElement("div");
-//     hypertyObjekt.className = "hyperty-panel";
-
-//     var inviteObjekt = document.createElement("div");
-//     inviteObjekt.className = "invitation-panel";
-
-//     var smthObjekt = document.createElement("div");
-//     smthObjekt.id = "smth";
-
-//     var myObjekt = document.createElement("div");
-//     myObjekt.className = "my-panel";
-
-//     var slider = document.createElement("input");
-//     slider.id = "slider1";
-//     slider.type = "range";
-//     slider.setAttribute("min", "0");
-//     slider.setAttribute("max", "100");
-//     slider.setAttribute("step", "1");
-//     slider.setAttribute("onchange", "showValue(this.value)");
-//     var span = document.createElement("span");
-//     span.id = "myrange";
-//     myObjekt.appendChild(slider);
-//     myObjekt.appendChild(span);
-
-//     place.appendChild(selectObjekt);
-//     place.appendChild(hypertyObjekt);
-//     place.appendChild(myObjekt);
-//     place.appendChild(inviteObjekt);
-//     place.appendChild(smthObjekt);
-//   };
-
-//   var bla = document.getElementById("box1");
-//   addContent(bla);
