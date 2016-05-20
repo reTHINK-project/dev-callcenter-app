@@ -3,6 +3,7 @@ var hyperty;
 function hypertyLoaded(result) {
   hyperty = result.instance;
   console.log("hypertyReporter: ", hyperty);
+  addContent();
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.send-panel').append( '<form class="connect">Hyperty URL: ' +
@@ -13,6 +14,12 @@ function hypertyLoaded(result) {
   $('.connect').on('submit', connectToHyperty);
 	initListeners();
 }
+
+function addContent() {
+  var place = document.getElementById("box1");
+    $(place).empty();
+    $(place).append('<div class="selection-panel"></div><div class="hyperty-panel"></div><div class="my-panel"><input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" /><span id="myrange">0</span></div><div class="invitation-panel"></div><div id="smth"></div><div class="send-panel"></div>');
+  }
 
 function showValue(v) {
   $('#myrange').html(v);
