@@ -8,6 +8,7 @@ function hypertyLoaded(result) {
   $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
   hyperty.myUrl = result.runtimeHypertyURL;
 	initListeners();
+  $.getScript("/examples/DTWebRTC3/adapter.js");
 }
 
 function addContent() {
@@ -80,10 +81,10 @@ function initListeners() {
 
   hyperty.addEventListener('webrtcreceive', function(event) {
     console.log('Webrtc receive event received:', event);
-    switch(event.webrtc.data.body.type){
-        case 'invitation':         handleInvite(event.webrtc.data); break;
-        case 'accepted':         handleAccepted(event.webrtc.data); break;
-        case 'icecandidate': handleIceCandidate(event.webrtc.data); break;
+    switch(event.webrtc.msg.body.type){
+        case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
+        case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
+        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
     }
   });
 

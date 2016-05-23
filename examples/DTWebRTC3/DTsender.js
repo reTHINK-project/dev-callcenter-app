@@ -2,13 +2,24 @@ var hyperty;
 
 function hypertyLoaded(result) {
   hyperty = result.instance;
-  console.log("hypertyReporter: ", hyperty);
+  console.log("hypertyReporter: ", result);
   addContent();
-  $('.selection-panel').hide();
+  //$('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
-  $('.send-panel').append('<form class="connect">Hyperty URL: <input class="to-hyperty-input" type="text" name="toHyperty"><br><input type="submit" value="connect"></form>');
+  $('.send-panel').append('<form class="connect">Hyperty URL: ' +
+                          '<input class="to-hyperty-input" type="text" name="toHyperty">' +
+                          '<br>' +
+                          '<input type="submit" value="connect">' +
+                          '</form>');
   $('.connect').on('submit', connectToHyperty);
+  $('.send-panel').append('<form class="webrtcconnect">Hyperty URL: ' +
+                          '<input class="webrtc-hyperty-input" type="text" name="webrtctoHyperty">' +
+                          '<br>' +
+                          '<input type="submit" value="webrtcconnect">' +
+                          '</form>');
+  $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
 	initListeners();
+  $.getScript("/examples/DTWebRTC3/adapter.js");
 }
 
 function addContent() {
@@ -51,6 +62,23 @@ function connectToHyperty(event) {
   });
 }
 
+function webrtcconnectToHyperty(event) {
+  event.preventDefault();
+  let toHypertyForm = $(event.currentTarget);
+  let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
+  console.log(toHyperty);
+
+  hyperty.webrtcconnect(toHyperty)
+  .then(function(obj) {
+    console.log('Webrtc obj: ', obj);
+    $('.webrtcconnect').hide();
+    hyperty.invite();
+  })
+  .catch(function(reason) {
+    console.error(reason);
+  });
+}
+
 // helping functions
 // receiving code here
 function initListeners () {
@@ -65,5 +93,14 @@ function initListeners () {
     $("#myrange").html(event.slider);
     $("#smth").html(event.reporter);
     $("#smth").append(event);
+  });
+
+  hyperty.addEventListener('webrtcreceive', function(event) {
+    console.log('Webrtc receive event received:', event);
+    switch(event.webrtc.msg.body.type){
+        case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
+        case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
+        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
+    }
   });
 }
