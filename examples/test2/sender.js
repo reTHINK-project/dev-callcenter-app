@@ -7,7 +7,7 @@ function hypertyLoaded(result) {
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.send-panel').append( '<form class="connect">Hyperty URL: ' +
-                   				'<input class="to-hyperty-input" type="text" name="toHyperty">' +
+                   				'<input class="to-hyperty-input" type="text" width="100px" name="toHyperty">' +
                    				'<br>' +
                    				'<input type="submit" value="connect">' +
                    				'</form>');

@@ -6,8 +6,14 @@
 var hypertyChat;
 var avatar = 'https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg';
 
-function hypertyLoaded(result) {
+function addContent() {
+  var place = document.getElementById("box1");
+  $(place).empty();
+  $(place).append('<div class="card-panel"></div>');
+}
 
+function hypertyLoaded(result) {
+  addContent();
   let hypertyInfo = '<span class="white-text">' +
                     '<b>Name:</b> ' + result.name + '</br>' +
                     '<b>Status:</b> ' + result.status + '</br>' +

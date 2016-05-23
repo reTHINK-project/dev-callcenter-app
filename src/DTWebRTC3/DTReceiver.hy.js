@@ -132,13 +132,13 @@ class Receiver extends EventEmitter {
   }
 
   //handler for received ICE candidate from partner
-  function handleIceCandidate(msg){
+  handleIceCandidate(msg){
     this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate));
   }
 
 
   //Alice: invite a partner p (Bob) to a call
-  function invite(p){
+  invite(p){
     var _this = this;
     this.partner = p;
     this.createPC();
@@ -166,7 +166,7 @@ class Receiver extends EventEmitter {
   }
 
   //Bob: handle incoming invite from Alice
-  function handleInvite(msg){
+   handleInvite(msg){
     var _this = this;
     console.log('got invite from', msg.from);
     this.partner = msg.from;
@@ -196,7 +196,7 @@ class Receiver extends EventEmitter {
   }
 
   //Alice: handle accepted call from Bob
-  function handleAccepted(msg){
+   handleAccepted(msg){
     var _this = this;
     var answer = msg.body.answer;
     console.log('received answer', answer);
@@ -207,7 +207,7 @@ class Receiver extends EventEmitter {
 
   //////////////////////////////////// CHECK EVERYTHING HERE
   //login with user name // this is the connect function!!!!!!!!!!!!!!! translate it to connect
-  function login(name){
+   login(name){
     //set name globally
     this.me = name;
     document.getElementById('myName').innerHTML = name;
@@ -221,7 +221,7 @@ class Receiver extends EventEmitter {
   }
 
   //send Websocket message // this is the dataobject.data function !!!!!!!!!!!!!!! translate it
-  function message(to, body){
+   message(to, body){
     var msg = {
         type: 'message',
         from: me,

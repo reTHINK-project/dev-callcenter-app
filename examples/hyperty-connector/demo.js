@@ -11,22 +11,22 @@ function getUserMedia(constraints) {
   return new Promise(function(resolve, reject) {
 
     navigator.mediaDevices.getUserMedia(constraints)
-      .then(function(mediaStream) {
-        resolve(mediaStream);
-      })
-      .catch(function(reason) {
-        reject(reason);
-      });
+    .then(function(mediaStream) {
+      resolve(mediaStream);
+    })
+    .catch(function(reason) {
+      reject(reason);
+    });
   });
 }
 
 function hypertyLoaded(result) {
-
+  addContent();
   let hypertyInfo = '<span class="white-text">' +
-                    '<b>Name:</b> ' + result.name + '</br>' +
-                    '<b>Status:</b> ' + result.status + '</br>' +
-                    '<b>HypertyURL:</b> ' + result.runtimeHypertyURL + '</br>' +
-                    '</span>';
+  '<b>Name:</b> ' + result.name + '</br>' +
+  '<b>Status:</b> ' + result.status + '</br>' +
+  '<b>HypertyURL:</b> ' + result.runtimeHypertyURL + '</br>' +
+  '</span>';
   $('.card-panel').html(hypertyInfo);
 
   // Prepare to discover email:
@@ -42,6 +42,12 @@ function hypertyLoaded(result) {
     });
 
   });
+}
+
+function addContent() {
+  var place = document.getElementById("box1");
+  $(place).empty();
+  $(place).append('<div class="card-panel"></div>');
 }
 
 function discoverEmail(hypertyDiscovery) {
@@ -200,25 +206,25 @@ function notificationHandler(controller, event) {
   });
 
   var parseInformation = '<div class="col s12">' +
-        '<div class="row valign-wrapper">' +
-          '<div class="col s2">' +
-            '<img src="' + calleeInfo.infoToken.picture + '" alt="" class="circle responsive-img">' +
-          '</div>' +
-          '<span class="col s10">' +
-            '<div class="row">' +
-              '<span class="col s3 text-right">Name: </span>' +
-              '<span class="col s9 black-text">' + calleeInfo.infoToken.name + '</span>' +
-            '</span>' +
-            '<span class="row">' +
-              '<span class="col s3 text-right">Email: </span>' +
-              '<span class="col s9 black-text">' + calleeInfo.infoToken.email + '</span>' +
-            '</span>' +
-            '<span class="row">' +
-              '<span class="col s3 text-right">locale: </span>' +
-              '<span class="col s9 black-text">' + calleeInfo.infoToken.locale + '</span>' +
-            '</span>' +
-          '</div>' +
-        '</div>';
+  '<div class="row valign-wrapper">' +
+  '<div class="col s2">' +
+  '<img src="' + calleeInfo.infoToken.picture + '" alt="" class="circle responsive-img">' +
+  '</div>' +
+  '<span class="col s10">' +
+  '<div class="row">' +
+  '<span class="col s3 text-right">Name: </span>' +
+  '<span class="col s9 black-text">' + calleeInfo.infoToken.name + '</span>' +
+  '</span>' +
+  '<span class="row">' +
+  '<span class="col s3 text-right">Email: </span>' +
+  '<span class="col s9 black-text">' + calleeInfo.infoToken.email + '</span>' +
+  '</span>' +
+  '<span class="row">' +
+  '<span class="col s3 text-right">locale: </span>' +
+  '<span class="col s9 black-text">' + calleeInfo.infoToken.locale + '</span>' +
+  '</span>' +
+  '</div>' +
+  '</div>';
 
   informationHolder.html(parseInformation);
   $('.modal-call').openModal();
