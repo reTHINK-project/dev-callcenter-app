@@ -19,7 +19,7 @@ class Receiver extends EventEmitter {
       audio: false,
       video: true
     }
-    this.me = null;
+    this.myUrl = null; // this.me = null;
     this.partner = null;
     this.pc = null;
     this.ice = false;
@@ -54,6 +54,29 @@ class Receiver extends EventEmitter {
     });
   }
 
+  webrtcconnect(hypertyURL) {
+    let _this = this;
+    let syncher = _this._syncher;
+
+    return new Promise(function(resolve, reject) {
+      syncher.create(_this._objectDescURL, [hypertyURL], obj)
+      .then(function(webrtcReporter) {
+        console.info('1. Return Created Data Object Reporter', webrtcReporter);
+        _this.webrtcReporter = webrtcReporter;
+        webrtcReporter.onSubscription(function(event) {
+          console.info('-------- Receiver received subscription request --------- \n');
+          event.accept(); // All subscription requested are accepted
+        });
+        resolve(webrtcReporter);
+      })
+      .catch(function(reason) {
+        console.error(reason);
+        reject(reason);
+      });
+    });
+  }
+
+  
   // send data to the other hyperty
   slideback(data) {
     this.objReporter.data.slider = data;
@@ -206,22 +229,9 @@ class Receiver extends EventEmitter {
   }
 
   //////////////////////////////////// CHECK EVERYTHING HERE
-  //login with user name // this is the connect function!!!!!!!!!!!!!!! translate it to connect
-   login(name){
-    //set name globally
-    this.me = name;
-    document.getElementById('myName').innerHTML = name;
-    console.log('logging in as', name);
 
-    var msg = {
-        type: 'login',
-        from: name
-    }
-    conn.send(JSON.stringify(msg));
-  }
-
-  //send Websocket message // this is the dataobject.data function !!!!!!!!!!!!!!! translate it
-   message(to, body){
+  // send Websocket message // this is the dataobject.data function !!!!!!!!!!!!!!! translate it
+message(to, body){
     var msg = {
         type: 'message',
         from: me,

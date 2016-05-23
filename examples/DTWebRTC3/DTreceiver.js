@@ -6,6 +6,7 @@ function hypertyLoaded(result) {
   addContent();
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
+  hyperty.myUrl = result.runtimeHypertyURL;
 	initListeners();
 }
 
