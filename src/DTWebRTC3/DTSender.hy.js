@@ -15,7 +15,11 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this._domain = divideURL(hypertyURL).domain;
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     this._syncher = new Syncher(hypertyURL, bus, configuration);;
-
+    this.constraints = {
+      audio: false,
+      video: true
+    }
+    
     // receiving starts here
     let _this = this;
     this._syncher.onNotification(function(event) {
@@ -78,7 +82,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
 export default function activate(hypertyURL, bus, configuration) {
   return {
-    name: 'Sender',
+    name: 'SenderDTWebRTC',
     instance: new Sender(hypertyURL, bus, configuration)
   };
 }
