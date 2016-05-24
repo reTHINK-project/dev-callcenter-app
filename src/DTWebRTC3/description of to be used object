@@ -1,0 +1,28 @@
+dataobject = {
+	connection : {
+		name 			: '',
+		status 		: "connected",
+		owner 		: "hyperty://example.com/alicehy",
+		peer 			: "connection://example.com/alice/bob27012016",
+		ownerPeer : {
+			connectionDescription: {
+				sdp	: sessiondescription.sdp,
+				type: sessiondescription.type
+			},
+			iceCandidates: []
+		}
+	},
+	peer : {
+		connectionDescription: {
+			sdp	: sessiondescription.sdp,
+			type: sessiondescription.type
+		},
+		iceCandidates: []
+	},
+	data : {
+		type : "offer/answer/candidate",
+		sdp,
+		candidate
+	}
+
+}

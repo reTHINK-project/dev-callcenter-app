@@ -140,12 +140,28 @@ function hypertyDeployed(hyperty) {
     throw Error('You must need specify the template for your example');
   }
 
-
+  if (hyperty.name == "ReceiverDTWebRTC" ||
+      hyperty.name == "SenderDTWebRTC"){
   $.getScript(script)
   .done(function (foo){
     console.log(">>>>>>>>>>>" + script + "loaded"); hypertyLoaded(hyperty); })
   .fail(function (err){
     console.log("!!!!!!!!!!! cant load" + script, err)});
+  }
+  else
+  {
+    getTemplate(template, script)
+    .then(function(template) {
+      let html = template();
+      $mainContent.html(html);
+
+      if (typeof hypertyLoaded === 'function') {
+        hypertyLoaded(hyperty);
+      } else {
+        console.info('If you need pass the hyperty to your template, create a function called hypertyLoaded');
+      }
+    });
+  }
 }
 
 
