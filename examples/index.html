@@ -12,7 +12,6 @@
   <meta name="author" content="Matrix">
   <link rel="icon" href="web/media/matrix.ico">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
-  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css" rel="stylesheet">
   <link href="web/css/style.css" rel="stylesheet">
 
@@ -24,81 +23,42 @@
     </head>
 
     <body  data-spy="scroll" data-target="navbar">
-
-     <!-- <script id="__bs_script__">//<![CDATA[
-      // document.write("<script async src='/browser-sync/browser-sync-client.2.12.5.js'><\/script>".replace("HOST", location.hostname));
-      // //]]></script>
-
-      <script async="" src="/browser-sync/browser-sync-client.2.12.5.js"></script>
-    -->
-
-
-
-
-    <!-- Fixed navbar -->
-    <nav class="navbar navbar-default navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" >
-            <i class="fa fa-bars"></i>
-          </button>
-          
-
-
-          
-          <img class="navbar-brand logo" id="logo" src="web/media/logo.png"  href="#" >
-          
-          <a class="navbar-brand big-text" rel="home" href="#">
-            <i class="fa fa-cog fa-spin fa-1x fa-fw"></i>
-            RETHINK - DT-HfTL-ÜBERFRAMEWORK 
-          </a>
-
-
-
+      <!-- Fixed navbar -->
+      <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid ">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" >
+              <i class="fa fa-bars"></i>
+            </button>
+            <img class="navbar-brand logo" id="logo" src="web/media/logo.png"  href="#" >
+            <a class="navbar-brand big-text" rel="home" href="#">
+              RETHINK-DT-HfTL-ÜBERFRAMEWORK 
+            </a>
+          </div>
+          <div id="navbar" class="collapse navbar-collapse ">
+            <ul id="hyperties-dropdown" class="nav navbar-nav">
+            </ul>
+          </div>
         </div>
-        <div id="navbar" class="collapse navbar-collapse">
-          <ul id="hyperties-dropdown" class="nav navbar-nav">
-
-          </ul>
+      </nav>
+      <!-- Begin page content -->
+      <div class="main-content container">
+        <div class="row">
+          <div class="col-sm-1"></div>
+          <div id="box1" class="content col-sm-10"></div>
+          <div class="col-sm-1"></div>
         </div>
       </div>
-    </nav>
+      <!-- Footer -->
+      <footer class="footer navbar-fixed-bottom">
+        <img class=" navbar-brand logo" id="logo" src="web/media/logo.png"  href="#" >
+      </footer>
+      <!-- Scripts -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.js"></script>
+      <!-- Hyperty Toolkit main file -->
+      <script src="../dist/main.js"></script>
 
+      <script src="web/js/custom.js"></script>
 
-    <!-- Begin page content -->
-    <div class="main-content container">
-      <div class="row">
-        <div class="col-sm-1"></div>
-        <div id="box1" class="content col-sm-10"></div>
-        <div class="col-sm-1"></div>
-      </div>
-    </div>
-
-
-    <footer class="footer navbar-fixed-bottom">
-      <div class="container-fluid">
-        <img class="logo" id="logo" src="web/media/logo.png"  href="#" ></img>
-     </div>
-   </footer>
-
-
-   <!--  ================================================== -->
-
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.3/jquery.js"></script>
-   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.js"></script>
-
-
-   <!-- Compiled and minified JavaScript -->
-
-
-     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.5/handlebars.min.js">
-      </script>
-    -->
-
-
-    <!-- Hyperty Toolkit main file -->
-    <script src="../dist/main.js"></script>
-    <script src="web/js/custom.js"></script>
-
-
-  </body></html>
+    </body></html>
