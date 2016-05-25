@@ -114,11 +114,12 @@ class Receiver extends EventEmitter {
 
   //send all ICE candidates from buffer to partner
   emptyIceBuffer(){
-    this.ice = true;
+    var _this = this;
+    _this.ice = true;
     //send ice candidates from buffer
-    for(var i = (this.iceBuffer.length - 1); i >= 0; i--){
-        this.sendIceCandidate(iceBuffer[i]);
-        this.iceBuffer.splice(i, 1);
+    for(var i = (_this.iceBuffer.length - 1); i >= 0; i--){
+        _this.sendIceCandidate(_this.iceBuffer[i]);
+        _this.iceBuffer.splice(i, 1);
     }
   }
 
