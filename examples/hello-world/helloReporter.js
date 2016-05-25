@@ -10,25 +10,31 @@ function hypertyLoaded(result) {
   hyperty = result.instance;
 
   console.log(hyperty);
+  addContent();
 
   $('.selection-panel').hide();
 
   let hypertyPanel = $('.hyperty-panel');
 
-  let hi = '<p>Hyperty Reporter URL: ' + result.runtimeHypertyURL + '</p>';
+  let hi = '<p>Hyperty Reporter URL: <br>' + result.runtimeHypertyURL + '</p>';
 
   hypertyPanel.append(hi);
 
 
   let hello = $('.hello-panel');
 
-  let sayHelloTo = '<form class="say-hello"> Hyperty URL: <input class="to-hyperty-input" type="text" name="toHyperty"><br><input type="submit" value="Say Hello"></form>'
+  let sayHelloTo = '<form class="say-hello"> Hyperty URL: <input class="to-hyperty-input" type="text" size="60" name="toHyperty"><br><input type="submit" value="Say Hello"></form>'
 
   hello.append(sayHelloTo);
 
   $('.say-hello').on('submit', sayHello);
 }
 
+function addContent() {
+  var place = document.getElementById("box1");
+    $(place).empty();
+    $(place).append('<div class="selection-panel"></div><div class="hyperty-panel"></div><div class="invitation-panel"></div><div class="hello-panel"></div><div class="bye-panel"></div><div class="msg-panel"></div>');
+  }
 
 function sayHello(event) {
 

@@ -32,14 +32,19 @@ runtimeLoader.install().then(function() {
 
     // create the link features
     $link.html(key);
-    $link.css('text-transform', 'none');
+    //$link.css('text-transform', 'none');
     $link.attr('data-name', key);
+    $link.attr('href','#');
     $link.on('click', loadHyperty);
 
     $item.append($link);
 
     $dropDown.append($item);
   });
+  $('.nav li a').on('click', function() {
+    $(this).parent().parent().find('.active').removeClass('active');
+    $(this).parent().addClass('active');
+});
 
 }).catch(function(reason) {
   console.error(reason);
@@ -97,55 +102,48 @@ function hypertyDeployed(hyperty) {
 
   switch (hyperty.name) {
     case 'ReceiverDTWebRTC':
-    template = 'DTWebRTC3/DTreceiver';
     script =  'DTWebRTC3/DTreceiver.js';
     break;
+
     case 'SenderDTWebRTC':
-    template = 'DTWebRTC3/DTsender';
     script =  'DTWebRTC3/DTsender.js';
     break;
 
     case 'Receiver':
-    template = 'test2/receiver';
     script =  'test2/receiver.js';
     break;
+
     case 'Sender':
-    template = 'test2/sender';
     script =  'test2/sender.js';
     break;
 
-
     case 'HypertyConnector':
-    template = 'hyperty-connector/HypertyConnector';
     script =  'hyperty-connector/demo.js';
     break;
 
     case 'HypertyChat':
-    template = 'hyperty-chat/HypertyChat';
     script =  'hyperty-chat/demo.js';
     break;
 
     case 'HelloWorldObserver':
-    template = 'hello-world/helloWorld';
     script =  'hello-world/helloObserver.js';
     break;
 
     case 'HelloWorldReporter':
-    template = 'hello-world/helloWorld';
     script =  'hello-world/helloReporter.js';
     break;
   }
 
-  if (!template) {
-    throw Error('You must need specify the template for your example');
+  if (!script) {
+    throw Error('You must need specify the js-script for your example');
   }
 
 
   $.getScript(script)
   .done(function (foo){
-    console.log(">>>>>>>>>>>" + script + "loaded"); hypertyLoaded(hyperty); })
+    console.log(">>>>>>>>>>> " + script + " loaded"); hypertyLoaded(hyperty); })
   .fail(function (err){
-    console.log("!!!!!!!!!!! cant load" + script, err)});
+    console.log("!!!!!!!!!!! cant load " + script, err); });
 }
 
 

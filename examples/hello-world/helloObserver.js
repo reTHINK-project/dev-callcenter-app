@@ -10,12 +10,13 @@ function hypertyLoaded(result) {
   hypertyObserver = result.instance;
 
   console.log(hypertyObserver);
+  addContent();
 
   $('.selection-panel').hide();
 
   let hypertyPanel = $('.hyperty-panel');
 
-  let hi = '<p>Hyperty Observer URL: ' + result.runtimeHypertyURL + '</p>';
+  let hi = '<p>Hyperty Observer URL: <br>' + result.runtimeHypertyURL + '</p>';
 
   hypertyPanel.append(hi);
 
@@ -32,6 +33,12 @@ function hypertyLoaded(result) {
     invitationPanel.append(invitation);
 
   });
+
+  function addContent() {
+  var place = document.getElementById("box1");
+    $(place).empty();
+    $(place).append('<div class="selection-panel"></div><div class="hyperty-panel"></div><div class="invitation-panel"></div><div class="hello-panel"></div><div class="bye-panel"></div><div class="msg-panel"></div>');
+  }
 
 
   hypertyObserver.addEventListener('hello', function(event) {

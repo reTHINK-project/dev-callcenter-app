@@ -7,7 +7,7 @@ function hypertyLoaded(result) {
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.send-panel').append( '<form class="connect">Hyperty URL: ' +
-                   				'<input class="to-hyperty-input" type="text" width="100px" name="toHyperty">' +
+                   				'<input class="to-hyperty-input" type="text" size="60" name="toHyperty">' +
                    				'<br>' +
                    				'<input type="submit" value="connect">' +
                    				'</form>');
@@ -40,25 +40,6 @@ function connectToHyperty(event) {
   .catch(function(reason) {
     console.error(reason);
     // reject(reason);
-  });
-}
-
-Handlebars.getTemplate = function(name) {
-  return new Promise(function(resolve, reject) {
-    if (Handlebars.templates === undefined || Handlebars.templates[name] === undefined)
-      Handlebars.templates = {};
-    else
-      resolve(Handlebars.templates[name]);
-    $.ajax({
-      url: 'templates/' + name + '.hbs',
-      success: function(data) {
-        Handlebars.templates[name] = Handlebars.compile(data);
-        resolve(Handlebars.templates[name]);
-      },
-      fail: function(reason) {
-        reject(reason);
-      }
-    });
   });
 }
 

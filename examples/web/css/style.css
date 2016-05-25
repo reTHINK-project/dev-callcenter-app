@@ -17,6 +17,10 @@ body {
   background-color: #f5f5f5;
 }
 
+.active {
+  font-weight: bold;
+}
+
 
 /* Custom page CSS
 -------------------------------------------------- */
@@ -39,7 +43,12 @@ code {
 }
 
 .logo {
+  font-weight: bold;
   padding-top:6px;
   height: 55px;
   width: auto;
+}
+
+.big-text a {
+  font-weight: bold;
 }
