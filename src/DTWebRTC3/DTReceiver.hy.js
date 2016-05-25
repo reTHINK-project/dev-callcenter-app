@@ -54,29 +54,6 @@ class Receiver extends EventEmitter {
     });
   }
 
-  webrtcconnect(hypertyURL) {
-    let _this = this;
-    let syncher = _this._syncher;
-
-    return new Promise(function(resolve, reject) {
-      syncher.create(_this._objectDescURL, [hypertyURL], obj)
-      .then(function(webrtcReporter) {
-        console.info('1. Return Created Data Object Reporter', webrtcReporter);
-        _this.webrtcReporter = webrtcReporter;
-        webrtcReporter.onSubscription(function(event) {
-          console.info('-------- Receiver received subscription request --------- \n');
-          event.accept(); // All subscription requested are accepted
-        });
-        resolve(webrtcReporter);
-      })
-      .catch(function(reason) {
-        console.error(reason);
-        reject(reason);
-      });
-    });
-  }
-
-  
   // send data to the other hyperty
   slideback(data) {
     this.objReporter.data.slider = data;
@@ -102,6 +79,11 @@ class Receiver extends EventEmitter {
         console.info('message received:', event); // Object was changed
         _this.trigger('slide', objObserver.data); // lets notify the App about the change
       });
+
+      objObserver.onChange('webrtc', function(event) {
+        console.info('webrtc message received:', event); // Object was changed
+        _this.trigger('webrtcreceive', objObserver.data); // lets notify the App about the change
+      });
     }).catch(function(reason) {
       console.error(reason);
     });
@@ -111,22 +93,22 @@ class Receiver extends EventEmitter {
 
   //create a peer connection with its event handlers
   createPC() {
-    pc = new RTCPeerConnection();
+    this.pc = new RTCPeerConnection();
     //event handler for when remote stream is added to peer connection
-    pc.onaddstream = function(obj){
-      console.log('onaddstream', pc);
+    this.pc.onaddstream = function(obj){
+      console.log('onaddstream', this.pc);
       document.getElementById('remoteVideo').srcObject = obj.stream;
     }
 
     //event handler for when local ice candidate has been found
-    pc.onicecandidate = function(e){
+    this.pc.onicecandidate = function(e){
       var cand = e.candidate;
 
       //end if candidate is null (last candidate is!)
       if(!cand) return;
 
       //if ice not enabled yet, push to buffer first
-      if(!ice){
+      if(!this.ice){
           this.iceBuffer.push(cand);
       }else{
           this.sendIceCandidate(cand);
@@ -159,37 +141,8 @@ class Receiver extends EventEmitter {
     this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate));
   }
 
-
-  //Alice: invite a partner p (Bob) to a call
-  invite(p){
-    var _this = this;
-    this.partner = p;
-    this.createPC();
-
-    navigator.mediaDevices.getUserMedia(constraints)
-    .then(function(stream){
-      document.getElementById('localVideo').srcObject = stream;
-      _thispc.addStream(stream);
-
-      _thispc.createOffer({
-        offerToReceiveAudio: 1,
-        offerToReceiveVideo: 1
-      })
-      .then(function(offer){
-        _this.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
-          var msg = {
-              type: 'invitation',
-              offer: offer,
-              to: partner
-          }
-          _this.message(partner, msg);
-        })
-      });
-    });
-  }
-
   //Bob: handle incoming invite from Alice
-   handleInvite(msg){
+  handleInvite(msg){
     var _this = this;
     console.log('got invite from', msg.from);
     this.partner = msg.from;
@@ -218,20 +171,10 @@ class Receiver extends EventEmitter {
     });
   }
 
-  //Alice: handle accepted call from Bob
-   handleAccepted(msg){
-    var _this = this;
-    var answer = msg.body.answer;
-    console.log('received answer', answer);
-    this.pc.setRemoteDescription(new RTCSessionDescription(answer), function(){
-       _this.emptyIceBuffer();
-    });
-  }
-
   //////////////////////////////////// CHECK EVERYTHING HERE
 
   // send Websocket message // this is the dataobject.data function !!!!!!!!!!!!!!! translate it
-message(to, body){
+  message(to, body){
     var msg = {
         type: 'message',
         from: me,
@@ -251,7 +194,7 @@ message(to, body){
 
 export default function activate(hypertyURL, bus, configuration) {
   return {
-    name: 'Receiver',
+    name: 'DTReceiver',
     instance: new Receiver(hypertyURL, bus, configuration)
   };
 }

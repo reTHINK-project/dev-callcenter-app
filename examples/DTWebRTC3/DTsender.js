@@ -6,12 +6,18 @@ function hypertyLoaded(result) {
   addContent();
   $('.selection-panel').hide();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
-  $('.send-panel').append( '<form class="connect">Hyperty URL: ' +
+  $('.send-panel').append('<form class="connect">Hyperty URL: ' +
                    				'<input class="to-hyperty-input" type="text" name="toHyperty">' +
                    				'<br>' +
                    				'<input type="submit" value="connect">' +
                    				'</form>');
   $('.connect').on('submit', connectToHyperty);
+  $('.send-panel').append('<form class="invite">Hyperty URL: ' +
+                          '<input class="webrtc-hyperty-input" type="text" name="webrtcHyperty">' +
+                          '<br>' +
+                          '<input type="submit" value="webrtcconnect">' +
+                          '</form>');
+  $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
 	initListeners();
 }
 
@@ -47,6 +53,23 @@ function connectToHyperty(event) {
   .then(function(obj) {
     console.log('Slider obj: ', obj);
     $('.connect').hide();
+  })
+  .catch(function(reason) {
+    console.error(reason);
+    // reject(reason);
+  });
+}
+
+function webrtcconnectToHyperty(event) {
+  event.preventDefault();
+  let toHypertyForm = $(event.currentTarget);
+  let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
+  console.log(toHyperty);
+
+  hyperty.webrtcconnect(toHyperty)
+  .then(function(obj) {
+    console.log('Webrtc obj: ', obj);
+    $('.webrtcconnect').hide();
   })
   .catch(function(reason) {
     console.error(reason);
