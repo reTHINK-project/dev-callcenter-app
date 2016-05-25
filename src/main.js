@@ -141,15 +141,14 @@ function hypertyDeployed(hyperty) {
   }
 
   if (hyperty.name == "ReceiverDTWebRTC" ||
-      hyperty.name == "SenderDTWebRTC"){
-  $.getScript(script)
-  .done(function (foo){
-    console.log(">>>>>>>>>>>" + script + "loaded"); hypertyLoaded(hyperty); })
-  .fail(function (err){
-    console.log("!!!!!!!!!!! cant load" + script, err)});
+      hyperty.name == "SenderDTWebRTC") {
+    $.getScript(script)
+    .done(function (foo){
+      console.log(">>>>>>>>>>>" + script + "loaded"); hypertyLoaded(hyperty); })
+    .fail(function (err){
+      console.log("!!!!!!!!!!! cant load" + script, err)});
   }
-  else
-  {
+  else {
     getTemplate(template, script)
     .then(function(template) {
       let html = template();

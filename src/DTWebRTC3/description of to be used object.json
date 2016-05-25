@@ -1,9 +1,9 @@
 dataobject = {
 	connection : {
-		name 			: '',
+		name 		: '',
 		status 		: "connected",
 		owner 		: "hyperty://example.com/alicehy",
-		peer 			: "connection://example.com/alice/bob27012016",
+		peer 		: "connection://example.com/alice/bob27012016",
 		ownerPeer : {
 			connectionDescription: {
 				sdp	: sessiondescription.sdp, // from local description
@@ -26,5 +26,4 @@ dataobject = {
 		sdp,
 		candidate
 	}
-
 }
