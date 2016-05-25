@@ -109,28 +109,16 @@ function hypertyDeployed(hyperty) {
     script =  'DTWebRTC3/DTsender.js';
     break;
 
-    case 'Receiver':
-    script =  'test2/receiver.js';
+    case 'DTSlider1':
+    script =  'DTSlider/DTSlider1.js';
     break;
 
-    case 'Sender':
-    script =  'test2/sender.js';
+    case 'DTSlider2':
+    script =  'DTSlider/DTSlider2.js';
     break;
 
     case 'HypertyConnector':
     script =  'hyperty-connector/demo.js';
-    break;
-
-    case 'HypertyChat':
-    script =  'hyperty-chat/demo.js';
-    break;
-
-    case 'HelloWorldObserver':
-    script =  'hello-world/helloObserver.js';
-    break;
-
-    case 'HelloWorldReporter':
-    script =  'hello-world/helloReporter.js';
     break;
   }
 
