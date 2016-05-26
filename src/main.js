@@ -126,7 +126,6 @@ function hypertyDeployed(hyperty) {
     throw Error('You must need specify the js-script for your example');
   }
 
-
   $.getScript(script)
   .done(function (foo){
     console.log(">>>>>>>>>>> " + script + " loaded"); hypertyLoaded(hyperty); })

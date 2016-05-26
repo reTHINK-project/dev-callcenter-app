@@ -316,4 +316,5 @@ function showVideo(controller) {
 
     console.log('hangout');
   });
+
 }

@@ -8,23 +8,25 @@ function hypertyLoaded(result) {
   $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
   hyperty.myUrl = result.runtimeHypertyURL;
 	initListeners();
+  $.getScript("/examples/DTWebRTC3/adapter.js");
 }
 
 function addContent() {
   var place = document.getElementById("box1");
   $(place).empty();
-  $(place).append(' <div class="selection-panel"></div>
-                    <div class="hyperty-panel"></div>
-                    <div class="my-panel">
-                      <input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" />
-                      <span id="myrange">0</span>
-                    </div>
-                    <div class="invitation-panel"></div>
-                    <div id="smth">
-                      <video id="remoteVideo" autoplay style="width: 500px; float: left; margin-right: 20px; border: 1px solid grey;"></video>
-                      <video id="localVideo" autoplay style="width: 200px; border: 1px solid grey;">PENIS HIHII</video>
-                    </div>
-                    <div class="send-panel"></div>');
+  $(place).append('<div class="selection-panel"></div>'+
+                  '<div class="hyperty-panel"></div>'+
+                  '<div class="my-panel">'+
+                    '<input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" />'+
+                    '<span id="myrange">0</span>'+
+                  '</div>'+
+                  '<div class="invitation-panel"></div>'+
+                  '<div id="smth"></div>'+
+                  '<div id="smth2">'+
+                    '<video id="remoteVideo" autoplay style="width: 500px; float: left; margin-right: 20px; border: 1px solid grey;"></video>'+
+                    '<video id="localVideo" autoplay style="width: 200px; border: 1px solid grey;">PENIS HIHII</video>'+
+                  '</div>'+
+                  '<div class="send-panel"></div>');
 }
 
 // send back methods
@@ -79,10 +81,10 @@ function initListeners() {
 
   hyperty.addEventListener('webrtcreceive', function(event) {
     console.log('Webrtc receive event received:', event);
-    switch(event.webrtc.data.body.type){
-        case 'invitation':         hyperty.handleInvite(event.webrtc.data); break;
-        case 'accepted':         hyperty.handleAccepted(event.webrtc.data); break;
-        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.data); break;
+    switch(event.webrtc.msg.body.type){
+        case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
+        case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
+        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
     }
   });
 
