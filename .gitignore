@@ -18,3 +18,4 @@ resources/*.hy.js
 dist
 config.json
 resources/tmp
+resources/descriptors/Hyperties.json
