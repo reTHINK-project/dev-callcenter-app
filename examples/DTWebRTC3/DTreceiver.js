@@ -16,17 +16,15 @@ function addContent() {
   $(place).empty();
   $(place).append('<div class="selection-panel"></div>'+
                   '<div class="hyperty-panel"></div>'+
-                  '<div class="my-panel">'+
-                    '<input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" />'+
-                    '<span id="myrange">0</span>'+
-                  '</div>'+
+                  '<div class="my-panel"></div>'+
+                  '<div class="send-panel"></div>'+
+                  '<br>' +
                   '<div class="invitation-panel"></div>'+
                   '<div id="smth"></div>'+
                   '<div id="smth2">'+
-                    '<video id="remoteVideo" autoplay style="width: 500px; float: left; margin-right: 20px; border: 1px solid grey;"></video>'+
-                    '<video id="localVideo" autoplay style="width: 200px; border: 1px solid grey;">PENIS HIHII</video>'+
-                  '</div>'+
-                  '<div class="send-panel"></div>');
+                    '<video id="remoteVideo" class="block" autoplay style="border: 1px solid grey;"></video>'+
+                    '<video id="localVideo" class="halfblock" autoplay style="border: 1px solid grey;"></video>'+
+                  '</div>');
 }
 
 // send back methods

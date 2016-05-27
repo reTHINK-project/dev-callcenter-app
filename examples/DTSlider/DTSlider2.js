@@ -12,8 +12,17 @@ function hypertyLoaded(result) {
 function addContent() {
   var place = document.getElementById("box1");
     $(place).empty();
-    $(place).append('<div class="selection-panel"></div><div class="hyperty-panel"></div><div class="my-panel"><input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" /><span id="myrange">0</span></div><div class="invitation-panel"></div><div id="smth"></div>');
-  }
+    $(place).append('<div class="selection-panel"></div>'+
+                    '<div class="hyperty-panel"></div>'+
+                    '<div class="send-panel"></div>'+
+                    '<br>'+
+                    '<div class="my-panel">'+
+                      '<input id="slider1" type="range" min="0" max="100" value="0" step="1" onchange="showValue(this.value)" />'+
+                      '<span id="myrange">0</span>'+
+                    '</div>'+
+                    '<div class="invitation-panel"></div>'+
+                    '<div id="smth"></div>');
+}
 
 // send back methods
 function showValue(newValue) { // when slider is moved by the receiver
