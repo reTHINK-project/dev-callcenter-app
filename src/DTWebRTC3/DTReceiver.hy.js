@@ -115,12 +115,14 @@ class Receiver extends EventEmitter {
   }
 
   //send all ICE candidates from buffer to partner
-  emptyIceBuffer(){
+  emptyIceBuffer(b){
+    console.log("empütyicebuffer")
     this.ice = true;
     //send ice candidates from buffer
-    for(var i = (this.iceBuffer.length - 1); i >= 0; i--){
-        this.sendIceCandidate(iceBuffer[i]);
-        this.iceBuffer.splice(i, 1);
+    for(var i = (b.length - 1); i >= 0; i--){
+      console.log("icebuffer:", b)
+      this.sendIceCandidate(b[i]);
+      b.splice(i, 1);
     }
   }
 
@@ -135,7 +137,9 @@ class Receiver extends EventEmitter {
 
   //handler for received ICE candidate from partner
   handleIceCandidate(msg){
-    this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate));
+    this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate))
+    .then((success)=>{console.log("handleIceCandidate success: ", success)})
+    .catch((err)=>{console.log("handleIceCandidate err: ", err)});
   }
 
   //Bob: handle incoming invite from Alice
@@ -162,8 +166,8 @@ class Receiver extends EventEmitter {
             }
             _this.connect(partner)
             .then((objReporter)=>{
+              console.log("objReporter present, sending msg answer");
               _this.message(msg);
-              _this.emptyIceBuffer();
             });
           });
         });
@@ -183,6 +187,11 @@ class Receiver extends EventEmitter {
     }
     console.log('sending', msg);
     this.webrtcReporter.data.webrtc = {msg : msg};
+  }
+
+  iceallowed(){
+    this.ice=true;
+    this.emptyIceBuffer(this.iceBuffer);
   }
 
 }

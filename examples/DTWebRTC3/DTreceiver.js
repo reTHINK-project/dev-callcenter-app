@@ -83,6 +83,7 @@ function initListeners() {
         case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
         case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
         case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
+        case 'iceallowed':   hyperty.iceallowed(event.webrtc.msg); break;
     }
   });
 

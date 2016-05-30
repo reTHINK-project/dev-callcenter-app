@@ -173,18 +173,23 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     var answer = msg.body.answer;
     console.log('received answer', answer);
     this.pc.setRemoteDescription(new RTCSessionDescription(answer), function(){
-       _this.emptyIceBuffer();
+      var msg = {
+          type: 'iceallowed'
+      };
+      _this.message(msg);
+      _this.emptyIceBuffer(_this.iceBuffer);
     });
   }
 
   //send all ICE candidates from buffer to partner
-  emptyIceBuffer(){
-    var _this = this;
+  emptyIceBuffer(b){
+    console.log("empütyicebuffer")
     this.ice = true;
     //send ice candidates from buffer
-    for(var i = (_this.iceBuffer.length - 1); i >= 0; i--){
-        _this.sendIceCandidate(_this.iceBuffer[i]);
-        _this.iceBuffer.splice(i, 1);
+    for(var i = (b.length - 1); i >= 0; i--){
+      console.log("icebuffer:", b)
+      this.sendIceCandidate(b[i]);
+      b.splice(i, 1);
     }
   }
 
@@ -199,7 +204,20 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
   //handler for received ICE candidate from partner
   handleIceCandidate(msg){
-    this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate));
+    if (this.ice) {
+      let data = {
+        type: 'candidate',
+        candidate: msg.body.candidate.candidate,
+        sdpMid: msg.body.candidate.sdpMid,
+        sdpMLineIndex: msg.body.candidate.sdpMLineIndex
+      };
+      console.log("icecandidateblubb: ", data)
+      this.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}))
+      .then((success)=>{console.log("handleIceCandidate success: ", success)})
+      .catch((err)=>{console.log("handleIceCandidate err: ", err);});
+    } else {
+      console.log("ice not ready");
+    }
   }
 
 }
