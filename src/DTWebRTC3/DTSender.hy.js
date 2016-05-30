@@ -1,4 +1,5 @@
 /* jshint undef: true */
+import HypertyDiscovery from 'service-framework/dist/HypertyDiscovery';
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter'; // for receiving
@@ -14,7 +15,8 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     this._domain = divideURL(hypertyURL).domain;
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
-    this._syncher = new Syncher(hypertyURL, bus, configuration);;
+    this._syncher = new Syncher(hypertyURL, bus, configuration);
+    this.hypertyDiscovery = new HypertyDiscovery(hypertyURL, bus);
     this.constraints = {
       audio: false,
       video: true
