@@ -20,7 +20,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this.constraints = {
       audio: false,
       video: true
-    }
+    };
     this.pc = null;
     this.ice = false; // Do we already transmit ICE candidates?
     this.iceBuffer = [];
@@ -71,9 +71,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this._syncher.subscribe(this._objectDescURL, event.url)
     .then(function(objObserver) {
       console.info(objObserver);
-
-      // // lets notify the App the subscription was accepted with the most updated version of Object
-      // _this.trigger('slideback', objObserver.data);
 
       objObserver.onChange('slider', function(event) {
         console.info('message received:',event); // Object was changed
@@ -130,12 +127,11 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
         })
         .then(function(offer){
           _this.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
-            var msg = {
+            _this.message({
                 type: 'invitation',
                 offer: offer
-            }
-            _this.message(msg);
-          })
+            });
+          });
         });
     });
   }
@@ -144,6 +140,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   createPC() {
     var _this = this;
     this.pc = new RTCPeerConnection();
+
     //event handler for when remote stream is added to peer connection
     this.pc.onaddstream = function(obj){
       console.log('onaddstream', _this.pc);
@@ -152,39 +149,25 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     //event handler for when local ice candidate has been found
     this.pc.onicecandidate = function(e){
-      // var cand = JSON.parse(JSON.stringify(e.candidate));
-      // var cand = jQuery.extend(true, {}, e.candidate);
       if (!e.candidate) return;
-      var cand = {
-        type: 'candidate',
-        candidate: e.candidate.candidate,
-        sdpMid: e.candidate.sdpMid,
-        sdpMLineIndex: e.candidate.sdpMLineIndex
-      };
-      console.log("ICE KANDIDAT: ", cand);
-      if(!cand)       return;
-      if(!_this.ice)  _this.iceBuffer.push(cand);
-      else            _this.sendIceCandidate(cand);
+      // console.log("ICE: ", e.candidate);
+      if (!_this.ice) _this.iceBuffer.push(e.candidate);
+      else            _this.sendIceCandidate(e.candidate);
     }
   }
 
   //send all ICE candidates from buffer to partner
-  emptyIceBuffer(b){
-    let _this=this;
-    console.log("emptyicebuffer: ", _this.iceBuffer[0]);
-    console.log("icebuffer: ", _this.iceBuffer);
+  emptyIceBuffer(){
+    console.log("icebuffer: ", this.iceBuffer);
     //send ice candidates from buffer
-    if (_this.iceBuffer.length) {
-      // let i=_this.iceBuffer.length-1;
-      _this.rek(this);
-    }
-    
+    if (this.iceBuffer && this.iceBuffer.length) this.rek(this);
   }
 
   rek(that){
+    // give the syncer time to sync or it will fail
     setTimeout(function() {
       if (that.iceBuffer.length>0) {
-        console.log("rek buf:", that.iceBuffer[0]);
+        console.log("iceBuffer[0]: ", that.iceBuffer[0]);
         that.sendIceCandidate(that.iceBuffer[0]);
         that.iceBuffer.splice(0, 1);
         that.rek(that);
@@ -193,25 +176,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       }
     }, 1);
   }
-
-  // emptyIceBuffer(b){
-  //   let _this=this;
-  //   console.log("emptyicebuffer: ", _this.iceBuffer[0]);
-  //   console.log("icebuffer: ", _this.iceBuffer);
-  //   //send ice candidates from buffer
-  //   let i=0;
-  //   if (_this.iceBuffer.length) {
-  //     console.log("icebufferl: ", _this.iceBuffer.length);
-  //     while(i<_this.iceBuffer.length){
-  //       // setTimeout(function() {
-  //         console.log("icebuffer2:", _this.iceBuffer[i]);
-  //         _this.sendIceCandidate(_this.iceBuffer[i]);
-  //         _this.iceBuffer.splice(i, 1);
-  //         i++;
-  //       // }, 10*i);
-  //     }
-  //   }
-  // }
 
   //send Websocket message
   message(body){
@@ -229,25 +193,21 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     var answer = msg.body.answer;
     console.log('received answer', msg);
     this.pc.setRemoteDescription(new RTCSessionDescription(answer), function(){
-      var msg = {
-          type: 'iceallowed'
-      };
-      _this.message(msg);
+      _this.message({type: 'iceallowed'});
+      // make sure that the iceallowed message is being received first
       setTimeout(function() {
         _this.ice = true;
         _this.emptyIceBuffer();
       }, 10);
-      
     });
   }
 
   //send one ICE candidate to partner
-  sendIceCandidate(cand){
-    var msg = {
+  sendIceCandidate(c){
+    this.message({
         type: 'icecandidate',
-        candidate: cand
-    }
-    this.message(msg);
+        candidate: c
+    });
   }
 
   //handler for received ICE candidate from partner

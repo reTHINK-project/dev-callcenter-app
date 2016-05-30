@@ -109,83 +109,48 @@ class Receiver extends EventEmitter {
 
     //event handler for when local ice candidate has been found
     this.pc.onicecandidate = function(e){
-      // var cand = JSON.parse(JSON.stringify(e.candidate));
-      // var cand = jQuery.extend(true, {}, e.candidate);
-      if(!e.candidate)       return;
-      var cand = {
-        type: 'candidate',
-        candidate: e.candidate.candidate,
-        sdpMid: e.candidate.sdpMid,
-        sdpMLineIndex: e.candidate.sdpMLineIndex
-      };
-      console.log("ICE KANDIDAT: ", cand);
-      if(!_this.ice)  _this.iceBuffer.push(cand);
-      else            _this.sendIceCandidate(cand);
+      if (!e.candidate) return;
+      // console.log("ICE: ", e.candidate);
+      if (!_this.ice) _this.iceBuffer.push(e.candidate);
+      else            _this.sendIceCandidate(e.candidate);
     }
   }
 
   //send all ICE candidates from buffer to partner
   emptyIceBuffer(){
-    let _this=this;
-    console.log("emptyicebuffer: ", _this.iceBuffer[0]);
-    console.log("icebuffer: ", _this.iceBuffer);
+    console.log("icebuffer: ", this.iceBuffer);
     //send ice candidates from buffer
-    if (_this.iceBuffer.length) {
-      let i=_this.iceBuffer.length-1;
-      _this.rek(this, i);
-    }
+    if (this.iceBuffer && this.iceBuffer.length) this.rek(this);
   }
 
-  rek(that, i){
+  rek(that){
+    // give the syncer time to sync or it will fail
     setTimeout(function() {
-      if (i>=0 && i<that.iceBuffer.length) {
-        console.log("rek buf:", that.iceBuffer[i]);
-        that.sendIceCandidate(that.iceBuffer[i]);
+      if (that.iceBuffer.length>0) {
+        console.log("iceBuffer[0]: ", that.iceBuffer[0]);
+        that.sendIceCandidate(that.iceBuffer[0]);
         that.iceBuffer.splice(0, 1);
-        i--;
-        that.rek(that, i);
+        that.rek(that);
       } else {
-        console.log("i: ", i);
+        console.log("that.iceBuffer.length: ", that.iceBuffer.length);
       }
     }, 1);
   }
 
-  // //send all ICE candidates from buffer to partner
-  // emptyIceBuffer(){
-  //   let _this=this;
-  //   console.log("emptyicebuffer: ", _this.iceBuffer[0]);
-  //   console.log("icebuffer: ", _this.iceBuffer);
-  //   //send ice candidates from buffer
-  //   let i=0;
-  //   if (_this.iceBuffer.length) {
-  //     console.log("icebufferl: ", _this.iceBuffer.length);
-  //     while(i<_this.iceBuffer.length){
-  //       // setTimeout(function() {
-  //         console.log("icebuffer2:", _this.iceBuffer[i]);
-  //         _this.sendIceCandidate(_this.iceBuffer[i]);
-  //         _this.iceBuffer.splice(i, 1);
-  //         i++;
-  //       // }, 10*i);
-  //     }
-  //   }
-  // }
-
   //send one ICE candidate to partner
-  sendIceCandidate(cand){
-    var msg = {
+  sendIceCandidate(c){
+    this.message({
         type: 'icecandidate',
-        candidate: cand
-    }
-    this.message(msg);
+        candidate: c
+    });
   }
 
   //handler for received ICE candidate from partner
   handleIceCandidate(msg){
-
-    if (!msg.body.hasOwnProperty('candidate')) return;
+    if (!msg.body.hasOwnProperty('candidate')) return; // doublecheck also on reciever side
     this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate))
     .then((success)=>{console.log("handleIceCandidate success: ", success)})
-    .catch((err)=>{console.log("handleIceCandidate err: ", err)});
+    .catch((err)   =>{console.log("handleIceCandidate err: "    , err)});
   }
 
   //Bob: handle incoming invite from Alice
@@ -193,10 +158,11 @@ class Receiver extends EventEmitter {
     var _this = this;
     this.partner = partner;
     console.log('got invite');
-    if(!confirm('Incoming call. Answer?')) return;
+    // uncommented for testing purposes
+    // if(!confirm('Incoming call. Answer?')) return;
     this.createPC();
     var offer = msg.body.offer;
-    console.log('received offer', offer);
+    console.log('received offer: ', offer);
     
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
@@ -206,14 +172,13 @@ class Receiver extends EventEmitter {
         _this.pc.createAnswer()
         .then(function(answer){
           _this.pc.setLocalDescription(new RTCSessionDescription(answer), function(){
-            var msg = {
-                type: 'accepted',
-                answer: answer
-            }
             _this.connect(partner)
             .then((objReporter)=>{
               console.log("objReporter present, sending msg answer");
-              _this.message(msg);
+              _this.message({
+                type: 'accepted',
+                answer: answer
+              });
             });
           });
         });
