@@ -152,12 +152,66 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     //event handler for when local ice candidate has been found
     this.pc.onicecandidate = function(e){
-      var cand = e.candidate;
-      if(!cand) return;
+      // var cand = JSON.parse(JSON.stringify(e.candidate));
+      // var cand = jQuery.extend(true, {}, e.candidate);
+      if (!e.candidate) return;
+      var cand = {
+        type: 'candidate',
+        candidate: e.candidate.candidate,
+        sdpMid: e.candidate.sdpMid,
+        sdpMLineIndex: e.candidate.sdpMLineIndex
+      };
+      console.log("ICE KANDIDAT: ", cand);
+      if(!cand)       return;
       if(!_this.ice)  _this.iceBuffer.push(cand);
       else            _this.sendIceCandidate(cand);
     }
   }
+
+  //send all ICE candidates from buffer to partner
+  emptyIceBuffer(b){
+    let _this=this;
+    console.log("emptyicebuffer: ", _this.iceBuffer[0]);
+    console.log("icebuffer: ", _this.iceBuffer);
+    //send ice candidates from buffer
+    if (_this.iceBuffer.length) {
+      // let i=_this.iceBuffer.length-1;
+      _this.rek(this);
+    }
+    
+  }
+
+  rek(that){
+    setTimeout(function() {
+      if (that.iceBuffer.length>0) {
+        console.log("rek buf:", that.iceBuffer[0]);
+        that.sendIceCandidate(that.iceBuffer[0]);
+        that.iceBuffer.splice(0, 1);
+        that.rek(that);
+      } else {
+        console.log("that.iceBuffer.length: ", that.iceBuffer.length);
+      }
+    }, 1);
+  }
+
+  // emptyIceBuffer(b){
+  //   let _this=this;
+  //   console.log("emptyicebuffer: ", _this.iceBuffer[0]);
+  //   console.log("icebuffer: ", _this.iceBuffer);
+  //   //send ice candidates from buffer
+  //   let i=0;
+  //   if (_this.iceBuffer.length) {
+  //     console.log("icebufferl: ", _this.iceBuffer.length);
+  //     while(i<_this.iceBuffer.length){
+  //       // setTimeout(function() {
+  //         console.log("icebuffer2:", _this.iceBuffer[i]);
+  //         _this.sendIceCandidate(_this.iceBuffer[i]);
+  //         _this.iceBuffer.splice(i, 1);
+  //         i++;
+  //       // }, 10*i);
+  //     }
+  //   }
+  // }
 
   //send Websocket message
   message(body){
@@ -165,7 +219,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
         type: 'message',
         body: body
     }
-    console.log('sending', msg);
+    console.log('sending ', msg);
     this.webrtcReporter.data.webrtc = {msg : msg};
   }
 
@@ -173,26 +227,18 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   handleAccepted(msg){
     var _this = this;
     var answer = msg.body.answer;
-    console.log('received answer', answer);
+    console.log('received answer', msg);
     this.pc.setRemoteDescription(new RTCSessionDescription(answer), function(){
       var msg = {
           type: 'iceallowed'
       };
       _this.message(msg);
-      _this.emptyIceBuffer(_this.iceBuffer);
+      setTimeout(function() {
+        _this.ice = true;
+        _this.emptyIceBuffer();
+      }, 10);
+      
     });
-  }
-
-  //send all ICE candidates from buffer to partner
-  emptyIceBuffer(b){
-    console.log("empütyicebuffer")
-    this.ice = true;
-    //send ice candidates from buffer
-    for(var i = (b.length - 1); i >= 0; i--){
-      console.log("icebuffer:", b)
-      this.sendIceCandidate(b[i]);
-      b.splice(i, 1);
-    }
   }
 
   //send one ICE candidate to partner
@@ -207,14 +253,8 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   //handler for received ICE candidate from partner
   handleIceCandidate(msg){
     if (this.ice) {
-      let data = {
-        type: 'candidate',
-        candidate: msg.body.candidate.candidate,
-        sdpMid: msg.body.candidate.sdpMid,
-        sdpMLineIndex: msg.body.candidate.sdpMLineIndex
-      };
-      console.log("icecandidateblubb: ", data)
-      this.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}))
+      if (!msg.body.hasOwnProperty('candidate')) return;
+      this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate))
       .then((success)=>{console.log("handleIceCandidate success: ", success)})
       .catch((err)=>{console.log("handleIceCandidate err: ", err);});
     } else {

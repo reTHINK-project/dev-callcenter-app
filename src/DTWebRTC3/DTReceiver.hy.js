@@ -75,6 +75,9 @@ class Receiver extends EventEmitter {
 
       // // lets notify the App the subscription was accepted with the most updated version of Object
       // _this.trigger('slide', objObserver.data);
+      objObserver.onChange('*', function(event) {
+        console.log("ANY EVENT RECEIVED!", event);
+      });
 
       objObserver.onChange('slider', function(event) {
         console.info('message received:', event); // Object was changed
@@ -106,25 +109,66 @@ class Receiver extends EventEmitter {
 
     //event handler for when local ice candidate has been found
     this.pc.onicecandidate = function(e){
-      var cand = e.candidate;
-
-      if(!cand) return;
+      // var cand = JSON.parse(JSON.stringify(e.candidate));
+      // var cand = jQuery.extend(true, {}, e.candidate);
+      if(!e.candidate)       return;
+      var cand = {
+        type: 'candidate',
+        candidate: e.candidate.candidate,
+        sdpMid: e.candidate.sdpMid,
+        sdpMLineIndex: e.candidate.sdpMLineIndex
+      };
+      console.log("ICE KANDIDAT: ", cand);
       if(!_this.ice)  _this.iceBuffer.push(cand);
       else            _this.sendIceCandidate(cand);
     }
   }
 
   //send all ICE candidates from buffer to partner
-  emptyIceBuffer(b){
-    console.log("empütyicebuffer")
-    this.ice = true;
+  emptyIceBuffer(){
+    let _this=this;
+    console.log("emptyicebuffer: ", _this.iceBuffer[0]);
+    console.log("icebuffer: ", _this.iceBuffer);
     //send ice candidates from buffer
-    for(var i = (b.length - 1); i >= 0; i--){
-      console.log("icebuffer:", b)
-      this.sendIceCandidate(b[i]);
-      b.splice(i, 1);
+    if (_this.iceBuffer.length) {
+      let i=_this.iceBuffer.length-1;
+      _this.rek(this, i);
     }
   }
+
+  rek(that, i){
+    setTimeout(function() {
+      if (i>=0 && i<that.iceBuffer.length) {
+        console.log("rek buf:", that.iceBuffer[i]);
+        that.sendIceCandidate(that.iceBuffer[i]);
+        that.iceBuffer.splice(0, 1);
+        i--;
+        that.rek(that, i);
+      } else {
+        console.log("i: ", i);
+      }
+    }, 1);
+  }
+
+  // //send all ICE candidates from buffer to partner
+  // emptyIceBuffer(){
+  //   let _this=this;
+  //   console.log("emptyicebuffer: ", _this.iceBuffer[0]);
+  //   console.log("icebuffer: ", _this.iceBuffer);
+  //   //send ice candidates from buffer
+  //   let i=0;
+  //   if (_this.iceBuffer.length) {
+  //     console.log("icebufferl: ", _this.iceBuffer.length);
+  //     while(i<_this.iceBuffer.length){
+  //       // setTimeout(function() {
+  //         console.log("icebuffer2:", _this.iceBuffer[i]);
+  //         _this.sendIceCandidate(_this.iceBuffer[i]);
+  //         _this.iceBuffer.splice(i, 1);
+  //         i++;
+  //       // }, 10*i);
+  //     }
+  //   }
+  // }
 
   //send one ICE candidate to partner
   sendIceCandidate(cand){
@@ -137,13 +181,15 @@ class Receiver extends EventEmitter {
 
   //handler for received ICE candidate from partner
   handleIceCandidate(msg){
+
+    if (!msg.body.hasOwnProperty('candidate')) return;
     this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate))
     .then((success)=>{console.log("handleIceCandidate success: ", success)})
     .catch((err)=>{console.log("handleIceCandidate err: ", err)});
   }
 
   //Bob: handle incoming invite from Alice
-   handleInvite(msg, partner){
+  handleInvite(msg, partner){
     var _this = this;
     this.partner = partner;
     console.log('got invite');
@@ -175,10 +221,6 @@ class Receiver extends EventEmitter {
     });
   }
 
-  //////////////////////////////////// CHECK EVERYTHING HERE
-
- 
-
   //send Websocket message
   message(body){
     var msg = {
@@ -190,16 +232,12 @@ class Receiver extends EventEmitter {
   }
 
   iceallowed(){
+    console.log("ICE IS ALLOWED NOW")
     this.ice=true;
-    this.emptyIceBuffer(this.iceBuffer);
+    this.emptyIceBuffer();
   }
 
 }
-
-
-
-
-
 
 export default function activate(hypertyURL, bus, configuration) {
   return {
