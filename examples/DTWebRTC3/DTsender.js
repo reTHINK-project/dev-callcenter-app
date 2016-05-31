@@ -5,15 +5,16 @@ function hypertyLoaded(result) {
   console.log("hypertyReporter: ", result);
   addContent();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
-  $('.send-panel').append('<form class="webrtcconnect">' +
-    '<input type="text" class="webrtc-hyperty-input block"  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
-    '<button type="submit" class="block"> webRTC to Hyperty</button>'+
-    '</form>');
   $('.email-panel').append('<form class="searchemail">'+ 
-    '<input type="email" class="friend-email validate block" placeholder="your friends email" id="email" required aria-required="true"  > '+
-    '<input type="text" class="friend-domain validate block" placeholder="Search in domain" id="domain" >'+
-    '<button type="submit" class="block">Search</button>'+
-    '</form>');
+    '<input type="email" class="friend-email validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
+    '<input type="text" class="friend-domain validate form-control " placeholder="Search in domain" id="domain" >'+
+    '<button type="submit" class="btn btn-default btn-sm btn-block ">Search</button>'+
+    '</form><br>');
+  $('.send-panel').append('<br><form class="webrtcconnect">' +
+    '<input type="text" class="webrtc-hyperty-input form-control "  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
+    '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
+    '</form><br>');
+  
 
   $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
   initListeners();
@@ -33,32 +34,27 @@ function addContent() {
     '<div class="hyperty-panel"></div>'+
     '<div class="email-panel"></div>'+
     '<div class="send-panel"></div>'+
-    '<br>' +
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-    '<video id="remoteVideo" class="block" autoplay style="border: 1px solid grey;"></video>'+
-    '<video id="localVideo" class="halfblock" autoplay style="border: 1px solid grey;"></video>'+
+    '<video id="remoteVideo" class="block hide" autoplay style="border: 1px solid grey;"></video>'+
+    '<video id="localVideo" class="halfblock hide" autoplay style="border: 1px solid grey;"></video>'+
     '</div>');
 }
-
-function showValue(v) {
-  $('#myrange').html(v);
-  hyperty.slide(v);
-}
-
 
 function webrtcconnectToHyperty(event) {
   event.preventDefault();
   let toHypertyForm = $(event.currentTarget);
   let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
+  toHypertyForm.append('<center><br><i class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
   console.log(toHyperty);
 
   hyperty.webrtcconnect(toHyperty)
   .then(function(obj) {
     console.log('Webrtc obj: ', obj);
-    $('.webrtcconnect').hide();
     hyperty.invite();
+    $('.send-panel').addClass('hide');
+    $('#smth2').find('.hide').removeClass('hide');
   })
   .catch(function(reason) {
     console.error(reason);
@@ -70,7 +66,7 @@ function webrtcconnectToHyperty(event) {
 function initListeners () {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
-    $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
+    $('.invitation-panel').append('<p> Invitation received from:\n ' + identity.email +  '</p>');
   });
 
   hyperty.addEventListener('webrtcreceive', function(event) {

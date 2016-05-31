@@ -18,7 +18,6 @@ function addContent() {
                   '<div class="hyperty-panel"></div>'+
                   '<div class="my-panel"></div>'+
                   '<div class="send-panel"></div>'+
-                  '<br>' +
                   '<div class="invitation-panel"></div>'+
                   '<div id="smth"></div>'+
                   '<div id="smth2">'+
