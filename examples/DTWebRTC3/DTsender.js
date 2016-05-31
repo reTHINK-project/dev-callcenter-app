@@ -13,10 +13,7 @@ function hypertyLoaded(result) {
     '<input type="email" class="friend-email validate block" placeholder="your friends email" id="email" required aria-required="true"  > '+
     '<input type="text" class="friend-domain validate block" placeholder="Search in domain" id="domain" >'+
     '<button type="submit" class="block">Search</button>'+
-    '</form>'+
-    '<ul class="collection hide">'+
-    '<li class="collection-header"><h4>Useres Hyperty</h4></li>'+
-    '</ul>');
+    '</form>');
 
   $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
   initListeners();
@@ -50,28 +47,12 @@ function showValue(v) {
   hyperty.slide(v);
 }
 
-function connectToHyperty(event) {
+
+function webrtcconnectToHyperty(event) {
   event.preventDefault();
   let toHypertyForm = $(event.currentTarget);
-  let toHyperty = toHypertyForm.find('.to-hyperty-input').val();
+  let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
   console.log(toHyperty);
-
-  hyperty.connect(toHyperty)
-  .then(function(obj) {
-    console.log('Slider obj: ', obj);
-    $('.connect').hide();
-  })
-  .catch(function(reason) {
-    console.error(reason);
-    // reject(reason);
-  });
-}
-
-function webrtcconnectToHyperty(toHyperty) {
-  // event.preventDefault();
-  // let toHypertyForm = $(event.currentTarget);
-  // let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
-  // console.log(toHyperty);
 
   hyperty.webrtcconnect(toHyperty)
   .then(function(obj) {
@@ -90,14 +71,6 @@ function initListeners () {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
-  });
-
-  hyperty.addEventListener('slideback', function(event) {
-    console.log('Slideback event received on sender side:', event);
-    $("#slider1").val(event.slider);
-    $("#myrange").html(event.slider);
-    $("#smth").html(event.reporter);
-    $("#smth").append(event);
   });
 
   hyperty.addEventListener('webrtcreceive', function(event) {
@@ -124,70 +97,17 @@ function discoverEmail(hypertyDiscovery) {
   section.removeClass('hide');
 
   $('.searchemail').on('submit', function(event) {
-    console.log(':::::::::::::::::::::::::::::::::::::1');
     event.preventDefault();
-
-    var collection = section.find('.collection');
-    var collectionItem = '<li class="collection-item item-loader"><div class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div></li>';
-
-    collection.removeClass('hide');
-    collection.addClass('center-align');
-    collection.prepend(collectionItem);
 
     var email = inputField.val();
     var domain = inputDomain.val();
-    console.log(':::::::::::::::::::::::::::::::::::::2', email);
-    hypertyDiscovery.discoverHypertyPerUser(email, domain).then(emailDiscovered).catch(emailDiscoveredError);
-    console.log(':::::::::::::::::::::::::::::::::::::3');
+    hypertyDiscovery.discoverHypertyPerUser(email, domain)
+    .then(function (result) {
+      $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
+      section.addClass('hide');
+    }).catch(function (err) {
+      console.error('Email Discovered Error: ', err);
+    });
 
   });
-}
-
-function emailDiscovered(result) {
-  console.log(':::::::::::::::::::::::::::::::::::::::Email Discovered: ', result);
-
-  var section = $('.discover');
-  var collection = section.find('.collection');
-  var collectionItem = '<li data-url="' + result.id + '" class="collection-item avatar">' +
-  '<span class="title"><b>Email: </b>' + result.id + '</span><p>&nbsp;</p>' +
-  '<p>' + result.descriptor + '<br>' + result.hypertyURL + '</p>' +
-  '<a title="Call to ' + result.id + '" class="waves-effect waves-light btn call-btn secondary-content"><i class="material-icons">call</i></a>' +
-  '</li>';
-
-  collection.removeClass('center-align');
-  var loader = collection.find('li.item-loader');
-  loader.remove();
-
-  var itemsFound = collection.find('li[data-url="' + result.id + '"]');
-  if (itemsFound.length) {
-    itemsFound[0].remove();
-  }
-
-  collection.append(collectionItem);
-
-  var callBtn = collection.find('.call-btn');
-  callBtn.on('click', function(event) {
-    event.preventDefault();
-    openVideo(result);
-  });
-
-
-  webrtcconnectToHyperty(result.hypertyURL);
-
-
-}
-
-function emailDiscoveredError(result) {
-
-  console.error('Email Discovered Error: ', result);
-
-  var section = $('.discover');
-  var collection = section.find('.collection');
-
-  var collectionItem = '<li class="collection-item orange lighten-3"><i class="material-icons left circle">error_outline</i>' + result + '</li>';
-
-  collection.empty();
-  collection.removeClass('center-align');
-  collection.removeClass('hide');
-  collection.append(collectionItem);
 }
