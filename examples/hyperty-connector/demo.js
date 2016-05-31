@@ -41,51 +41,8 @@ function hypertyLoaded(result) {
 function addContent() {
   var place = document.getElementById("box1");
   $(place).empty();
-  $(place).append('<div class="card-panel teal lighten-2 white-text"></div> <section class="discover"> <form class="form col s12"> <div class="row"> <div class="input-field col s12"> <input placeholder="your friends email" id="email" required aria-required="true" type="email" class="friend-email validate"> <label for="email" style="width: 100%;" data-error="the email format should be like user@domain.pt">search by email</label> </div> </div> <div class="row"> <div class="input-field col s12"> <input placeholder="Search in domain" id="domain" type="text" class="friend-domain validate"> <label for="domain" style="width: 100%;" data-error="">Looking for email on domain</label> </div> </div> <div class="row"> <div class="input-field col s8"> <button class="search waves-effect waves-light btn" type="submit"><i class="material-icons left">search</i>Search</button> </div> </div> </form> <div class="loader"></div> <ul class="collection with-header hide col s12"> <li class="collection-header"><h4>Useres Hyperty</h4></li> </ul> </section> <section class="video-holder hide"> <video class="video responsive-video" autoplay></video> <button class="camera waves-effect waves-light btn"><i class="material-icons left">videocam_off</i></button> <button class="mute waves-effect waves-light btn"><i class="material-icons left">volume_off</i></button> <button class="mic waves-effect waves-light btn"><i class="material-icons left">mic</i></button> <button class="hangout waves-effect waves-light btn"><i class="material-icons left">call_end</i></button> </section> <!-- Modal Structure --> <div class="modal modal-call"> <div class="modal-content"> <h4>Call Incoming From</h4> <span class="information"></span> </div> <div class="modal-footer"> <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat btn-reject">Reject</a> <a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat btn-accept">Accept</a> </div> </div> ');
+  $(place).append('<div class="card-panel teal lighten-2 white-text"></div> <section class="discover"> <form class="form col s12"> <div class="row"> <div class="input-field col s12"> <input placeholder="your friends email" id="email" required aria-required="true" type="email" class="friend-email validate"> <label for="email" style="width: 100%;" data-error="the email format should be like user@domain.pt">search by email</label> </div> </div> <div class="row"> <div class="input-field col s12"> <input placeholder="Search in domain" id="domain" type="text" class="friend-domain validate"> <label for="domain" style="width: 100%;" data-error="">Looking for email on domain</label> </div> </div> <div class="row"> <div class="input-field col s8"> <button class="search waves-effect waves-light btn" type="submit"><i class="material-icons left">search</i>Search</button> </div> </div> </form> <div class="loader"></div> <ul class="collection with-header hide col s12"> <li class="collection-header"><h4>Useres Hyperty</h4></li> </ul> </section> <section class="video-holder hide"> <video class="video responsive-video" autoplay></video> <button class="camera waves-effect waves-light btn"><i class="material-icons left">videocam_off</i></button> <button class="mute waves-effect waves-light btn"><i class="material-icons left">volume_off</i></button> <button class="mic waves-effect waves-light btn"><i class="material-icons left">mic</i></button> <button class="hangout waves-effect waves-light btn"><i class="material-icons left">call_end</i></button> </section>  <!-- Modal --> <div class="modal fade" id="myModal" role="dialog"> <div class="modal-dialog modal-sm"> <div class="modal-content"> <div class="modal-body"> <span class="information"></span> <button type="button" id="btn-accept" class=" btn btn-default" data-dismiss="modal">accept</button> <button type="button" id="btn-reject" class=" btn btn-default" data-dismiss="modal">reject</button> </div> </div> </div> </div> </div>');
 
-//   $(place).append('<div class="card-panel teal lighten-2 white-text"></div>'+
-// '<section class="discover">'+
-//   '<form class="form col s12">'+
-//     '<div class="row">'+
-//       '<div class="input-field col s12">'+
-//         '<input placeholder="your friends email" id="email" required aria-required="true" type="email" class="friend-email validate">'+
-//         '<label for="email" style="width: 100%;" data-error="the email format should be like user@domain.pt">search by email</label>'+
-//       '</div>'+
-//     '</div>'+
-//     '<div class="row">'+
-//       '<div class="input-field col s12">'+
-//         '<input placeholder="Search in domain" id="domain" type="text" class="friend-domain validate">'+
-//         '<label for="domain" style="width: 100%;" data-error="">Looking for email on domain</label>'+
-//       '</div>'
-//     '</div>'+
-//     '<div class="row">'+
-//       '<div class="input-field col s8">'+
-//         '<button class="search waves-effect waves-light btn" type="submit"><i class="material-icons left">search</i>Search</button>'+
-//       '</div>'+
-//     '</div>'+
-//   '</form>'+
-//   '<div class="loader"></div>'+
-//   '<ul class="collection with-header hide col s12">'+
-//     '<li class="collection-header"><h4>Useres Hyperty</h4></li>'+
-//   '</ul>'+
-// '</section>'+
-// '<section class="video-holder hide">'+
-//   '<video class="video responsive-video" autoplay></video>'+
-//   '<button class="camera waves-effect waves-light btn"><i class="material-icons left">videocam_off</i></button>'+
-//   '<button class="mute waves-effect waves-light btn"><i class="material-icons left">volume_off</i></button>'+
-//   '<button class="mic waves-effect waves-light btn"><i class="material-icons left">mic</i></button>'+
-//     '<button class="hangout waves-effect waves-light btn"><i class="material-icons left">call_end</i></button>'+
-// '</section>'+
-// '<div class="modal modal-call">'+
-//   '<div class="modal-content">'+
-//     '<h4>Call Incoming From</h4>'+
-//     '<span class="information"></span>'+
-//   '</div>'+
-//   '<div class="modal-footer">'+
-//     '<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat btn-reject">Reject</a>'+
-//     '<a href="#!" class="modal-action modal-close waves-effect waves-green btn-flat btn-accept">Accept</a>'+
-//   '</div>'+
-// '</div>');
 }
 
 function discoverEmail(hypertyDiscovery) {
@@ -206,9 +163,9 @@ function notification(event) {
 function notificationHandler(controller, event) {
 
   var calleeInfo = event.identity;
-  var incoming = $('.modal-call');
-  var acceptBtn = incoming.find('.btn-accept');
-  var rejectBtn = incoming.find('.btn-reject');
+  var incoming = $('#myModal');
+  var acceptBtn = incoming.find('#btn-accept');
+  var rejectBtn = incoming.find('#btn-reject');
   var informationHolder = incoming.find('.information');
 
   showVideo(controller);
@@ -218,7 +175,7 @@ function notificationHandler(controller, event) {
   acceptBtn.on('click', function(e) {
 
     e.preventDefault();
-
+    $('.modal-call').modal('hide');
     var options = options || {video: true, audio: true};
     getUserMedia(options).then(function(mediaStream) {
       console.info('recived media stream: ', mediaStream);
@@ -233,7 +190,7 @@ function notificationHandler(controller, event) {
   });
 
   rejectBtn.on('click', function(e) {
-
+    $('.modal-call').modal('hide');
     controller.decline().then(function(result) {
       console.log(result);
     }).catch(function(reason) {
@@ -245,15 +202,15 @@ function notificationHandler(controller, event) {
 
   var parseInformation = '<div class="col s12">' +
   '<div class="row valign-wrapper">' +
-  '<div class="col s2">' +
-  '<img src="' + calleeInfo.infoToken.picture + '" alt="" class="circle responsive-img">' +
+  '<div class="col s2 avatar">' +
+  '<img src="' + calleeInfo.infoToken.picture + '" alt="" class="circle  responsive-img">' +
   '</div>' +
   '<span class="col s10">' +
-  '<div class="row">' +
+  '<div >' +
   '<span class="col s3 text-right">Name: </span>' +
   '<span class="col s9 black-text">' + calleeInfo.infoToken.name + '</span>' +
   '</span>' +
-  '<span class="row">' +
+  '<span class="row ">' +
   '<span class="col s3 text-right">Email: </span>' +
   '<span class="col s9 black-text">' + calleeInfo.infoToken.email + '</span>' +
   '</span>' +
@@ -265,7 +222,7 @@ function notificationHandler(controller, event) {
   '</div>';
 
   informationHolder.html(parseInformation);
-  $('.modal-call').openModal();
+  $('#myModal').modal('show');
 
 }
 
