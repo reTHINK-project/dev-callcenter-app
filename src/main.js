@@ -44,7 +44,7 @@ runtimeLoader.install().then(function() {
   $('.nav li a').on('click', function() {
     $(this).parent().parent().find('.active').removeClass('active');
     $(this).parent().addClass('active');
-});
+  });
 
 }).catch(function(reason) {
   console.error(reason);
@@ -127,29 +127,14 @@ function hypertyDeployed(hyperty) {
     throw Error('You must need specify the js-script for your example');
   }
 
-  if (hyperty.name == "ReceiverDTWebRTC" ||
-      hyperty.name == "SenderDTWebRTC") {
-    $.getScript(script)
-    .done(function (foo){
-      console.log(">>>>>>>>>>> " + script + " loaded"); hypertyLoaded(hyperty);
-    })
-    .fail(function (err){
-      console.log("!!!!!!!!!!! cant load " + script, err);
-    });
-  }
-  else {
-    getTemplate(template, script)
-    .then(function(template) {
-      let html = template();
-      $mainContent.html(html);
 
-      if (typeof hypertyLoaded === 'function') {
-       hypertyLoaded(hyperty);
-      } else {
-       console.info('If you need pass the hyperty to your template, create a function called hypertyLoaded');
-      }
-    });
-  }
+  $.getScript(script)
+  .done(function (foo){
+    console.log(">>>>>>>>>>> " + script + " loaded"); hypertyLoaded(hyperty);
+  })
+  .fail(function (err){
+    console.log("!!!!!!!!!!! cant load " + script, err);
+  });
 }
 
 function hypertyFail(reason) {
