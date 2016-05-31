@@ -65,3 +65,11 @@ input {
   width: 20px;
   height: auto;
 }
+
+.btn.btn-default {
+    background-color: #CCCCCC;
+}
+
+.btn.btn-default:hover {
+    background-color: #EEEEEE;
+}

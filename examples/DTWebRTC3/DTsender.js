@@ -6,13 +6,13 @@ function hypertyLoaded(result) {
   addContent();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.send-panel').append('<form class="webrtcconnect">' +
-    '<input type="text" class="webrtc-hyperty-input block"  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
-    '<button type="submit" class="block"> webRTC to Hyperty</button>'+
+    '<input type="text" class="webrtc-hyperty-input form-control block"  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
+    '<button type="submit" class="btn btn-default btn-sm btn-block block">webRTC to Hyperty </button>'+
     '</form>');
   $('.email-panel').append('<form class="searchemail">'+ 
-    '<input type="email" class="friend-email validate block" placeholder="your friends email" id="email" required aria-required="true"  > '+
-    '<input type="text" class="friend-domain validate block" placeholder="Search in domain" id="domain" >'+
-    '<button type="submit" class="block">Search</button>'+
+    '<input type="email" class="friend-email validate form-control block" placeholder="your friends email" id="email" required aria-required="true"  > '+
+    '<input type="text" class="friend-domain validate form-control block" placeholder="Search in domain" id="domain" >'+
+    '<button type="submit" class="btn btn-default btn-sm btn-block block">Search</button>'+
     '</form>');
 
   $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
@@ -31,9 +31,11 @@ function addContent() {
   $(place).empty();
   $(place).append('<div class="selection-panel"></div>'+
     '<div class="hyperty-panel"></div>'+
+    '<br>'+
     '<div class="email-panel"></div>'+
-    '<div class="send-panel"></div>'+
     '<br>' +
+    '<div class="send-panel"></div>'+
+    '<br>'+
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
