@@ -2,9 +2,16 @@ html {
   position: relative;
   min-height: 100%;
 }
+@font-face{
+    font-family: "telegrotesk";
+    src: url('../font/telegrotesk-halbfett.ttf'),
+    url('../font/telegrotesk-normal.ttf'); /* IE */
+}
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
+  font-family: "telegrotesk";
+  font-size: 18px;
 }
 
 body > .container {
@@ -32,9 +39,11 @@ body > .container {
 }
 
 .big-text {
-  padding-top: 20px;
-  padding-bottom: 16px;
+  padding-top: 22px;
+  padding-bottom: 12px;
+  padding-left: 33px;
   font-weight: bold;
+  font-size:22px
 }
 
 .footer {
@@ -68,8 +77,11 @@ input {
 
 .btn.btn-default {
     background-color: #CCCCCC;
+    font-size:14px;
+    font-weight: bold;
 }
 
 .btn.btn-default:hover {
     background-color: #EEEEEE;
 }
+
