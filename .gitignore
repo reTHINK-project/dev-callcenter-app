@@ -1,4 +1,3 @@
-.git
 CVS
 .svn
 .hg
@@ -12,10 +11,7 @@ npm-debug.log
 vendor
 build
 node_modules
-resources/bundle.js
-resources/*.hy.js
+resources
 *.komodoproject
 dist
 config.json
-resources/tmp
-resources/descriptors/Hyperties.json
