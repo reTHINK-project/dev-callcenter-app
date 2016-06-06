@@ -101,6 +101,10 @@ function hypertyDeployed(hyperty) {
   let script = '';
 
   switch (hyperty.name) {
+    case 'Receiver4DTWebRTC':
+    script =  'DTWebRTC4/DTHCreceiver.js';
+    break;
+
     case 'ReceiverDTWebRTC':
     script =  'DTWebRTC3/DTreceiver.js';
     break;
@@ -128,6 +132,7 @@ function hypertyDeployed(hyperty) {
   }
 
   if (hyperty.name == "ReceiverDTWebRTC" ||
+      hyperty.name == "Receiver4DTWebRTC" ||
       hyperty.name == "SenderDTWebRTC") {
     $.getScript(script)
     .done(function (foo){

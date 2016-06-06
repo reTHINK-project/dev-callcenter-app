@@ -211,10 +211,12 @@ class ConnectionController extends EventEmitter {
   }
 
   changePeerInformation(dataObjectObserver) {
+    console.log("dataObjectObserver: ", dataObjectObserver)
     let _this = this;
     let data = dataObjectObserver.data;
+    console.log("data: ", data);
     let isOwner = data.hasOwnProperty('connection');
-
+    console.log("isOwner: ", isOwner);
     let peerData = isOwner ? data.connection.ownerPeer : data.peer;
 
     console.info('Peer Data:', JSON.stringify(peerData));
@@ -288,7 +290,7 @@ class ConnectionController extends EventEmitter {
         sdp: description.sdp,
         type: description.type
       };
-
+      console.log("dataobejctreporter: ", _this._dataObjectReporter);
       if (_this.mode === 'offer') {
         data.connection.ownerPeer.connectionDescription = sdpConnection;
       } else {
