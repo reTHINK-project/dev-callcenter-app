@@ -3,6 +3,7 @@ import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter';
 import obj from './obj';
+import config from  './stunTurnserverConfig'
 
 class Receiver extends EventEmitter {
 
@@ -100,7 +101,7 @@ class Receiver extends EventEmitter {
   createPC() {
 
     var _this = this;
-    this.pc = new RTCPeerConnection();
+    this.pc = new RTCPeerConnection({'iceServers': config.ice});
     //event handler for when remote stream is added to peer connection
     this.pc.onaddstream = function(obj){
       console.log('onaddstream', _this.pc);
@@ -210,3 +211,6 @@ export default function activate(hypertyURL, bus, configuration) {
     instance: new Receiver(hypertyURL, bus, configuration)
   };
 }
+
+
+  

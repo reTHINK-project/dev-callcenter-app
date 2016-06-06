@@ -73,7 +73,7 @@ function discoverEmail(hypertyDiscovery) {
 }
 
 function emailDiscovered(result) {
-  console.log('Email Discovered: ', result);
+  console.log('OOOOOOOOOOOOOOOOOOOO Email Discovered: ', result);
 
   var section = $('.discover');
   var avatar = 'https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg';
