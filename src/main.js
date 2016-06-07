@@ -105,6 +105,10 @@ function hypertyDeployed(hyperty) {
     script =  'DTWebRTC4/DTHCreceiver.js';
     break;
 
+    case 'Sender4DTWebRTC':
+    script =  'DTWebRTC4/DTHCreceiver.js';
+    break;
+
     case 'ReceiverDTWebRTC':
     script =  'DTWebRTC3/DTreceiver.js';
     break;

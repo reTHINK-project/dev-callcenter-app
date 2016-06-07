@@ -206,7 +206,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
 export default function activate(hypertyURL, bus, configuration) {
   return {
-    name: 'SenderDTWebRTC',
+    name: 'Sender4DTWebRTC',
     instance: new Sender(hypertyURL, bus, configuration)
   };
 }
