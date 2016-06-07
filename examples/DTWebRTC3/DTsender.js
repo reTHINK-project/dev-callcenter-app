@@ -2,7 +2,7 @@ var hyperty;
 
 function hypertyLoaded(result) {
   hyperty = result.instance;
-  console.log("hypertyReporter: ", result);
+  console.log("HHHHHHHHHHHHHHHHHHHHHHHHHHHhypertyReporter: ", result);
   addContent();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.email-panel').append('<form class="searchemail">'+ 
@@ -46,7 +46,7 @@ function webrtcconnectToHyperty(event) {
   event.preventDefault();
   let toHypertyForm = $(event.currentTarget);
   let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
-  toHypertyForm.append('<center><br><i class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
+  toHypertyForm.append('<center><br><i style="color: #e20074;"" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
   console.log(toHyperty);
 
   hyperty.webrtcconnect(toHyperty)
