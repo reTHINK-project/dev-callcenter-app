@@ -119,11 +119,6 @@ class Receiver extends EventEmitter {
       } else {
         _this.addIceCandidate(cand);
       }
-      
-      
-
-      // if(!_this.ice)  _this.iceBuffer.push(cand);
-      // else            _this.sendIceCandidate(cand);
     }
   }
 

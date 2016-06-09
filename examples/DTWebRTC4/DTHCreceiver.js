@@ -8,7 +8,7 @@ function hypertyLoaded(result) {
   $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
   hyperty.myUrl = result.runtimeHypertyURL;
 	initListeners();
-  $.getScript("/examples/DTWebRTC3/adapter.js");
+  $.getScript("/examples/DTWebRTC4/adapter.js");
 }
 
 function addContent() {
