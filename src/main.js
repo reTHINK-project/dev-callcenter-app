@@ -4,10 +4,6 @@ import RuntimeLoader from 'service-framework/dist/RuntimeLoader';
 import InstallerFactory from '../resources/factories/InstallerFactory';
 import config from '../config.json';
 
-import {getTemplate, serialize} from './utils/utils';
-
-// import hyperties from '../resources/descriptors/Hyperties';
-
 let installerFactory = new InstallerFactory();
 
 window.KJUR = {};
@@ -92,23 +88,12 @@ function loadHyperty(event) {
 
 function hypertyDeployed(hyperty) {
 
-  // Add some utils
-  serialize();
-
   let $mainContent = $('.main-content').find('.row');
 
   let template = '';
   let script = '';
 
   switch (hyperty.name) {
-    case 'Receiver4DTWebRTC':
-    script =  'DTWebRTC4/DTHCreceiver.js';
-    break;
-
-    case 'Sender4DTWebRTC':
-    script =  'DTWebRTC4/DTHCreceiver.js';
-    break;
-
     case 'ReceiverDTWebRTC':
     script =  'DTWebRTC3/DTreceiver.js';
     break;
@@ -117,18 +102,6 @@ function hypertyDeployed(hyperty) {
     script =  'DTWebRTC3/DTsender.js';
     break;
 
-    case 'DTSlider1':
-    script =  'DTSlider/DTSlider1.js';
-    break;
-
-    case 'DTSlider2':
-    script =  'DTSlider/DTSlider2.js';
-    break;
-
-    case 'HypertyConnector':
-    script =  'hyperty-connector/demo.js';
-    template = 'hyperty-connector/HypertyConnector';
-    break;
   }
 
   if (!script) {

@@ -82,10 +82,6 @@ var _EventEmitter2 = require('../utils/EventEmitter');
 
 var _EventEmitter3 = _interopRequireDefault(_EventEmitter2);
 
-var _obj = require('./obj');
-
-var _obj2 = _interopRequireDefault(_obj);
-
 var _stunTurnserverConfig = require('./stunTurnserverConfig');
 
 var _stunTurnserverConfig2 = _interopRequireDefault(_stunTurnserverConfig);
@@ -142,7 +138,7 @@ var Sender = function (_EventEmitter) {
       var syncher = _this._syncher;
 
       return new Promise(function (resolve, reject) {
-        syncher.create(_this._objectDescURL, [hypertyURL], _obj2.default).then(function (objReporter) {
+        syncher.create(_this._objectDescURL, [hypertyURL], obj).then(function (objReporter) {
           console.info('1. Return Created Data Object Reporter', objReporter);
           _this.objReporter = objReporter;
           objReporter.onSubscription(function (event) {
@@ -361,21 +357,7 @@ function activate(hypertyURL, bus, configuration) {
 }
 module.exports = exports['default'];
 
-},{"../utils/EventEmitter":6,"../utils/utils":7,"./obj":4,"./stunTurnserverConfig":5,"service-framework/dist/HypertyDiscovery":1,"service-framework/dist/Syncher":2}],4:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-   value: true
-});
-var obj = {
-   slider: 0,
-   webrtc: {}
-};
-
-exports.default = obj;
-module.exports = exports['default'];
-
-},{}],5:[function(require,module,exports){
+},{"../utils/EventEmitter":5,"../utils/utils":6,"./stunTurnserverConfig":4,"service-framework/dist/HypertyDiscovery":1,"service-framework/dist/Syncher":2}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -433,7 +415,7 @@ var config = {
 exports.default = config;
 module.exports = exports['default'];
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -514,7 +496,7 @@ var EventEmitter = function () {
 exports.default = EventEmitter;
 module.exports = exports['default'];
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

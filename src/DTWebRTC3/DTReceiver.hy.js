@@ -2,7 +2,6 @@
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter';
-import obj from './obj';
 import config from  './stunTurnserverConfig'
 
 class Receiver extends EventEmitter {

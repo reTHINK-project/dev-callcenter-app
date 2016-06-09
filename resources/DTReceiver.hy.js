@@ -48,10 +48,6 @@ var _EventEmitter2 = require('../utils/EventEmitter');
 
 var _EventEmitter3 = _interopRequireDefault(_EventEmitter2);
 
-var _obj = require('./obj');
-
-var _obj2 = _interopRequireDefault(_obj);
-
 var _stunTurnserverConfig = require('./stunTurnserverConfig');
 
 var _stunTurnserverConfig2 = _interopRequireDefault(_stunTurnserverConfig);
@@ -301,21 +297,7 @@ function activate(hypertyURL, bus, configuration) {
 }
 module.exports = exports['default'];
 
-},{"../utils/EventEmitter":5,"../utils/utils":6,"./obj":3,"./stunTurnserverConfig":4,"service-framework/dist/Syncher":1}],3:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-   value: true
-});
-var obj = {
-   slider: 0,
-   webrtc: {}
-};
-
-exports.default = obj;
-module.exports = exports['default'];
-
-},{}],4:[function(require,module,exports){
+},{"../utils/EventEmitter":4,"../utils/utils":5,"./stunTurnserverConfig":3,"service-framework/dist/Syncher":1}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -373,7 +355,7 @@ var config = {
 exports.default = config;
 module.exports = exports['default'];
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -454,7 +436,7 @@ var EventEmitter = function () {
 exports.default = EventEmitter;
 module.exports = exports['default'];
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

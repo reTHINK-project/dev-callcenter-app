@@ -3,7 +3,6 @@ import HypertyDiscovery from 'service-framework/dist/HypertyDiscovery';
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter'; // for receiving
-import obj from './obj';
 import config from  './stunTurnserverConfig'
 
 class Sender extends EventEmitter{ // extends EventEmitter because we need to recieve events
