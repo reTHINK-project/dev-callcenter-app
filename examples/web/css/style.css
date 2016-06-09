@@ -18,8 +18,9 @@ body > .container {
   padding: 60px 15px 0;
 }
 
-.active {
+.active > a {
   font-weight: bold;
+  color: #e20074 !important;
 }
 
 .container .text-muted {
@@ -29,6 +30,10 @@ body > .container {
 .navbar-nav > li > a {
     padding-top: 20px;
     padding-bottom: 16px;
+}
+
+.navbar-nav > li > a:hover {
+   color: #e20074 !important;
 }
 
 .logo {
@@ -43,7 +48,12 @@ body > .container {
   padding-bottom: 12px;
   padding-left: 33px;
   font-weight: bold;
-  font-size:22px
+  font-size:22px;
+  text-decoration: none !important;
+}
+.big-text:hover {
+
+color: #e20074 !important;
 }
 
 .footer {
@@ -79,9 +89,5 @@ input {
     background-color: #CCCCCC;
     font-size:14px;
     font-weight: bold;
-}
-
-.btn.btn-default:hover {
-    background-color: #EEEEEE;
 }
 
