@@ -2,21 +2,15 @@ var hyperty;
 
 function hypertyLoaded(result) {
   hyperty = result.instance;
-  console.log("HHHHHHHHHHHHHHHHHHHHHHHHHHHhypertyReporter: ", result);
   addContent();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
-  
-  
-
-  
   initListeners();
   $.getScript("/examples/DTWebRTC3/adapter.js");
 
   // Prepare to discover email:
   var hypertyDiscovery = result.instance.hypertyDiscovery;
   discoverEmail(hypertyDiscovery);
-   // hyperty.showidentity();
-
+  // hyperty.showidentity();
  }
 
 
@@ -30,8 +24,8 @@ function hypertyLoaded(result) {
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-    '<video id="remoteVideo" class="block hide" autoplay "></video>'+
-    '<video id="localVideo" class="halfblock hide" autoplay "></video>'+
+      '<video id="remoteVideo" class="block hide" autoplay  poster="web/media/load2.gif"></video>'+
+      '<video id="localVideo" class="halfblock hide" autoplay  poster="web/media/load2.gif"></video>'+
     '</div>');
 }
 
