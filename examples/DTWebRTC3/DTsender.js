@@ -24,8 +24,8 @@ function hypertyLoaded(result) {
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-      '<video id="remoteVideo" class="block hide" autoplay  poster="web/media/load2.gif"></video>'+
-      '<video id="localVideo" class="halfblock hide" autoplay  poster="web/media/load2.gif"></video>'+
+      '<video id="remoteVideo" class="block hide" autoplay  poster="web/media/load3.gif"></video>'+
+      '<video id="localVideo" class="halfblock hide" autoplay  poster="web/media/load3.gif"></video>'+
     '</div>');
 }
 
