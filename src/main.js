@@ -25,35 +25,14 @@ runtimeLoader.install().then(function() {
   hyperties.forEach(function(key) {
     if(key == "DTReceiver"){
       loadHyperty(0,key);
-
     }else{
-    //   let $item = $(document.createElement('li'));
-    //   let $link = $(document.createElement('a'));
-
-    // // create the link features
-    // $link.html(key);
-    // //$link.css('text-transform', 'none');
-    // $link.attr('data-name', key);
-    // $link.attr('href','#');
-    // $link.on('click', loadHyperty);
-
-    // $item.append($link);
-
-    // $dropDown.append($item);
-    $dropDown.append('<form class="searchemail" data-name="DTSender">'+ 
-      '<input type="email" style="float: left" class="friend-email halfblock validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
-      '<button type="submit"  class="btn halfblock btn-default btn-sm btn-block ">Search</button>'+
-      '</form><br>');
-    $('.searchemail').on('submit',loadHyperty);
-
-
-  }
-});
-  $('.nav li a').on('click', function() {
-    $(this).parent().parent().find('.active').removeClass('active');
-    $(this).parent().addClass('active');
+      $dropDown.append('<form class="searchemail" data-name="DTSender">'+ 
+        '<input type="email" style="float: left" class="friend-email halfblock validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
+        '<button type="submit"  class="btn btn-default btn-sm">Search</button>'+
+        '</form><br>');
+      $('.searchemail').on('submit',loadHyperty);
+    }
   });
-
 }).catch(function(reason) {
   console.error(reason);
 });

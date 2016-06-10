@@ -30,8 +30,8 @@ function hypertyLoaded(result) {
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-    '<video id="remoteVideo" class="block hide" autoplay style="border: 1px solid grey;"></video>'+
-    '<video id="localVideo" class="halfblock hide" autoplay style="border: 1px solid grey;"></video>'+
+    '<video id="remoteVideo" class="block hide" autoplay "></video>'+
+    '<video id="localVideo" class="halfblock hide" autoplay "></video>'+
     '</div>');
 }
 
@@ -82,9 +82,9 @@ function discoverEmail(hypertyDiscovery) {
   console.log('>>>>><',email);
   hypertyDiscovery.discoverHypertyPerUser(email, 0)
   .then(function (result) {
-    console.log('öööööööööööööööööööö',result.hypertyURL )
+    console.log('öööööööööööööööööööö',result )
     $('.send-panel').append('<br><form class="webrtcconnect">' +
-    '<input type="text" class="webrtc-hyperty-input form-control "  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
+    '<input type="text" class="webrtc-hyperty-input form-control ">' +
     '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
     '</form><br>');
     $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
