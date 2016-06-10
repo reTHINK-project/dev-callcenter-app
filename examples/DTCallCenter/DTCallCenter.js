@@ -3,29 +3,30 @@ var hyperty;
 function hypertyLoaded(result) {
   hyperty = result.instance;
   addContent();
-  $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
+  $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
   initListeners();
-  $.getScript("/examples/DTWebRTC3/adapter.js");
+  $.getScript("/examples/DTCallCenter/adapter.js");
+  hyperty.myUrl = result.runtimeHypertyURL;
+  if(result.name == "SenderDTWebRTC"){
+    // Prepare to discover email:
+    var hypertyDiscovery = result.instance.hypertyDiscovery;
+    discoverEmail(hypertyDiscovery);
+    // hyperty.showidentity();
+  }
+}
 
-  // Prepare to discover email:
-  var hypertyDiscovery = result.instance.hypertyDiscovery;
-  discoverEmail(hypertyDiscovery);
-  // hyperty.showidentity();
- }
-
-
- function addContent() {
+function addContent() {
   var place = document.getElementById("box1");
   $(place).empty();
   $(place).append('<div class="selection-panel"></div>'+
     '<div class="hyperty-panel"></div>'+
-    '<div class="email-panel"></div>'+
+    '<div class="my-panel"></div>'+
     '<div class="send-panel"></div>'+
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-      '<video id="remoteVideo" class="block hide" autoplay  poster="web/media/load3.gif"></video>'+
-      '<video id="localVideo" class="halfblock hide" autoplay  poster="web/media/load3.gif"></video>'+
+    '<video id="remoteVideo" class="block hide" autoplay  poster="web/media/load3.gif"></video>'+
+    '<video id="localVideo" class="halfblock hide" autoplay  poster="web/media/load3.gif"></video>'+
     '</div>');
 }
 
@@ -48,12 +49,12 @@ function webrtcconnectToHyperty(event) {
   });
 }
 
-// helping functions
 // receiving code here
-function initListeners () {
-  hyperty.addEventListener('invitation', function(identity) {
+function initListeners() {
+	hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
-    $('.invitation-panel').append('<p> Invitation received from:\n ' + identity.email +  '</p>');
+    $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
+    $('#smth2').find('.hide').removeClass('hide');
   });
 
   hyperty.addEventListener('webrtcreceive', function(event) {
@@ -62,25 +63,21 @@ function initListeners () {
       case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
       case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
       case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
+      case 'iceallowed':   hyperty.iceallowed(); break;
     }
   });
+
 }
-
-
-// #############################-EMAIL-DISCOVER-############################################
-
 
 function discoverEmail(hypertyDiscovery) {
 
   var email = $('.searchemail').find('.friend-email').val();
-  console.log('>>>>><',email);
   hypertyDiscovery.discoverHypertyPerUser(email, 0)
   .then(function (result) {
-    console.log('öööööööööööööööööööö',result )
     $('.send-panel').append('<br><form class="webrtcconnect">' +
-    '<input type="text" class="webrtc-hyperty-input form-control ">' +
-    '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
-    '</form><br>');
+      '<input type="text" class="webrtc-hyperty-input form-control ">' +
+      '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
+      '</form><br>');
     $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
     $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
   }).catch(function (err) {
