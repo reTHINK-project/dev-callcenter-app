@@ -77,7 +77,7 @@ var Receiver = function (_EventEmitter) {
     _this2._objectDescURL = 'hyperty-catalogue://' + _this2._domain + '/.well-known/dataschemas/FakeDataSchema';
     _this2._syncher = new _Syncher.Syncher(hypertyURL, bus, configuration);
     _this2.constraints = {
-      audio: false,
+      audio: true,
       video: true
     };
     _this2.myUrl = null; // this.me = null;

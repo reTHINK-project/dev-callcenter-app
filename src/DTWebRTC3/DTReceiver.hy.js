@@ -16,7 +16,7 @@ class Receiver extends EventEmitter {
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     this._syncher = new Syncher(hypertyURL, bus, configuration);
     this.constraints = {
-      audio: false,
+      audio: true,
       video: true
     }
     this.myUrl = null; // this.me = null;

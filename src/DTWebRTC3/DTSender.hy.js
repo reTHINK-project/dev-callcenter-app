@@ -3,7 +3,8 @@ import HypertyDiscovery from 'service-framework/dist/HypertyDiscovery';
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter'; // for receiving
-import config from  './stunTurnserverConfig'
+import config from  './stunTurnserverConfig';
+import IdentityManager from '../IdentityManager';
 
 class Sender extends EventEmitter{ // extends EventEmitter because we need to recieve events
 
@@ -17,6 +18,10 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     this._syncher = new Syncher(hypertyURL, bus, configuration);
     this.hypertyDiscovery = new HypertyDiscovery(hypertyURL, bus);
+
+    this.identityManager = new IdentityManager(hypertyURL, configuration.runtimeURL , bus);
+
+    
     this.constraints = {
       audio: false,
       video: true
@@ -31,6 +36,15 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       _this._onNotification(event);
     });
   }
+
+  showidentity(url){
+    let _this = this;
+    let syncher = _this._syncher;
+    console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',this.identityManager,
+      "\n 0000000000000000000000000",this.identityManager.discoverUserRegistered(url));
+
+  }
+
 
   connect(hypertyURL) {
     let _this = this;

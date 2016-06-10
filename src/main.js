@@ -20,23 +20,35 @@ runtimeLoader.install().then(function() {
 
 }).then(function(hyperties) {
 
-  let $dropDown = $('#hyperties-dropdown');
+  let $dropDown = $('#navbar');
 
   hyperties.forEach(function(key) {
-    let $item = $(document.createElement('li'));
-    let $link = $(document.createElement('a'));
+    if(key == "DTReceiver"){
+      loadHyperty(0,key);
 
-    // create the link features
-    $link.html(key);
-    //$link.css('text-transform', 'none');
-    $link.attr('data-name', key);
-    $link.attr('href','#');
-    $link.on('click', loadHyperty);
+    }else{
+    //   let $item = $(document.createElement('li'));
+    //   let $link = $(document.createElement('a'));
 
-    $item.append($link);
+    // // create the link features
+    // $link.html(key);
+    // //$link.css('text-transform', 'none');
+    // $link.attr('data-name', key);
+    // $link.attr('href','#');
+    // $link.on('click', loadHyperty);
 
-    $dropDown.append($item);
-  });
+    // $item.append($link);
+
+    // $dropDown.append($item);
+    $dropDown.append('<form class="searchemail" data-name="DTSender">'+ 
+      '<input type="email" style="float: left" class="friend-email halfblock validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
+      '<button type="submit"  class="btn halfblock btn-default btn-sm btn-block ">Search</button>'+
+      '</form><br>');
+    $('.searchemail').on('submit',loadHyperty);
+
+
+  }
+});
   $('.nav li a').on('click', function() {
     $(this).parent().parent().find('.active').removeClass('active');
     $(this).parent().addClass('active');
@@ -76,12 +88,17 @@ function getListOfHyperties(domain) {
 
 }
 
-function loadHyperty(event) {
-  event.preventDefault();
+function loadHyperty(event,key) {
+  let hypertyName;
+  if(event){
+    event.preventDefault();
+    hypertyName = $(event.currentTarget).attr('data-name');
+    console.log('##############################', hypertyName);
+  }else{
+    hypertyName = key;
+  }
 
-  let hypertyName = $(event.currentTarget).attr('data-name');
   let hypertyPath = 'hyperty-catalogue://' + domain + '/.well-known/hyperties/' + hypertyName;
-
   runtimeLoader.requireHyperty(hypertyPath).then(hypertyDeployed).catch(hypertyFail);
 
 }

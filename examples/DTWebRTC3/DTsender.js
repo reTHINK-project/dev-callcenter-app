@@ -5,29 +5,22 @@ function hypertyLoaded(result) {
   console.log("HHHHHHHHHHHHHHHHHHHHHHHHHHHhypertyReporter: ", result);
   addContent();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
-  $('.email-panel').append('<form class="searchemail">'+ 
-    '<input type="email" class="friend-email validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
-    '<input type="text" class="friend-domain validate form-control " placeholder="Search in domain" id="domain" >'+
-    '<button type="submit" class="btn btn-default btn-sm btn-block ">Search</button>'+
-    '</form><br>');
-  $('.send-panel').append('<br><form class="webrtcconnect">' +
-    '<input type="text" class="webrtc-hyperty-input form-control "  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
-    '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
-    '</form><br>');
+  
   
 
-  $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
+  
   initListeners();
   $.getScript("/examples/DTWebRTC3/adapter.js");
 
   // Prepare to discover email:
   var hypertyDiscovery = result.instance.hypertyDiscovery;
   discoverEmail(hypertyDiscovery);
-  
-}
+   // hyperty.showidentity();
+
+ }
 
 
-function addContent() {
+ function addContent() {
   var place = document.getElementById("box1");
   $(place).empty();
   $(place).append('<div class="selection-panel"></div>'+
@@ -85,25 +78,18 @@ function initListeners () {
 
 function discoverEmail(hypertyDiscovery) {
 
-  var section = $('.email-panel');
-  var searchForm = section.find('.searchemail');
-  var inputField = searchForm.find('.friend-email');
-  var inputDomain = searchForm.find('.friend-domain');
-
-  section.removeClass('hide');
-
-  $('.searchemail').on('submit', function(event) {
-    event.preventDefault();
-
-    var email = inputField.val();
-    var domain = inputDomain.val();
-    hypertyDiscovery.discoverHypertyPerUser(email, domain)
-    .then(function (result) {
-      $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
-      section.addClass('hide');
-    }).catch(function (err) {
-      console.error('Email Discovered Error: ', err);
-    });
-
+  var email = $('.searchemail').find('.friend-email').val();
+  console.log('>>>>><',email);
+  hypertyDiscovery.discoverHypertyPerUser(email, 0)
+  .then(function (result) {
+    console.log('öööööööööööööööööööö',result.hypertyURL )
+    $('.send-panel').append('<br><form class="webrtcconnect">' +
+    '<input type="text" class="webrtc-hyperty-input form-control "  placeholder="awesome Hyperty-URL" name="webrtctoHyperty">' +
+    '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
+    '</form><br>');
+    $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
+    $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
+  }).catch(function (err) {
+    console.error('Email Discovered Error: ', err);
   });
 }
