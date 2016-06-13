@@ -171,7 +171,7 @@ class Receiver extends EventEmitter {
         .then(function(answer){
           _this.pc.setLocalDescription(new RTCSessionDescription(answer), function(){
             console.log("answer from callee: ", answer);
-            _this.connect(partner); // connect to the other hyperty now
+            _this.connect(partner) // connect to the other hyperty now
             .then((objReporter)=>{
               console.log("the objreporter is as follows: ", objReporter);
               _this.objReporter = objReporter;
