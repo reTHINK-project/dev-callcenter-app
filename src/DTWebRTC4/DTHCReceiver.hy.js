@@ -20,11 +20,11 @@ class Receiver extends EventEmitter {
       audio: false,
       video: true
     }
-    this.myUrl = null; // this.me = null;
-    this.partner = null;
-    this.pc = null;
-    this.ice = false;
-    this.iceBuffer = [];
+    this.myUrl = null;    // runtimeurl;
+    this.partner = null;  // hypertyURL of the other hyperty
+    this.pc = null;       // the peer connection object of WebRTC
+    this.ice = false;     // if true then ice candidates will be handled
+    this.iceBuffer = [];  // the buffer for local ice candidates
 
     // receiving starts here
     let _this = this;
@@ -60,30 +60,24 @@ class Receiver extends EventEmitter {
     });
   }
 
-
-
   // reveicing starts here
   _onNotification(event) {
     let _this = this;
     console.info( 'Event Received: ', event);
     this.trigger('invitation', event.identity);
-    event.ack(); // Acknowledge reporter about the Invitation was received
+    event.ack(); // acknowledge reporter about the invitation was received
 
     // Subscribe to Object
     this._syncher.subscribe(this._objectDescURL, event.url)
     .then(function(objObserver) {
       console.info("[_onNotification] objObserver ", objObserver);
-      // _this.createPC();
       
       console.log("event.from: ", event.from);
       _this.handleInvite(objObserver.data, event.from);
       _this.changePeerInformation(objObserver);
-      // _this.connect(event.from);
 
       objObserver.onChange('connectionDescription', function(event) {
         console.info('connectionDescription received:', event); // Object was changed
-        // _this.trigger('webrtcreceive', objObserver.data); // lets notify the App about the change
-
       });
     }).catch(function(reason) {
       console.error(reason);
@@ -95,39 +89,34 @@ class Receiver extends EventEmitter {
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
-    // this.pc = new RTCPeerConnection({'iceServers': config.ice});
     this.pc = new RTCPeerConnection();
-    //event handler for when remote stream is added to peer connection
+
+    //event handler when a remote stream is added to the peer connection
     this.pc.onaddstream = function(obj){
       console.log('onaddstream', _this.pc);
       document.getElementById('remoteVideo').srcObject = obj.stream;
     }
 
-    //event handler for when local ice candidate has been found
+    //event handler for when a local ice candidate has been found
     this.pc.onicecandidate = function(e){
       console.log("myicecandidateevent: ", e)
       var cand = e.candidate;
       if(!cand) return;
-      cand.type = 'candidate';
-      console.log("the candidate is: ", cand);
-      if (_this.objReporter) {
-        console.log("_this.objReporter ", _this.objReporter)
-        _this.objReporter.data.peer.iceCandidates.push(cand);
-      } else {
-        _this.addIceCandidate(cand);
-      }
+      cand.type = 'candidate';  // for compatibility with the hyperty connector
+      if (_this.objReporter)  _this.objReporter.data.peer.iceCandidates.push(cand);
+      else                    _this.addIceCandidate(cand);
     }
   }
 
-  //send all ICE candidates from buffer to partner
+  //send all ICE candidates from the buffer to the partner
   emptyIceBuffer(){
     console.log("icebuffer: ", this.iceBuffer);
     if (this.iceBuffer && this.iceBuffer.length) this.rek(this);
   }
 
+  // recursive function needed to use 'timeout' to keep the order of the ice candidates so the syncher doesn't choke
   rek(that){
-    // give the syncer time to sync or it will fail
-    setTimeout(function() {
+    setTimeout(()=>{
       if (that.iceBuffer.length>0) {
         console.log("iceBuffer[0]: ", that.iceBuffer[0]);
         that.sendIceCandidate(that.iceBuffer[0]);
@@ -150,11 +139,6 @@ class Receiver extends EventEmitter {
   addIceCandidate(cand){
     if (!cand.type) cand.type = 'candidate';
     this.iceBuffer.push(cand);
-  }
-
-  //handler for received ICE candidate from partner
-  handleIceCandidate(msg){
-    this.pc.addIceCandidate(new RTCIceCandidate(msg.body.candidate));
   }
 
   //Bob: handle incoming invite from Alice
@@ -234,33 +218,14 @@ class Receiver extends EventEmitter {
 
     if (data.type === 'offer' || data.type === 'answer') {
       console.info('Process Connection Description: ', data.sdp);
-      _this.pc.setRemoteDescription(new RTCSessionDescription(data, _this.remoteDescriptionSuccess, _this.remoteDescriptionError));
+      _this.pc.setRemoteDescription(new RTCSessionDescription(data));
     }
 
     if (data.candidate) {
       console.info('Process Ice Candidate: ', data);
-      _this.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}, _this.iceSuccess, _this.iceError));
+      _this.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}));
     }
   }
-
-
-  remoteDescriptionSuccess() {
-    console.info('remote success');
-  }
-
-  remoteDescriptionError(error) {
-    console.error('error: ', error);
-  }
-
-  iceSuccess() {
-    console.info('remote success');
-  }
-
-  iceError(error) {
-    console.error('error: ', error);
-  }
-
-
 }
 
 
