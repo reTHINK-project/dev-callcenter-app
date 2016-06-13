@@ -114,7 +114,7 @@ class Receiver extends EventEmitter {
     if (this.iceBuffer && this.iceBuffer.length) this.rek(this);
   }
 
-  // recursive function needed to use 'timeout' to keep the order of the ice candidates so the syncher doesn't choke
+  // recursive function needed to use 'timeout' to keep the order of the ice candidates so the syncher doesn't choke when the messaging node dosn't keep the order
   rek(that){
     setTimeout(()=>{
       if (that.iceBuffer.length>0) {
@@ -128,6 +128,7 @@ class Receiver extends EventEmitter {
     }, 5);
   }
 
+  // send ice candidates to the remote hyperty
   sendIceCandidate (c) {
     if (!this.objReporter.data.peer.iceCandidates)
       this.objReporter.data.peer.iceCandidates = []; // SHOULD BE REMOVED I GUESS BECAUSE OF "PEER"
@@ -137,16 +138,16 @@ class Receiver extends EventEmitter {
 
   //send one ICE candidate to partner
   addIceCandidate(cand){
-    if (!cand.type) cand.type = 'candidate';
+    if (!cand.type) cand.type = 'candidate'; // just make sure it's set
     this.iceBuffer.push(cand);
   }
 
-  //Bob: handle incoming invite from Alice
+  // callee handles incoming invite from the caller
   handleInvite(data, partner){
-    var _this = this;
+    let _this = this;
     this.partner = partner;
     console.log('got invite');
-    if(!confirm('Incoming call. Answer?')) return;
+    if(!confirm('Incoming call. Answer?')) return; // TODO: should be placed in the js file
     this.createPC();
     
     let offer;
@@ -154,28 +155,28 @@ class Receiver extends EventEmitter {
       console.log("OFFER RECEIVED: ", data)
       offer = data.connection.ownerPeer.connectionDescription;
     } else {
-      console.log("mist: ", data);
+      console.log("offer was't set in the invitation - data: ", data);
+      return;
     }
 
-    console.log('received offer', offer);
+    console.log('received offer: ', offer);
     
+    // access the camera
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
-      document.getElementById('localVideo').srcObject = stream;
-      _this.pc.addStream(stream);
+      document.getElementById('localVideo').srcObject = stream; // TODO: move this to the js file
+      _this.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
       _this.pc.setRemoteDescription(new RTCSessionDescription(offer), function(){
         _this.pc.createAnswer()
         .then(function(answer){
           _this.pc.setLocalDescription(new RTCSessionDescription(answer), function(){
-            console.log("answer from bob: ", answer);
-            _this.connect(partner)
+            console.log("answer from callee: ", answer);
+            _this.connect(partner); // connect to the other hyperty now
             .then((objReporter)=>{
               console.log("the objreporter is as follows: ", objReporter);
               _this.objReporter = objReporter;
-              console.log("connection description will be set now")
               _this.objReporter.data.peer.connectionDescription = answer;
-              _this.emptyIceBuffer();
-              // some invite could be here
+              _this.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe
             });
           });
         });
@@ -189,10 +190,9 @@ class Receiver extends EventEmitter {
   changePeerInformation(dataObjectObserver) {
     let _this = this;
     let data = dataObjectObserver.data;
-    let isOwner = data.hasOwnProperty('connection');
     console.log(data);
-    let peerData = isOwner ? data.connection.ownerPeer : data.peer;
-
+    // decide if I am the caller or callee TODO: set it statically
+    let peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {
@@ -208,7 +208,7 @@ class Receiver extends EventEmitter {
 
     dataObjectObserver.onChange('*', function(event) {
       console.info('Observer on change message: ', event);
-      _this.processPeerInformation(event.data[0]);
+      _this.processPeerInformation(event.data[0]); // this does the trick when ice candidates are trickling ;)
     });
   }
 
@@ -216,8 +216,8 @@ class Receiver extends EventEmitter {
     let _this = this;
     console.info("processPeerInformation: ", data);
 
-    if (data.type === 'offer' || data.type === 'answer') {
-      console.info('Process Connection Description: ', data.sdp);
+    if (data.type === 'offer' || data.type === 'answer') { // TODO: set it statically
+      console.info('Process Connection Description: ', data);
       _this.pc.setRemoteDescription(new RTCSessionDescription(data));
     }
 
@@ -227,11 +227,6 @@ class Receiver extends EventEmitter {
     }
   }
 }
-
-
-
-
-
 
 export default function activate(hypertyURL, bus, configuration) {
   return {
