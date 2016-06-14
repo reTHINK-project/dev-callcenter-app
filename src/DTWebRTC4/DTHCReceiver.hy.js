@@ -104,23 +104,21 @@ class Receiver extends EventEmitter {
       var cand = e.candidate;
       if(!cand) return;
       cand.type = 'candidate'; // for compatibility with the hyperty connector
-      if (_this.objReporter)  _this.sendIceCandidate(cand);
-      else                    _this.addIceCandidate(cand);
+      if(!_this.ice)  _this.addIceCandidate(cand);
+      else            _this.sendIceCandidate(cand);
     }
-  }
-
-  // send ice candidates to the remote hyperty
-  sendIceCandidate (c) {
-    if (!this.objReporter.data.peer.iceCandidates)
-      this.objReporter.data.peer.iceCandidates = []; // SHOULD BE REMOVED I GUESS BECAUSE OF "PEER"
-    console.log("this.objReporter.data: ", this.objReporter.data);
-    this.objReporter.data.peer.iceCandidates.push(c);
   }
 
   //send one ICE candidate to partner
   addIceCandidate(cand){
     if (!cand.type) cand.type = 'candidate';
     this.iceBuffer.push(cand);
+  }
+
+  // send ice candidates to the remote hyperty
+  sendIceCandidate (c) {
+    console.log("this.objReporter.data: ", this.objReporter.data);
+    this.objReporter.data.peer.iceCandidates.push(c);
   }
 
   //send all ICE candidates from the buffer to the partner
@@ -176,6 +174,7 @@ class Receiver extends EventEmitter {
               console.log("the objreporter is as follows: ", objReporter);
               _this.objReporter = objReporter;
               _this.objReporter.data.peer.connectionDescription = answer;
+              _this.ice = true;
               _this.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe
             });
           });

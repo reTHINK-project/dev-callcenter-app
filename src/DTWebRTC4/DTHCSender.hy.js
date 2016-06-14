@@ -120,9 +120,10 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       else            _this.sendIceCandidate(cand);
     }
   }
-  
+
   // save one ICE candidate to the buffer
   addIceCandidate(c){
+    if (!c.type) c.type = 'candidate';
     this.iceBuffer.push(c);
   }
 
