@@ -19,7 +19,7 @@ class Receiver extends EventEmitter {
     this.constraints = {
       audio: false,
       video: true
-    }
+    };
     this.myUrl = null;    // runtimeurl;
     this.partner = null;  // hypertyURL of the other hyperty
     this.pc = null;       // the peer connection object of WebRTC
@@ -87,6 +87,46 @@ class Receiver extends EventEmitter {
 
   // WEBRTC FUNCTIONS HERE
 
+  // callee handles incoming invite from the caller
+  handleInvite(data, partner){
+    var that = this;
+    this.partner = partner;
+    console.log('got invite');
+    if(!confirm('Incoming call. Answer?')) return; // TODO: move it to js file
+    this.createPC();
+    
+    let offer;
+    if (data.connection.ownerPeer.connectionDescription.type == "offer") {
+      console.log("OFFER RECEIVED: ", data)
+      offer = data.connection.ownerPeer.connectionDescription;
+    } else {
+      console.log("offer was't set in the invitation - data: ", data);
+      return;
+    }
+    
+    navigator.mediaDevices.getUserMedia(this.constraints)
+    .then(function(stream){
+      document.getElementById('localVideo').srcObject = stream; // TODO: move this to the js file
+      that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
+      that.pc.setRemoteDescription(new RTCSessionDescription(offer), function(){
+        that.pc.createAnswer()
+        .then(function(answer){
+          that.pc.setLocalDescription(new RTCSessionDescription(answer), function(){
+            console.log("answer from callee: ", answer);
+            that.connect(partner) // connect to the other hyperty now
+            .then((objReporter)=>{
+              console.log("the objreporter is as follows: ", objReporter);
+              that.objReporter = objReporter;
+              that.objReporter.data.peer.connectionDescription = answer;
+              that.ice = true;
+              that.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe
+            });
+          });
+        });
+      });
+    });
+  }
+
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
@@ -110,9 +150,9 @@ class Receiver extends EventEmitter {
   }
 
   //send one ICE candidate to partner
-  addIceCandidate(cand){
-    if (!cand.type) cand.type = 'candidate';
-    this.iceBuffer.push(cand);
+  addIceCandidate(c){
+    // if (!c.type) c.type = 'candidate';
+    this.iceBuffer.push(c);
   }
 
   // send ice candidates to the remote hyperty
@@ -141,47 +181,6 @@ class Receiver extends EventEmitter {
     }, 5);
   }
 
-
-
-  // callee handles incoming invite from the caller
-  handleInvite(data, partner){
-    var _this = this;
-    this.partner = partner;
-    console.log('got invite');
-    if(!confirm('Incoming call. Answer?')) return; // TODO: move it to js file
-    this.createPC();
-    
-    let offer;
-    if (data.connection.ownerPeer.connectionDescription.type == "offer") {
-      console.log("OFFER RECEIVED: ", data)
-      offer = data.connection.ownerPeer.connectionDescription;
-    } else {
-      console.log("offer was't set in the invitation - data: ", data);
-      return;
-    }
-    
-    navigator.mediaDevices.getUserMedia(this.constraints)
-    .then(function(stream){
-      document.getElementById('localVideo').srcObject = stream; // TODO: move this to the js file
-      _this.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
-      _this.pc.setRemoteDescription(new RTCSessionDescription(offer), function(){
-        _this.pc.createAnswer()
-        .then(function(answer){
-          _this.pc.setLocalDescription(new RTCSessionDescription(answer), function(){
-            console.log("answer from callee: ", answer);
-            _this.connect(partner) // connect to the other hyperty now
-            .then((objReporter)=>{
-              console.log("the objreporter is as follows: ", objReporter);
-              _this.objReporter = objReporter;
-              _this.objReporter.data.peer.connectionDescription = answer;
-              _this.ice = true;
-              _this.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe
-            });
-          });
-        });
-      });
-    });
-  }
 
   //////////////////////////////////// 
 

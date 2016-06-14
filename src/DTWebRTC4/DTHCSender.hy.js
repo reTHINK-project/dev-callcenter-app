@@ -22,6 +22,10 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       audio: false,
       video: true
     };
+    this.receivingConstraints = {
+      offerToReceiveAudio: 1,
+      offerToReceiveVideo: 1
+    };
     this.myUrl = null; // this.me = null;
     this.partner = null;
     this.pc = null;
@@ -61,15 +65,15 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   // sending starts here
   connect(hypertyURL) {
     this.partner = hypertyURL;
-    let _this = this;
-    let syncher = _this._syncher;
+    let that = this;
+    let syncher = that._syncher;
 
     return new Promise(function(resolve, reject) {
-      syncher.create(_this._objectDescURL, [hypertyURL], {})
+      syncher.create(that._objectDescURL, [hypertyURL], {})
         .then(function(objReporter) {
           console.info('1. Return Created WebRTC Object Reporter', objReporter);
-          _this.objReporter = objReporter;
-          _this.invite()
+          that.objReporter = objReporter;
+          that.invite()
           .then((offer)=>{
             // console.log("offer is that: ", offer)
           
@@ -99,6 +103,31 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
   // WEBRTC FUNCTIONS HERE
   
+  // caller invites a callee
+  invite(){
+    var that = this;
+    this.createPC();
+    return new Promise((resolve, reject) => {
+      navigator.mediaDevices.getUserMedia(this.constraints)
+      .then(function(stream){
+          console.log("localviodeo")
+          document.getElementById('localVideo').srcObject = stream;
+          that.pc.addStream(stream);
+          that.pc.createOffer(that.receivingConstraints)
+          .then(function(offer){
+            that.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
+              resolve(offer);
+            }, function (){
+              reject();
+            })
+          })
+          .catch((e)=>{
+            reject("Create Offer failed: ", e);
+          });
+      });
+    });
+  }
+
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
@@ -123,7 +152,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
   // save one ICE candidate to the buffer
   addIceCandidate(c){
-    if (!c.type) c.type = 'candidate';
+    // if (!c.type) c.type = 'candidate';
     this.iceBuffer.push(c);
   }
 
@@ -131,35 +160,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   sendIceCandidate (c) {
     console.log("this.objReporter.data: ", this.objReporter.data);
     this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
-  }
-
-
-  // caller invites a callee
-  invite(){
-    var _this = this;
-    this.createPC();
-    return new Promise((resolve, reject) => {
-      navigator.mediaDevices.getUserMedia(this.constraints)
-      .then(function(stream){
-          console.log("localviodeo")
-          document.getElementById('localVideo').srcObject = stream;
-          _this.pc.addStream(stream);
-          _this.pc.createOffer({
-            offerToReceiveAudio: 1,
-            offerToReceiveVideo: 1
-          })
-          .then(function(offer){
-            _this.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
-              resolve(offer);
-            }, function (){
-              reject();
-            })
-          })
-          .catch((e)=>{
-            reject("Create Offer failed: ", e);
-          });
-      });
-    });
   }
 
   //send all ICE candidates from buffer to callee
@@ -170,11 +170,10 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
   // recursive function needed to use 'timeout' to keep the order of the ice candidates so the syncher doesn't choke when the messaging node dosn't keep the order
   rek(that){
-    // give the syncer time to sync or it will fail
     setTimeout(function() {
       if (that.iceBuffer.length>0) {
         console.log("iceBuffer[0]: ", that.iceBuffer[0]);
-        if (that.iceBuffer[0]) that.iceBuffer[0].type = 'candidate';
+        // if (that.iceBuffer[0]) that.iceBuffer[0].type = 'candidate';
         that.sendIceCandidate(that.iceBuffer[0]);
         that.iceBuffer.splice(0, 1);
         that.rek(that);
@@ -183,6 +182,9 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       }
     }, 5);
   }
+
+
+
 
 
 
