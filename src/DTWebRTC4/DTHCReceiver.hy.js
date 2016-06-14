@@ -114,7 +114,7 @@ class Receiver extends EventEmitter {
     if (this.iceBuffer && this.iceBuffer.length) this.rek(this);
   }
 
-  // recursive function needed to use 'timeout' to keep the order of the ice candidates so the syncher doesn't choke when the messaging node dosn't keep the order
+  // recursive function needed to use 'timeout' to keep the order of the ice candidates so the syncher doesn't choke
   rek(that){
     setTimeout(()=>{
       if (that.iceBuffer.length>0) {
@@ -128,7 +128,6 @@ class Receiver extends EventEmitter {
     }, 5);
   }
 
-  // send ice candidates to the remote hyperty
   sendIceCandidate (c) {
     if (!this.objReporter.data.peer.iceCandidates)
       this.objReporter.data.peer.iceCandidates = []; // SHOULD BE REMOVED I GUESS BECAUSE OF "PEER"
@@ -138,13 +137,13 @@ class Receiver extends EventEmitter {
 
   //send one ICE candidate to partner
   addIceCandidate(cand){
-    if (!cand.type) cand.type = 'candidate'; // just make sure it's set
+    if (!cand.type) cand.type = 'candidate';
     this.iceBuffer.push(cand);
   }
 
   // callee handles incoming invite from the caller
   handleInvite(data, partner){
-    let _this = this;
+    var _this = this;
     this.partner = partner;
     console.log('got invite');
     if(!confirm('Incoming call. Answer?')) return; // TODO: move it to js file
@@ -159,7 +158,6 @@ class Receiver extends EventEmitter {
       return;
     }
     
-    // access the camera
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
       document.getElementById('localVideo').srcObject = stream; // TODO: move this to the js file
@@ -188,6 +186,7 @@ class Receiver extends EventEmitter {
   changePeerInformation(dataObjectObserver) {
     let _this = this;
     let data = dataObjectObserver.data;
+    let isOwner = data.hasOwnProperty('connection');
     console.log(data);
 
     // decide if I am the caller or callee TODO: set it statically
