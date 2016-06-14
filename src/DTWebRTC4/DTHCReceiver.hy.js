@@ -33,6 +33,31 @@ class Receiver extends EventEmitter {
     });
   }
 
+  // reveicing starts here
+  _onNotification(event) {
+    let _this = this;
+    console.info( 'Event Received: ', event);
+    this.trigger('invitation', event.identity);
+    event.ack(); // acknowledge reporter about the invitation was received
+
+    // Subscribe to Object
+    this._syncher.subscribe(this._objectDescURL, event.url)
+    .then(function(objObserver) {
+      console.info("[_onNotification] objObserver ", objObserver);
+      
+      console.log("event.from: ", event.from);
+      _this.handleInvite(objObserver.data, event.from);
+      _this.changePeerInformation(objObserver);
+
+      objObserver.onChange('connectionDescription', function(event) {
+        console.info('connectionDescription received:', event); // Object was changed
+      });
+    }).catch(function(reason) {
+      console.error(reason);
+    });
+  }
+
+  // sending starts here
   connect(hypertyURL) {
     let _this = this;
     let syncher = _this._syncher;
@@ -60,36 +85,12 @@ class Receiver extends EventEmitter {
     });
   }
 
-  // reveicing starts here
-  _onNotification(event) {
-    let _this = this;
-    console.info( 'Event Received: ', event);
-    this.trigger('invitation', event.identity);
-    event.ack(); // acknowledge reporter about the invitation was received
-
-    // Subscribe to Object
-    this._syncher.subscribe(this._objectDescURL, event.url)
-    .then(function(objObserver) {
-      console.info("[_onNotification] objObserver ", objObserver);
-      
-      console.log("event.from: ", event.from);
-      _this.handleInvite(objObserver.data, event.from);
-      _this.changePeerInformation(objObserver);
-
-      objObserver.onChange('connectionDescription', function(event) {
-        console.info('connectionDescription received:', event); // Object was changed
-      });
-    }).catch(function(reason) {
-      console.error(reason);
-    });
-  }
-
   // WEBRTC FUNCTIONS HERE
 
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
-    this.pc = new RTCPeerConnection();
+    this.pc = new RTCPeerConnection({'iceServers': config.ice});
 
     //event handler when a remote stream is added to the peer connection
     this.pc.onaddstream = function(obj){
@@ -99,13 +100,27 @@ class Receiver extends EventEmitter {
 
     //event handler for when a local ice candidate has been found
     this.pc.onicecandidate = function(e){
-      console.log("myicecandidateevent: ", e)
+      console.log("icecandidateevent occured: ", e)
       var cand = e.candidate;
       if(!cand) return;
-      cand.type = 'candidate';  // for compatibility with the hyperty connector
-      if (_this.objReporter)  _this.objReporter.data.peer.iceCandidates.push(cand);
+      cand.type = 'candidate'; // for compatibility with the hyperty connector
+      if (_this.objReporter)  _this.sendIceCandidate(cand);
       else                    _this.addIceCandidate(cand);
     }
+  }
+
+  // send ice candidates to the remote hyperty
+  sendIceCandidate (c) {
+    if (!this.objReporter.data.peer.iceCandidates)
+      this.objReporter.data.peer.iceCandidates = []; // SHOULD BE REMOVED I GUESS BECAUSE OF "PEER"
+    console.log("this.objReporter.data: ", this.objReporter.data);
+    this.objReporter.data.peer.iceCandidates.push(c);
+  }
+
+  //send one ICE candidate to partner
+  addIceCandidate(cand){
+    if (!cand.type) cand.type = 'candidate';
+    this.iceBuffer.push(cand);
   }
 
   //send all ICE candidates from the buffer to the partner
@@ -128,18 +143,7 @@ class Receiver extends EventEmitter {
     }, 5);
   }
 
-  sendIceCandidate (c) {
-    if (!this.objReporter.data.peer.iceCandidates)
-      this.objReporter.data.peer.iceCandidates = []; // SHOULD BE REMOVED I GUESS BECAUSE OF "PEER"
-    console.log("this.objReporter.data: ", this.objReporter.data);
-    this.objReporter.data.peer.iceCandidates.push(c);
-  }
 
-  //send one ICE candidate to partner
-  addIceCandidate(cand){
-    if (!cand.type) cand.type = 'candidate';
-    this.iceBuffer.push(cand);
-  }
 
   // callee handles incoming invite from the caller
   handleInvite(data, partner){
@@ -186,12 +190,10 @@ class Receiver extends EventEmitter {
   changePeerInformation(dataObjectObserver) {
     let _this = this;
     let data = dataObjectObserver.data;
-    let isOwner = data.hasOwnProperty('connection');
     console.log(data);
 
     // decide if I am the caller or callee TODO: set it statically
-    let peerData = isOwner ? data.connection.ownerPeer : data.peer;
-
+    let peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {

@@ -37,6 +37,28 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     });
   }
 
+  // reveicing starts here
+  _onNotification(event) {
+    let _this = this;
+    console.info( 'Event Received: ', event);
+    this.trigger('invitation', event.identity);
+    event.ack(); // Acknowledge reporter about the Invitation was received
+
+    // Subscribe to Object
+    this._syncher.subscribe(this._objectDescURL, event.url)
+    .then(function(objObserver) {
+      // console.info("[_onNotification] objObserver ", objObserver);
+      
+      console.log("event.from: ", event.from);
+      _this.objObserver = objObserver;
+      _this.changePeerInformation(objObserver);
+
+    }).catch(function(reason) {
+      console.error(reason);
+    });
+  }
+
+  // sending starts here
   connect(hypertyURL) {
     this.partner = hypertyURL;
     let _this = this;
@@ -75,7 +97,43 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }); 
   }
 
-    //Alice: invite a partner (Bob) to a call
+  // WEBRTC FUNCTIONS HERE
+  
+  //create a peer connection with its event handlers
+  createPC() {
+    var _this = this;
+    this.pc = new RTCPeerConnection({'iceServers': config.ice});
+
+    //event handler for when remote stream is added to peer connection
+    this.pc.onaddstream = function(obj){
+      console.log('onaddstream', _this.pc);
+      document.getElementById('remoteVideo').srcObject = obj.stream;
+    }
+
+    //event handler for when local ice candidate has been found
+    this.pc.onicecandidate = function(e){
+      console.log("icecandidateevent occured: ", e)
+      var cand = e.candidate;
+      if(!cand) return;
+      cand.type = 'candidate';  // for compatibility with the hyperty connector
+      if(!_this.ice)  _this.addIceCandidate(cand);
+      else            _this.sendIceCandidate(cand);
+    }
+  }
+  
+  // save one ICE candidate to the buffer
+  addIceCandidate(c){
+    this.iceBuffer.push(c);
+  }
+
+  // send ice candidates to the remote hyperty
+  sendIceCandidate (c) {
+    console.log("this.objReporter.data: ", this.objReporter.data);
+    this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
+  }
+
+
+  // caller invites a callee
   invite(){
     var _this = this;
     this.createPC();
@@ -103,30 +161,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     });
   }
 
-  // reveicing starts here
-  _onNotification(event) {
-    let _this = this;
-    console.info( 'Event Received: ', event);
-    this.trigger('invitation', event.identity);
-    event.ack(); // Acknowledge reporter about the Invitation was received
-
-    // Subscribe to Object
-    this._syncher.subscribe(this._objectDescURL, event.url)
-    .then(function(objObserver) {
-      // console.info("[_onNotification] objObserver ", objObserver);
-      
-      console.log("event.from: ", event.from);
-      _this.objObserver = objObserver;
-      _this.changePeerInformation(objObserver);
-
-    }).catch(function(reason) {
-      console.error(reason);
-    });
-  }
-
- // WEBRTC FUNCTIONS HERE
-
-  //send all ICE candidates from buffer to partner
+  //send all ICE candidates from buffer to callee
   emptyIceBuffer(){
     console.log("icebuffer: ", this.iceBuffer);
     if (this.iceBuffer && this.iceBuffer.length) this.rek(this);
@@ -148,16 +183,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }, 5);
   }
 
-  // send ice candidates to the remote hyperty
-  sendIceCandidate (c) {
-    console.log("this.objReporter.data: ", this.objReporter.data);
-    this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
-  }
 
-  // save one ICE candidate to the buffer
-  addIceCandidate(c){
-    this.iceBuffer.push(c);
-  }
 
   // remote ice buffer
   emptyRemoteIceBuffer() {
@@ -178,39 +204,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }, 5);
   }
 
-  /////////////////////////////////////////////////////////////////////////
-
-  //create a peer connection with its event handlers
-  createPC() {
-    var _this = this;
-    this.pc = new RTCPeerConnection(); // TODO: replace
-    // this.pc = new RTCPeerConnection({'iceServers': config.ice});
-
-    //event handler for when remote stream is added to peer connection
-    this.pc.onaddstream = function(obj){
-      console.log('onaddstream', _this.pc);
-      document.getElementById('remoteVideo').srcObject = obj.stream;
-    }
-
-    //event handler for when local ice candidate has been found
-    this.pc.onicecandidate = function(e){
-      console.log("myicecandidateevent: ", e)
-      var cand = e.candidate;
-      if(!cand) return;
-      cand.type = 'candidate';
-      if(!_this.ice)  _this.iceBuffer.push(cand);
-      else            _this.sendIceCandidate(cand);
-    }
-
-    this.pc.addEventListener('iceconnectionstatechange', function(event) {
-      console.info('iceconnectionstatechange', event.currentTarget.iceConnectionState);
-      let data = _this.objReporter.data;
-      if (data.hasOwnProperty('connection')) {
-        data.connection.status = event.currentTarget.iceConnectionState;
-      }
-    });
-
-  }
   
   //////////////////////////////////// 
 
@@ -218,10 +211,8 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   changePeerInformation(dataObjectObserver) {
     let _this = this;
     let data = dataObjectObserver.data;
-    let isOwner = data.hasOwnProperty('connection');
     console.log(data);
-    let peerData = isOwner ? data.connection.ownerPeer : data.peer;
-
+    let peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {
