@@ -93,7 +93,7 @@ function hypertyLoaded(result) {
     // Prepare to discover email:
     var hypertyDiscovery = result.instance.hypertyDiscovery;
     discoverEmail(hypertyDiscovery);
-    // hyperty.showidentity();
+    hyperty.showidentity();
   }
 }
 
