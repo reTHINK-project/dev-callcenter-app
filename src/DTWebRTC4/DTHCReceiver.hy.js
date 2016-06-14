@@ -147,7 +147,7 @@ class Receiver extends EventEmitter {
     let _this = this;
     this.partner = partner;
     console.log('got invite');
-    if(!confirm('Incoming call. Answer?')) return; // TODO: should be placed in the js file
+    if(!confirm('Incoming call. Answer?')) return; // TODO: move it to js file
     this.createPC();
     
     let offer;
@@ -158,8 +158,6 @@ class Receiver extends EventEmitter {
       console.log("offer was't set in the invitation - data: ", data);
       return;
     }
-
-    console.log('received offer: ', offer);
     
     // access the camera
     navigator.mediaDevices.getUserMedia(this.constraints)
@@ -191,8 +189,10 @@ class Receiver extends EventEmitter {
     let _this = this;
     let data = dataObjectObserver.data;
     console.log(data);
+
     // decide if I am the caller or callee TODO: set it statically
-    let peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
+    let peerData = isOwner ? data.connection.ownerPeer : data.peer;
+
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {
@@ -217,7 +217,7 @@ class Receiver extends EventEmitter {
     console.info("processPeerInformation: ", data);
 
     if (data.type === 'offer' || data.type === 'answer') { // TODO: set it statically
-      console.info('Process Connection Description: ', data);
+      console.info('Process Connection Description: ', data.sdp);
       _this.pc.setRemoteDescription(new RTCSessionDescription(data));
     }
 

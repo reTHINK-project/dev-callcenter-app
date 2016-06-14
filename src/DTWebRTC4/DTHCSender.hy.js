@@ -39,6 +39,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
   // connect to the other hyperty
   connect(hypertyURL) {
+    this.partner = hypertyURL;
     let _this = this;
     this.partner = hypertyURL;
     let syncher = _this._syncher;
@@ -50,8 +51,9 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
           _this.objReporter = objReporter;
           _this.invite()
           .then((offer)=>{
-            // console.log("offer is: ", offer);
-            objReporter.data.connection = { // owner has that, so the caller does
+            // console.log("offer is that: ", offer)
+          
+            objReporter.data.connection = { // owner has that
               name    : '',
               status  : "offer",
               owner   : "hyperty://could.my.hypertyurl.be.here/yes/no",
@@ -64,7 +66,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
           });
           objReporter.onSubscription(function(event) {
             console.info('-------- Receiver received subscription request --------- \n');
-            event.accept(); // All subscription requested are accepted
+            event.accept(); // all subscription requested are accepted
             resolve(objReporter);
           });
         })
@@ -81,7 +83,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this.createPC();
 
     return new Promise((resolve, reject) => {
-      // let's access the camera or microphone
       navigator.mediaDevices.getUserMedia(this.constraints)
       .then(function(stream){
           document.getElementById('localVideo').srcObject = stream;
@@ -90,9 +91,12 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
           .then(function(offer){
             _this.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
               resolve(offer);
-            }, function (e){
-              reject("we have an error setting the local description: ",e);
+            }, function (){
+              reject();
             })
+          })
+          .catch((e)=>{
+            reject("Create Offer failed: ", e);
           });
       });
     });
@@ -142,16 +146,16 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }, 5);
   }
 
+  // send ice candidates to the remote hyperty
   sendIceCandidate (c) {
     console.log("this.objReporter.data: ", this.objReporter.data);
     this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
   }
 
-  //send one ICE candidate to partner
-  addIceCandidate(cand){
-    this.iceBuffer.push(cand);
+  // save one ICE candidate to the buffer
+  addIceCandidate(c){
+    this.iceBuffer.push(c);
   }
-
 
   // remote ice buffer
   emptyRemoteIceBuffer() {
@@ -160,7 +164,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   }
 
   rekRemote(that){
-    console.log("rekremoterek")
     setTimeout(function() {
       if (that.remoteIceBuffer.length>0) {
         console.log("remoteIceBuffer[0]: ", that.remoteIceBuffer[0]);
@@ -173,10 +176,13 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }, 5);
   }
 
+  /////////////////////////////////////////////////////////////////////////
+
   //create a peer connection with its event handlers
   createPC() {
-    let _this = this;
-    this.pc = new RTCPeerConnection();
+    var _this = this;
+    this.pc = new RTCPeerConnection(); // TODO: replace
+    // this.pc = new RTCPeerConnection({'iceServers': config.ice});
 
     //event handler for when remote stream is added to peer connection
     this.pc.onaddstream = function(obj){
