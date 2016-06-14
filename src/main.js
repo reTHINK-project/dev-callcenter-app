@@ -119,10 +119,9 @@ function webrtcconnectToHyperty(event) {
   toHypertyForm.append('<center><br><i style="color: #e20074;"" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
   console.log(toHyperty);
 
-  hyperty.webrtcconnect(toHyperty)
+  hyperty.connect(toHyperty)
   .then(function(obj) {
     console.log('Webrtc obj: ', obj);
-    hyperty.invite();
     $('.send-panel').addClass('hide');
     $('#smth2').find('.hide').removeClass('hide');
   })
@@ -142,13 +141,11 @@ function initListeners() {
   hyperty.addEventListener('webrtcreceive', function(event) {
     console.log('Webrtc receive event received:', event);
     switch(event.webrtc.msg.body.type){
-      case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
-      case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
-      case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
-      case 'iceallowed':   hyperty.iceallowed(); break;
+        case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
+        case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
+        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
     }
   });
-
 }
 
 function discoverEmail(hypertyDiscovery) {
