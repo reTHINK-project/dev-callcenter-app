@@ -87,11 +87,15 @@ class Receiver extends EventEmitter {
   // WEBRTC FUNCTIONS HERE
 
   // callee handles incoming invite from the caller
-  handleInvite(data, partner){
-    var that = this;
+  handleInvite(data, partner) {
     this.partner = partner;
     console.log('got invite');
-    if(!confirm('Incoming call. Answer?')) return; // TODO: move it to js file
+    this.trigger('incomingcall', data);
+  }
+
+  // calle accepted the invitation
+  invitationAccepted(data) {
+    let that = this;
     this.createPC();
     
     let offer;
@@ -105,14 +109,14 @@ class Receiver extends EventEmitter {
     
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
-      document.getElementById('localVideo').srcObject = stream; // TODO: move this to the js file
+      that.trigger('localvideo', stream);
       that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
       that.pc.setRemoteDescription(new RTCSessionDescription(offer), function(){
         that.pc.createAnswer()
         .then(function(answer){
           that.pc.setLocalDescription(new RTCSessionDescription(answer), function(){
             console.log("answer from callee: ", answer);
-            that.connect(partner) // connect to the other hyperty now
+            that.connect(that.partner) // connect to the other hyperty now
             .then((objReporter)=>{
               console.log("the objreporter is as follows: ", objReporter);
               that.objReporter = objReporter;
@@ -135,7 +139,7 @@ class Receiver extends EventEmitter {
     //event handler when a remote stream is added to the peer connection
     this.pc.onaddstream = function(obj){
       console.log('onaddstream', _this.pc);
-      document.getElementById('remoteVideo').srcObject = obj.stream;
+      _this.trigger('remotevideo', obj.stream);
     }
 
     //event handler for when a local ice candidate has been found

@@ -32,4 +32,20 @@ function initListeners() {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
   });
+
+  hyperty.addEventListener('incomingcall', function(data) {
+    console.log('incomingcall received');
+    if (!confirm('Incoming call. Answer?')) return false;
+    hyperty.invitationAccepted(data);
+  });
+
+  hyperty.addEventListener('localvideo', function(stream) {
+    console.log('local stream received');
+    document.getElementById('localVideo').srcObject = stream;
+  });
+  
+  hyperty.addEventListener('remotevideo', function(stream) {
+    console.log('remotevideo received');
+    document.getElementById('remoteVideo').srcObject = stream;
+  });
 }
