@@ -35,8 +35,8 @@ function addContent() {
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-    '<video id="remoteVideo" class="block hide" autoplay style="border: 1px solid grey;"></video>'+
-    '<video id="localVideo" class="halfblock hide" autoplay style="border: 1px solid grey;"></video>'+
+    '<video id="remoteVideo" class="block7 hide" autoplay style="border: 1px solid grey;"></video>'+
+    '<video id="localVideo" class="block3 hide" autoplay style="border: 1px solid grey;"></video>'+
     '</div>');
 }
 

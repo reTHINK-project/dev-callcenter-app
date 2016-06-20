@@ -19,8 +19,9 @@ runtimeLoader.install().then(function() {
       loadHyperty(0,key);
     }else if(key == "DTHCsender"){
       $dropDown.append('<form class="searchemail" data-name="DTHCsender">'+ 
-        '<input type="email" style="float: left" class="friend-email halfblock validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
-        '<button type="submit"  class="btn btn-default btn-sm">Search</button>'+
+        '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
+        '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+ 
+        '<button type="submit" style="float: left"  class="btn btn-default btn-sm">Search</button>'+
         '</form><br>');
       $('.searchemail').on('submit',loadHyperty);
     }else{}
@@ -103,8 +104,8 @@ function addContent() {
     '<div class="invitation-panel"></div>'+
     '<div id="smth"></div>'+
     '<div id="smth2">'+
-    '<video id="remoteVideo" class="block hide" autoplay  poster="web/media/load3.gif"></video>'+
-    '<video id="localVideo" class="halfblock hide" autoplay  poster="web/media/load3.gif"></video>'+
+    '<video id="remoteVideo" class="block7 hide" autoplay  poster="web/media/load3.gif"></video>'+
+    '<video id="localVideo" class="block3 hide" autoplay  poster="web/media/load3.gif"></video>'+
     '</div>');
 }
 
@@ -138,7 +139,8 @@ function initListeners() {
 function discoverEmail(hypertyDiscovery) {
 
   var email = $('.searchemail').find('.friend-email').val();
-  hypertyDiscovery.discoverHypertyPerUser(email, 0)
+  var domain = $('.searchemail').find('.friend-domain').val();
+  hypertyDiscovery.discoverHypertyPerUser(email, domain)
   .then(function (result) {
     $('.send-panel').append('<br><form class="webrtcconnect">' +
       '<input type="text" class="webrtc-hyperty-input form-control ">' +

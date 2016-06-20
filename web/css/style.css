@@ -69,14 +69,19 @@ input {
     width: 100%;
 }
 
-.block {
+.block7 {
     /*display: block;*/
     width: 70%;
 }
 
-.halfblock {
+.block3 {
    /* display: block;*/
     width: 30%;
+}
+
+.block2 {
+   /* display: block;*/
+    width: 20%;
 }
 
 .avatar img {
