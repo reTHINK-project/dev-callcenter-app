@@ -52,8 +52,7 @@ body > .container {
   text-decoration: none !important;
 }
 .big-text:hover {
-
-color: #e20074 !important;
+  color: #e20074 !important;
 }
 
 .footer {
@@ -97,6 +96,7 @@ input {
 }
 
 
-.navbar-fixed-top {
+/*.navbar-fixed-top {
   max-height: 60px;
 }
+*/

@@ -15,10 +15,10 @@ runtimeLoader.install().then(function() {
 }).then(function(hyperties) {
   let $dropDown = $('#navbar');
   hyperties.forEach(function(key) {
-    if(key == "DTReceiver"){
+    if(key == "DTHCreceiver"){
       loadHyperty(0,key);
-    }else if(key == "DTSender"){
-      $dropDown.append('<form class="searchemail" data-name="DTSender">'+ 
+    }else if(key == "DTHCsender"){
+      $dropDown.append('<form class="searchemail" data-name="DTHCsender">'+ 
         '<input type="email" style="float: left" class="friend-email halfblock validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
         '<button type="submit"  class="btn btn-default btn-sm">Search</button>'+
         '</form><br>');
@@ -116,7 +116,7 @@ function webrtcconnectToHyperty(event) {
   event.preventDefault();
   let toHypertyForm = $(event.currentTarget);
   let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
-  toHypertyForm.append('<center><br><i style="color: #e20074;"" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
+  toHypertyForm.append('<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
   console.log(toHyperty);
 
   hyperty.connect(toHyperty)
