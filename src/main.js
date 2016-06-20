@@ -53,10 +53,8 @@ function getListOfHyperties(domain) {
       fail: function(reason) {
         reject(reason);
       }
-
     });
   });
-
 }
 
 function loadHyperty(event,key) {
@@ -74,8 +72,6 @@ function loadHyperty(event,key) {
 function hypertyFail(reason) {
   console.error(reason);
 }
-
-
 
 // ###################################################################################################################
 // ################################## DTCallCenter ###################################################################
@@ -136,15 +132,6 @@ function initListeners() {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
     $('#smth2').find('.hide').removeClass('hide');
-  });
-
-  hyperty.addEventListener('webrtcreceive', function(event) {
-    console.log('Webrtc receive event received:', event);
-    switch(event.webrtc.msg.body.type){
-        case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
-        case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
-        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
-    }
   });
 }
 

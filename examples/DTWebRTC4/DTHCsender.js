@@ -2,7 +2,6 @@ var hyperty;
 
 function hypertyLoaded(result) {
   hyperty = result.instance;
-  console.log("HHHHHHHHHHHHHHHHHHHHHHHHHHHhypertyReporter: ", result);
   addContent();
   $('.hyperty-panel').append('<p>Hyperty Reporter URL:<br>' + result.runtimeHypertyURL + '</p>');
   $('.email-panel').append('<form class="searchemail">'+ 
@@ -25,7 +24,6 @@ function hypertyLoaded(result) {
   discoverEmail(hypertyDiscovery);
   
 }
-
 
 function addContent() {
   var place = document.getElementById("box1");
@@ -60,57 +58,24 @@ function webrtcconnectToHyperty(event) {
   });
 }
 
-
-function showValue(v) {
-  $('#myrange').html(v);
-	hyperty.slide(v);
-}
-
-
-// helping functions
-// receiving code here
 function initListeners () {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
   });
-
-  hyperty.addEventListener('slideback', function(event) {
-    console.log('Slideback event received on sender side:', event);
-    $("#slider1").val(event.slider);
-    $("#myrange").html(event.slider);
-    $("#smth").html(event.reporter);
-    $("#smth").append(event);
-  });
-
-  hyperty.addEventListener('webrtcreceive', function(event) {
-    console.log('Webrtc receive event received:', event);
-    switch(event.webrtc.msg.body.type){
-        case 'invitation':         hyperty.handleInvite(event.webrtc.msg, event.reporter); break;
-        case 'accepted':         hyperty.handleAccepted(event.webrtc.msg); break;
-        case 'icecandidate': hyperty.handleIceCandidate(event.webrtc.msg); break;
-    }
-  });
 }
 
-
 // #############################-EMAIL-DISCOVER-############################################
-
-
 function discoverEmail(hypertyDiscovery) {
 
   var section = $('.email-panel');
   var searchForm = section.find('.searchemail');
-  var inputField = searchForm.find('.friend-email');
-  var inputDomain = searchForm.find('.friend-domain');
-
   section.removeClass('hide');
 
   $('.searchemail').on('submit', function(event) {
     event.preventDefault();
-
-    var email = inputField.val();
-    var domain = inputDomain.val();
+    var email = searchForm.find('.friend-email').val();
+    var domain = searchForm.find('.friend-domain').val();
     hypertyDiscovery.discoverHypertyPerUser(email, domain)
     .then(function (result) {
       $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
@@ -118,6 +83,5 @@ function discoverEmail(hypertyDiscovery) {
     }).catch(function (err) {
       console.error('Email Discovered Error: ', err);
     });
-
   });
 }
