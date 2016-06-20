@@ -194,8 +194,7 @@ class Receiver extends EventEmitter {
     let data = dataObjectObserver.data;
     console.log(data);
 
-    // decide if I am the caller or callee TODO: set it statically
-    let peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
+    let peerData = data.connection.ownerPeer;
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {
@@ -219,7 +218,7 @@ class Receiver extends EventEmitter {
     let _this = this;
     console.info("processPeerInformation: ", data);
 
-    if (data.type === 'offer' || data.type === 'answer') { // TODO: set it statically
+    if (data.type === 'offer') {
       console.info('Process Connection Description: ', data.sdp);
       _this.pc.setRemoteDescription(new RTCSessionDescription(data));
     }
