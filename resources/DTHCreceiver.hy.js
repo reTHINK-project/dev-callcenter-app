@@ -157,10 +157,17 @@ var Receiver = function (_EventEmitter) {
   }, {
     key: 'handleInvite',
     value: function handleInvite(data, partner) {
-      var that = this;
       this.partner = partner;
       console.log('got invite');
-      if (!confirm('Incoming call. Answer?')) return; // TODO: move it to js file
+      this.trigger('incomingcall', data);
+    }
+
+    // calle accepted the invitation
+
+  }, {
+    key: 'invitationAccepted',
+    value: function invitationAccepted(data) {
+      var that = this;
       this.createPC();
 
       var offer = void 0;
@@ -173,13 +180,13 @@ var Receiver = function (_EventEmitter) {
       }
 
       navigator.mediaDevices.getUserMedia(this.constraints).then(function (stream) {
-        document.getElementById('localVideo').srcObject = stream; // TODO: move this to the js file
+        that.trigger('localvideo', stream);
         that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
         that.pc.setRemoteDescription(new RTCSessionDescription(offer), function () {
           that.pc.createAnswer().then(function (answer) {
             that.pc.setLocalDescription(new RTCSessionDescription(answer), function () {
               console.log("answer from callee: ", answer);
-              that.connect(partner) // connect to the other hyperty now
+              that.connect(that.partner) // connect to the other hyperty now
               .then(function (objReporter) {
                 console.log("the objreporter is as follows: ", objReporter);
                 that.objReporter = objReporter;
@@ -204,7 +211,7 @@ var Receiver = function (_EventEmitter) {
       //event handler when a remote stream is added to the peer connection
       this.pc.onaddstream = function (obj) {
         console.log('onaddstream', _this.pc);
-        document.getElementById('remoteVideo').srcObject = obj.stream;
+        _this.trigger('remotevideo', obj.stream);
       };
 
       //event handler for when a local ice candidate has been found
@@ -272,8 +279,7 @@ var Receiver = function (_EventEmitter) {
       var data = dataObjectObserver.data;
       console.log(data);
 
-      // decide if I am the caller or callee TODO: set it statically
-      var peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
+      var peerData = data.connection.ownerPeer;
       console.info('Peer Data:', peerData);
 
       if (peerData.hasOwnProperty('connectionDescription')) {
@@ -298,8 +304,7 @@ var Receiver = function (_EventEmitter) {
       var _this = this;
       console.info("processPeerInformation: ", data);
 
-      if (data.type === 'offer' || data.type === 'answer') {
-        // TODO: set it statically
+      if (data.type === 'offer') {
         console.info('Process Connection Description: ', data.sdp);
         _this.pc.setRemoteDescription(new RTCSessionDescription(data));
       }

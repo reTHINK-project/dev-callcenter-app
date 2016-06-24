@@ -18,6 +18,7 @@ runtimeLoader.install().then(function() {
     if(key == "DTHCreceiver"){
       loadHyperty(0,key);
     }else if(key == "DTHCsender"){
+     
       $dropDown.append('<form class="searchemail" data-name="DTHCsender">'+ 
         '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
         '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+ 
