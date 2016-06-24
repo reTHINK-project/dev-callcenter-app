@@ -15,3 +15,8 @@ $(window).resize(onResize);
 $(function() {
   onResize();
 });
+
+
+function toggleSettings() {
+    $("#settings").toggle();
+}

@@ -14,19 +14,28 @@ runtimeLoader.install().then(function() {
   return getListOfHyperties(domain);
 }).then(function(hyperties) {
   let $dropDown = $('#navbar');
+
+
   hyperties.forEach(function(key) {
     if(key == "DTHCreceiver"){
       loadHyperty(0,key);
     }else if(key == "DTHCsender"){
      
-      $dropDown.append('<form class="searchemail" data-name="DTHCsender">'+ 
+      $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+ 
         '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
         '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+ 
         '<button type="submit" style="float: left"  class="btn btn-default btn-sm">Search</button>'+
-        '</form><br>');
+        '</form></div>');
       $('.searchemail').on('submit',loadHyperty);
     }else{}
   });
+    $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div>'+
+      '<div id="settings" class="settings"><table>'+
+                '<td class="darktext">Stun-Server </td><td><input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></td><td></td>'+
+                '<td class="darktext">Turn-Server </td><td><input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></td><td></td>'+
+                '<td class="darktext"> Camera Resolution</td><td><select size="1" id="camResolution"></select></td>'+
+                '<td><button id="saveConfig" class="btn btn-default btn-sm" onclick="saveProfile();toggleSettings();">Save profile</button></td>'+
+           '</table></div>');
 }).catch(function(reason) {
   console.error(reason);
 });

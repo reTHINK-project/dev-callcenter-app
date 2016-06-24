@@ -3,9 +3,9 @@ html {
   min-height: 100%;
 }
 @font-face{
-    font-family: "telegrotesk";
-    src: url('../font/telegrotesk-halbfett.ttf'),
-    url('../font/telegrotesk-normal.ttf'); /* IE */
+  font-family: "telegrotesk";
+  src: url('../font/telegrotesk-halbfett.ttf'),
+  url('../font/telegrotesk-normal.ttf'); /* IE */
 }
 body {
   /* Margin bottom by footer height */
@@ -28,12 +28,12 @@ body > .container {
 }
 
 .navbar-nav > li > a {
-    padding-top: 20px;
-    padding-bottom: 16px;
+  padding-top: 20px;
+  padding-bottom: 16px;
 }
 
 .navbar-nav > li > a:hover {
-   color: #e20074 !important;
+ color: #e20074 !important;
 }
 
 .logo {
@@ -65,23 +65,23 @@ body > .container {
 }
 
 input {
-    display: block;
-    width: 100%;
+  display: block;
+  width: 100%;
 }
 
 .block7 {
-    /*display: block;*/
-    width: 70%;
+  /*display: block;*/
+  width: 70%;
 }
 
 .block3 {
-   /* display: block;*/
-    width: 30%;
+ /* display: block;*/
+ width: 30%;
 }
 
 .block2 {
-   /* display: block;*/
-    width: 20%;
+ /* display: block;*/
+ width: 20%;
 }
 
 .avatar img {
@@ -90,14 +90,15 @@ input {
 }
 
 .btn.btn-default {
-    background-color: #CCCCCC;
-    font-size:14px;
-    font-weight: bold;
-    color: #444444;
+  background-color: #CCCCCC;
+  font-size:14px;
+  font-weight: bold;
+  color: #444444;
 }
 
 .searchemail {
   margin-top: 10px;
+
 }
 
 
@@ -105,3 +106,12 @@ input {
   max-height: 60px;
 }
 */
+
+.settings  {
+  float: right;
+  display: none;
+}
+
+.darktext {
+  color: #777;
+}
