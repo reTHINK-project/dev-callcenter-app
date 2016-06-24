@@ -346,7 +346,7 @@ var Sender = function (_EventEmitter) {
       var _this = this;
       var data = dataObjectObserver.data;
       console.log(data);
-      var peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
+      var peerData = data && data.connection ? data.connection.ownerPeer : data.peer;
       console.info('Peer Data:', peerData);
 
       if (peerData.hasOwnProperty('connectionDescription')) {
