@@ -29,8 +29,8 @@ function addContent() {
 
 function initListeners() {
 	hyperty.addEventListener('invitation', function(identity) {
-    console.log('Invitation event received from:', identity);
-    $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
+    console.log('Invitation event received from:', identity, identity.infoToken.name);
+    $('.invitation-panel').append(`<p> Invitation received from:<br>email: ` + identity.email +  `<br>name: ` + identity.infoToken.name + '</p>');
   });
 
   hyperty.addEventListener('incomingcall', function(data) {

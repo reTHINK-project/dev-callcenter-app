@@ -220,7 +220,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     let _this = this;
     let data = dataObjectObserver.data;
     console.log(data);
-    let peerData = data.hasOwnProperty('connection') ? data.connection.ownerPeer : data.peer;
+    let peerData = data && data.connection ? data.connection.ownerPeer : data.peer;
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {
