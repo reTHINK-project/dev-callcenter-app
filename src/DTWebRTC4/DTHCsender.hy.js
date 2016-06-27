@@ -81,13 +81,13 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     return new Promise(function(resolve, reject) {
       syncher.create(that._objectDescURL, [hypertyURL], {})
-        .then(function(objReporter) {
-          console.info('1. Return Created WebRTC Object Reporter', objReporter);
-          that.objReporter = objReporter;
-          that.invite()
-          .then((offer)=>{
+      .then(function(objReporter) {
+        console.info('1. Return Created WebRTC Object Reporter', objReporter);
+        that.objReporter = objReporter;
+        that.invite()
+        .then((offer)=>{
             // console.log("offer is that: ", offer)
-          
+            
             objReporter.data.connection = { // owner has that
               name    : '',
               status  : "offer",
@@ -99,18 +99,18 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
               }
             };
           });
-          objReporter.onSubscription(function(event) {
-            console.info('-------- Receiver received subscription request --------- \n');
+        objReporter.onSubscription(function(event) {
+          console.info('-------- Receiver received subscription request --------- \n');
             event.accept(); // all subscription requested are accepted
             resolve(objReporter);
           });
-        })
-        .catch(function(reason) {
-          console.error(reason);
-          reject(reason);
-        });
+      })
+      .catch(function(reason) {
+        console.error(reason);
+        reject(reason);
+      });
     }); 
-  }
+}
 
   // WEBRTC FUNCTIONS HERE
   
@@ -121,27 +121,32 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     return new Promise((resolve, reject) => {
       navigator.mediaDevices.getUserMedia(this.constraints)
       .then(function(stream){
-          console.log("localviodeo")
-          document.getElementById('localVideo').srcObject = stream;
-          that.pc.addStream(stream);
-          that.pc.createOffer(that.receivingConstraints)
-          .then(function(offer){
-            that.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
-              resolve(offer);
-            }, function (){
-              reject();
-            })
+        console.log("localviodeo")
+        document.getElementById('localVideo').srcObject = stream;
+        that.pc.addStream(stream);
+        that.pc.createOffer(that.receivingConstraints)
+        .then(function(offer){
+          that.pc.setLocalDescription(new RTCSessionDescription(offer), function(){
+            resolve(offer);
+          }, function (){
+            reject();
           })
-          .catch((e)=>{
-            reject("Create Offer failed: ", e);
-          });
+        })
+        .catch((e)=>{
+          reject("Create Offer failed: ", e);
+        });
       });
     });
+  }
+
+  setIceServer(ice) {
+    config.ice = ice.concat(config.ice);
   }
 
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
+    console.info('DDDDDDDDDDDDDDAAAAAAAAAA', config);
     this.pc = new RTCPeerConnection({'iceServers': config.ice});
 
     //event handler for when remote stream is added to peer connection

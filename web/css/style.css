@@ -112,6 +112,10 @@ input {
   display: none;
 }
 
+.settings input {
+   display: block;
+}
+
 .darktext {
   color: #777;
 }

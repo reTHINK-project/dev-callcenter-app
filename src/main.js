@@ -10,6 +10,8 @@ let domain = config.domain;
 let runtime = 'https://catalogue.' + domain + '/.well-known/runtime/Runtime';
 let runtimeLoader = new RuntimeLoader(installerFactory, runtime);
 
+
+
 runtimeLoader.install().then(function() {
   return getListOfHyperties(domain);
 }).then(function(hyperties) {
@@ -20,7 +22,7 @@ runtimeLoader.install().then(function() {
     if(key == "DTHCreceiver"){
       loadHyperty(0,key);
     }else if(key == "DTHCsender"){
-     
+
       $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+ 
         '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
         '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+ 
@@ -29,13 +31,17 @@ runtimeLoader.install().then(function() {
       $('.searchemail').on('submit',loadHyperty);
     }else{}
   });
-    $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div>'+
-      '<div id="settings" class="settings"><table>'+
-                '<td class="darktext">Stun-Server </td><td><input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></td><td></td>'+
-                '<td class="darktext">Turn-Server </td><td><input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></td><td></td>'+
-                '<td class="darktext"> Camera Resolution</td><td><select size="1" id="camResolution"></select></td>'+
-                '<td><button id="saveConfig" class="btn btn-default btn-sm" onclick="saveProfile();toggleSettings();">Save profile</button></td>'+
-           '</table></div>');
+  $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div>'+
+    '<div><form id="settings" class="settings"><table>'+
+    '<td class="darktext">Stun-Server </td><td><input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></td><td></td>'+
+    '<td class="darktext">Turn-Server </td><td><input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></td><td></td>'+
+    '<td class="darktext">user</td><td><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></td>'+
+    '<td class="darktext">pass</td><td><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></td>'+
+    '<td class="darktext"> Camera Resolution</td><td><select size="1" id="camResolution"></select></td>'+
+    '<td><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></td>'+
+    '</table></form></div>');
+  $('#settings').on('submit',saveProfile,toggleSettings);
+  loadProfile();
 }).catch(function(reason) {
   console.error(reason);
 });
@@ -121,6 +127,8 @@ function addContent() {
 
 function webrtcconnectToHyperty(event) {
   event.preventDefault();
+  saveProfile();
+  getIceServers();
   let toHypertyForm = $(event.currentTarget);
   let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
   toHypertyForm.append('<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
@@ -155,7 +163,7 @@ function initListeners() {
     console.log('local stream received');
     document.getElementById('localVideo').srcObject = stream;
   });
-    
+
   hyperty.addEventListener('remotevideo', function(stream) {
     console.log('remotevideo received');
     document.getElementById('remoteVideo').srcObject = stream;
@@ -177,4 +185,61 @@ function discoverEmail(hypertyDiscovery) {
   }).catch(function (err) {
     console.error('Email Discovered Error: ', err);
   });
+}
+
+var PROFILE_KEY = "WEBRTC-SIMPLE-SETTINGS";
+
+function getIceServers() {
+  var stun = $("#stun").val();
+  var turn = $("#turn").val();
+  var turn_user = $("#turn_user").val();
+  var turn_pass = $("#turn_pass").val();
+  var iceServers = [];
+  if (stun)
+    iceServers.push({urls: "stun:" + stun});
+  if (turn)
+    iceServers.push({
+      urls: "turn:" + turn,
+      username: turn_user,
+      credential: turn_pass
+    });
+  hyperty.setIceServer(iceServers);
+}
+
+function saveProfile() {
+  event.preventDefault();
+  var profile = {};
+  // transfer all values from all text-inputs of the settings div to profile
+  $("#settings :text").each(function (i) {
+    profile[$(this).attr('id')] = $(this).val();
+  });
+  $("#settings  :password").each(function (i) {
+    profile[$(this).attr('id')] = $(this).val();
+  });
+  $("#settings #camResolution").each(function (i) {
+    profile[$(this).attr('id')] = $(this).val();
+  });
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+}
+
+function loadProfile() {
+  console.log("loading profile " + PROFILE_KEY);
+  var profile = null;
+  var s = localStorage.getItem(PROFILE_KEY);
+  if (s) {
+    try {
+      profile = JSON.parse(s);
+    }
+    catch (e) {
+      console.log("error while parsing settings from local storage");
+    }
+  }
+  if (profile !== null) {
+    for (var key in profile) {
+      // set value either in settings-div or if not found there in a plain field with this id
+      if ($("#settings #" + key)[0]){
+        $("#settings #" + key).val(profile[key]);
+      }
+    }
+  }
 }

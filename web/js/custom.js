@@ -18,5 +18,6 @@ $(function() {
 
 
 function toggleSettings() {
+	event.preventDefault();
     $("#settings").toggle();
 }

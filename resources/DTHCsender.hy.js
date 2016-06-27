@@ -243,6 +243,11 @@ var Sender = function (_EventEmitter) {
         });
       });
     }
+  }, {
+    key: 'setIceServer',
+    value: function setIceServer(ice) {
+      _stunTurnserverConfig2.default.ice = ice.concat(_stunTurnserverConfig2.default.ice);
+    }
 
     //create a peer connection with its event handlers
 
@@ -250,6 +255,7 @@ var Sender = function (_EventEmitter) {
     key: 'createPC',
     value: function createPC() {
       var _this = this;
+      console.info('DDDDDDDDDDDDDDAAAAAAAAAA', _stunTurnserverConfig2.default);
       this.pc = new RTCPeerConnection({ 'iceServers': _stunTurnserverConfig2.default.ice });
 
       //event handler for when remote stream is added to peer connection

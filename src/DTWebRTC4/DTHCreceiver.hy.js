@@ -130,10 +130,14 @@ class Receiver extends EventEmitter {
     });
   }
 
+  setIceServer(ice) {
+    config.ice = ice.concat(config.ice);
+  }
   
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
+    console.info('DDDDDDDDDDDDDDAAAAAAAAAA', config);
     this.pc = new RTCPeerConnection({'iceServers': config.ice});
 
     //event handler when a remote stream is added to the peer connection
@@ -211,7 +215,7 @@ class Receiver extends EventEmitter {
     dataObjectObserver.onChange('*', function(event) {
       console.info('Observer on change message: ', event);
       _this.processPeerInformation(event.data[0]); // this does the trick when ice candidates are trickling ;)
-    });
+  });
   }
 
   processPeerInformation(data) {
@@ -246,4 +250,3 @@ export default function activate(hypertyURL, bus, configuration) {
 }
 
 
-  
