@@ -9,7 +9,7 @@ window.KJUR = {};
 let domain = config.domain;
 let runtime = 'https://catalogue.' + domain + '/.well-known/runtime/Runtime';
 let runtimeLoader = new RuntimeLoader(installerFactory, runtime);
-
+var hypertyDiscovery;
 
 
 runtimeLoader.install().then(function() {
@@ -106,8 +106,9 @@ function hypertyLoaded(result) {
   hyperty.myUrl = result.runtimeHypertyURL;
   if(result.name == "SenderDTWebRTC"){
     // Prepare to discover email:
-    var hypertyDiscovery = result.instance.hypertyDiscovery;
-    discoverEmail(hypertyDiscovery);
+    hypertyDiscovery = result.instance.hypertyDiscovery;
+    discoverEmail(0);
+    $('.searchemail').off('submit').on('submit',discoverEmail);
     // hyperty.showidentity();
   }
 }
@@ -174,12 +175,14 @@ function initListeners() {
   });
 }
 
-function discoverEmail(hypertyDiscovery) {
+function discoverEmail(event) {
+  if(event){event.preventDefault();}
 
   var email = $('.searchemail').find('.friend-email').val();
   var domain = $('.searchemail').find('.friend-domain').val();
   hypertyDiscovery.discoverHypertyPerUser(email, domain)
   .then(function (result) {
+    $('.send-panel').empty();
     $('.send-panel').append('<br><form class="webrtcconnect">' +
       '<input type="text" class="webrtc-hyperty-input form-control ">' +
       '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
