@@ -93,6 +93,10 @@ class Receiver extends EventEmitter {
     this.trigger('incomingcall', data);
   }
 
+  setMediaOptions(opt) {
+    this.constraints = opt;
+  }
+
   // calle accepted the invitation
   invitationAccepted(data) {
     let that = this;
@@ -106,7 +110,7 @@ class Receiver extends EventEmitter {
       console.log("offer was't set in the invitation - data: ", data);
       return;
     }
-    
+    console.log('>>>>>>>>Constrains', this.constraints );
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
       that.trigger('localvideo', stream);
@@ -133,6 +137,8 @@ class Receiver extends EventEmitter {
   setIceServer(ice) {
     config.ice = ice.concat(config.ice);
   }
+
+
   
   //create a peer connection with its event handlers
   createPC() {

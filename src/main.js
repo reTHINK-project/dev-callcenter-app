@@ -37,10 +37,12 @@ runtimeLoader.install().then(function() {
     '<td class="darktext">Turn-Server </td><td><input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></td><td></td>'+
     '<td class="darktext">user</td><td><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></td>'+
     '<td class="darktext">pass</td><td><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></td>'+
-    '<td class="darktext"> Camera Resolution</td><td><select size="1" id="camResolution"></select></td>'+
+    '<td class="darktext"> Camera Resolution</td><td><select size="1" value="" class="darktext" id="camResolution"></select></td>'+
     '<td><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></td>'+
     '</table></form></div>');
-  $('#settings').on('submit',saveProfile,toggleSettings);
+  $('#settings').on('submit',saveProfile);
+  $('#settings').on('submit',toggleSettings);
+  fillResoultionSelector();
   loadProfile();
 }).catch(function(reason) {
   console.error(reason);
@@ -106,7 +108,7 @@ function hypertyLoaded(result) {
     // Prepare to discover email:
     var hypertyDiscovery = result.instance.hypertyDiscovery;
     discoverEmail(hypertyDiscovery);
-    hyperty.showidentity();
+    // hyperty.showidentity();
   }
 }
 
@@ -129,6 +131,7 @@ function webrtcconnectToHyperty(event) {
   event.preventDefault();
   saveProfile();
   getIceServers();
+  prepareMediaOptions();
   let toHypertyForm = $(event.currentTarget);
   let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
   toHypertyForm.append('<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
@@ -151,6 +154,7 @@ function initListeners() {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
     $('#smth2').find('.hide').removeClass('hide');
+    prepareMediaOptions();
   });
 
   hyperty.addEventListener('incomingcall', function(data) {
@@ -209,6 +213,7 @@ function getIceServers() {
 function saveProfile() {
   event.preventDefault();
   var profile = {};
+  console.log("save profile " + PROFILE_KEY);
   // transfer all values from all text-inputs of the settings div to profile
   $("#settings :text").each(function (i) {
     profile[$(this).attr('id')] = $(this).val();
@@ -218,7 +223,9 @@ function saveProfile() {
   });
   $("#settings #camResolution").each(function (i) {
     profile[$(this).attr('id')] = $(this).val();
+    console.log('BLA',$(this).val() );
   });
+
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
 }
 
@@ -242,4 +249,51 @@ function loadProfile() {
       }
     }
   }
+}
+
+
+
+var resolutions = {
+    "1920x1080": "FHD 16:9 1920x1080",
+    "1680x1050": "WSXGA+ 16:10 1680x1050",
+    "1600x1200": "UXGA 4:3 1600x1200",
+    "1280x800": "WXGA 16:10 1280x800",
+    "1280x720": "WXGA 16:9 1280x720",
+    "800x600": "SVGA 4:3 800x600",
+    "640x480": "VGA 4:3 640x480",
+    "320x200": "CGA 8:5 320x200",
+    "32x20": "CGA 8:5 32x20",
+    "4096x2160": "4K 17:9 4096x2160"
+};
+
+
+
+function prepareMediaOptions() {
+    var mediaOptions = {};
+    var selectedRes = $("#camResolution").val();
+    var resolutionArr = selectedRes.split("x");
+    console.log("Selected Resolution: " + selectedRes);
+    console.log("minWidth: " + resolutionArr[0]);
+    mediaOptions = {
+        'audio': true,
+        'video': {
+            mandatory: {
+                minWidth: resolutionArr[0],
+                minHeight: resolutionArr[1],
+                maxWidth: resolutionArr[0],
+                maxHeight: resolutionArr[1]
+            }
+        }
+    };
+    hyperty.setMediaOptions(mediaOptions);
+}
+
+function fillResoultionSelector() {
+    $("#camResolution")
+    var mySelect = $("#camResolution")
+    $.each(resolutions, function (val, text) {
+        mySelect.append(
+                $('<option></option>').val(val).html(text)
+                );
+    });
 }

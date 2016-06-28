@@ -87,7 +87,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
         that.invite()
         .then((offer)=>{
             // console.log("offer is that: ", offer)
-            
+
             objReporter.data.connection = { // owner has that
               name    : '',
               status  : "offer",
@@ -113,12 +113,15 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 }
 
   // WEBRTC FUNCTIONS HERE
-  
+  setMediaOptions(opt) {
+    this.constraints = opt;
+  }
   // caller invites a callee
   invite(){
     var that = this;
     this.createPC();
     return new Promise((resolve, reject) => {
+      console.log('>>>>>>>>Constrains', this.constraints );
       navigator.mediaDevices.getUserMedia(this.constraints)
       .then(function(stream){
         console.log("localviodeo")

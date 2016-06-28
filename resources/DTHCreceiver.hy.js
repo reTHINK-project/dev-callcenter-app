@@ -161,6 +161,11 @@ var Receiver = function (_EventEmitter) {
       console.log('got invite');
       this.trigger('incomingcall', data);
     }
+  }, {
+    key: 'setMediaOptions',
+    value: function setMediaOptions(opt) {
+      this.constraints = opt;
+    }
 
     // calle accepted the invitation
 
@@ -178,7 +183,7 @@ var Receiver = function (_EventEmitter) {
         console.log("offer was't set in the invitation - data: ", data);
         return;
       }
-
+      console.log('>>>>>>>>Constrains', this.constraints);
       navigator.mediaDevices.getUserMedia(this.constraints).then(function (stream) {
         that.trigger('localvideo', stream);
         that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later

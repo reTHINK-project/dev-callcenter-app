@@ -217,6 +217,11 @@ var Sender = function (_EventEmitter) {
 
     // WEBRTC FUNCTIONS HERE
 
+  }, {
+    key: 'setMediaOptions',
+    value: function setMediaOptions(opt) {
+      this.constraints = opt;
+    }
     // caller invites a callee
 
   }, {
@@ -227,6 +232,7 @@ var Sender = function (_EventEmitter) {
       var that = this;
       this.createPC();
       return new Promise(function (resolve, reject) {
+        console.log('>>>>>>>>Constrains', _this3.constraints);
         navigator.mediaDevices.getUserMedia(_this3.constraints).then(function (stream) {
           console.log("localviodeo");
           document.getElementById('localVideo').srcObject = stream;
