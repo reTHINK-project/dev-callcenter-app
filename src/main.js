@@ -31,16 +31,19 @@ runtimeLoader.install().then(function() {
       $('.searchemail').on('submit',loadHyperty);
     }else{}
   });
-  $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div>'+
-    '<div><form id="settings" class="settings"><table>'+
-    '<td class="darktext">Stun-Server </td><td><input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></td><td></td>'+
-    '<td class="darktext">Turn-Server </td><td><input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></td><td></td>'+
-    '<td class="darktext">user</td><td><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></td>'+
-    '<td class="darktext">pass</td><td><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></td>'+
-    '<td class="darktext">use strict<input id="strictice" type="checkbox" value="strictice"></td>'+
-    '<td><select size="1" value="" class="darktext" id="camResolution"></select></td>'+
-    '<td><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></td>'+
-    '</table></form></div>');
+  $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div><br><div></div>'+
+    '<div><form class="form-horizontal" role="form" id="settings" class="settings">'+
+
+    '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></div>'+
+    '<label class="col-sm-1 control-label">Turn</label><div class="col-sm-4"> <input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></div>'+
+    '<label><input type="checkbox" value="">use strict</label></div>'+
+
+    '<div class="darktext form-group"><label class="col-sm-1 control-label">user</label><div class="col-sm-4"><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></div>'+
+    '<label class="col-sm-1 control-label">pass</label><div class="col-sm-4"><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></div></div>'+
+
+    '<div class="darktext form-group"><div class="col-sm-6"></div><div class="col-sm-4"><select  value="" class="darktext" id="camResolution"></select></div>'+
+    '<div class="col-sm-2"><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></div></div>'+
+    '</form></div>');
   $('#settings').on('submit',saveProfile);
   $('#settings').on('submit',toggleSettings);
   fillResoultionSelector();
