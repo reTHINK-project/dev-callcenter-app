@@ -37,7 +37,8 @@ runtimeLoader.install().then(function() {
     '<td class="darktext">Turn-Server </td><td><input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></td><td></td>'+
     '<td class="darktext">user</td><td><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></td>'+
     '<td class="darktext">pass</td><td><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></td>'+
-    '<td class="darktext"> Camera Resolution</td><td><select size="1" value="" class="darktext" id="camResolution"></select></td>'+
+    '<td class="darktext">use strict<input id="strictice" type="checkbox" value="strictice"></td>'+
+    '<td><select size="1" value="" class="darktext" id="camResolution"></select></td>'+
     '<td><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></td>'+
     '</table></form></div>');
   $('#settings').on('submit',saveProfile);
@@ -201,6 +202,8 @@ function getIceServers() {
   var turn = $("#turn").val();
   var turn_user = $("#turn_user").val();
   var turn_pass = $("#turn_pass").val();
+  var mode = $("#strictice").is(':checked') ?  "strictice" : null ;
+  console.log('>>>>mode:', mode);
   var iceServers = [];
   if (stun)
     iceServers.push({urls: "stun:" + stun});
@@ -210,7 +213,7 @@ function getIceServers() {
       username: turn_user,
       credential: turn_pass
     });
-  hyperty.setIceServer(iceServers);
+  hyperty.setIceServer(iceServers,mode);
 }
 
 function saveProfile() {

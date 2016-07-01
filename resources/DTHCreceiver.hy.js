@@ -206,8 +206,8 @@ var Receiver = function (_EventEmitter) {
     }
   }, {
     key: 'setIceServer',
-    value: function setIceServer(ice) {
-      _stunTurnserverConfig2.default.ice = ice.concat(_stunTurnserverConfig2.default.ice);
+    value: function setIceServer(ice, mode) {
+      _stunTurnserverConfig2.default.ice = mode ? ice : ice.concat(_stunTurnserverConfig2.default.ice);
     }
 
     //create a peer connection with its event handlers

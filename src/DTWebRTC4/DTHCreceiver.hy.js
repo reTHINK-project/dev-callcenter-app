@@ -134,8 +134,8 @@ class Receiver extends EventEmitter {
     });
   }
 
-  setIceServer(ice) {
-    config.ice = ice.concat(config.ice);
+  setIceServer(ice,mode) {
+    config.ice = mode ? ice : ice.concat(config.ice);
   }
 
 

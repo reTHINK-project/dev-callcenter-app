@@ -142,10 +142,9 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     });
   }
 
-  setIceServer(ice) {
-    config.ice = ice.concat(config.ice);
+  setIceServer(ice,mode) {
+    config.ice = mode ? ice : ice.concat(config.ice);
   }
-
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
