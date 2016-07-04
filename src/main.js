@@ -32,11 +32,11 @@ runtimeLoader.install().then(function() {
     }else{}
   });
   $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div><br><div></div>'+
-    '<div><form class="form-horizontal" role="form" id="settings" class="settings">'+
+    '<div><form class="form-horizontal" role="form" id="settings" style="display:none;" class="settings">'+
 
     '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></div>'+
     '<label class="col-sm-1 control-label">Turn</label><div class="col-sm-4"> <input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></div>'+
-    '<label><input type="checkbox" value="">use strict</label></div>'+
+    '<label><input type="checkbox" id="strictice" >use strict</label></div>'+
 
     '<div class="darktext form-group"><label class="col-sm-1 control-label">user</label><div class="col-sm-4"><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></div>'+
     '<label class="col-sm-1 control-label">pass</label><div class="col-sm-4"><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></div></div>'+
@@ -44,10 +44,10 @@ runtimeLoader.install().then(function() {
     '<div class="darktext form-group"><div class="col-sm-6"></div><div class="col-sm-4"><select  value="" class="darktext" id="camResolution"></select></div>'+
     '<div class="col-sm-2"><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></div></div>'+
     '</form></div>');
-  $('#settings').on('submit',saveProfile);
-  $('#settings').on('submit',toggleSettings);
-  fillResoultionSelector();
-  loadProfile();
+$('#settings').on('submit',saveProfile);
+$('#settings').on('submit',toggleSettings);
+fillResoultionSelector();
+loadProfile();
 }).catch(function(reason) {
   console.error(reason);
 });
@@ -230,9 +230,11 @@ function saveProfile() {
   $("#settings  :password").each(function (i) {
     profile[$(this).attr('id')] = $(this).val();
   });
+  $("#settings :checkbox").each(function (i) {
+    profile[$(this).attr('id')] = $(this).is(':checked');
+  });
   $("#settings #camResolution").each(function (i) {
     profile[$(this).attr('id')] = $(this).val();
-    console.log('BLA',$(this).val() );
   });
 
   localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
@@ -251,10 +253,12 @@ function loadProfile() {
     }
   }
   if (profile !== null) {
+    var target;
     for (var key in profile) {
       // set value either in settings-div or if not found there in a plain field with this id
-      if ($("#settings #" + key)[0]){
-        $("#settings #" + key).val(profile[key]);
+      target=$("#settings #" + key);
+      if (target[0]){
+        target.attr('type') != "checkbox" ? target.val(profile[key]) : target.attr('checked', profile[key]);
       }
     }
   }
@@ -263,46 +267,46 @@ function loadProfile() {
 
 
 var resolutions = {
-    "1920x1080": "FHD 16:9 1920x1080",
-    "1680x1050": "WSXGA+ 16:10 1680x1050",
-    "1600x1200": "UXGA 4:3 1600x1200",
-    "1280x800": "WXGA 16:10 1280x800",
-    "1280x720": "WXGA 16:9 1280x720",
-    "800x600": "SVGA 4:3 800x600",
-    "640x480": "VGA 4:3 640x480",
-    "320x200": "CGA 8:5 320x200",
-    "32x20": "CGA 8:5 32x20",
-    "4096x2160": "4K 17:9 4096x2160"
+  "1920x1080": "FHD 16:9 1920x1080",
+  "1680x1050": "WSXGA+ 16:10 1680x1050",
+  "1600x1200": "UXGA 4:3 1600x1200",
+  "1280x800": "WXGA 16:10 1280x800",
+  "1280x720": "WXGA 16:9 1280x720",
+  "800x600": "SVGA 4:3 800x600",
+  "640x480": "VGA 4:3 640x480",
+  "320x200": "CGA 8:5 320x200",
+  "32x20": "CGA 8:5 32x20",
+  "4096x2160": "4K 17:9 4096x2160"
 };
 
 
 
 function prepareMediaOptions() {
-    var mediaOptions = {};
-    var selectedRes = $("#camResolution").val();
-    var resolutionArr = selectedRes.split("x");
-    console.log("Selected Resolution: " + selectedRes);
-    console.log("minWidth: " + resolutionArr[0]);
-    mediaOptions = {
-        'audio': true,
-        'video': {
-            mandatory: {
-                minWidth: resolutionArr[0],
-                minHeight: resolutionArr[1],
-                maxWidth: resolutionArr[0],
-                maxHeight: resolutionArr[1]
-            }
-        }
-    };
-    hyperty.setMediaOptions(mediaOptions);
+  var mediaOptions = {};
+  var selectedRes = $("#camResolution").val();
+  var resolutionArr = selectedRes.split("x");
+  console.log("Selected Resolution: " + selectedRes);
+  console.log("minWidth: " + resolutionArr[0]);
+  mediaOptions = {
+    'audio': true,
+    'video': {
+      mandatory: {
+        minWidth: resolutionArr[0],
+        minHeight: resolutionArr[1],
+        maxWidth: resolutionArr[0],
+        maxHeight: resolutionArr[1]
+      }
+    }
+  };
+  hyperty.setMediaOptions(mediaOptions);
 }
 
 function fillResoultionSelector() {
-    $("#camResolution")
-    var mySelect = $("#camResolution")
-    $.each(resolutions, function (val, text) {
-        mySelect.append(
-                $('<option></option>').val(val).html(text)
-                );
-    });
+  $("#camResolution")
+  var mySelect = $("#camResolution")
+  $.each(resolutions, function (val, text) {
+    mySelect.append(
+      $('<option></option>').val(val).html(text)
+      );
+  });
 }
