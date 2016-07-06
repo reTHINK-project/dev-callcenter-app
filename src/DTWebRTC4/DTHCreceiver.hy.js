@@ -14,6 +14,9 @@ class Receiver extends EventEmitter {
 
     this._domain = divideURL(hypertyURL).domain;
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
+    if (config.env === 'production') {
+      this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
+    }
     this._syncher = new Syncher(hypertyURL, bus, configuration);
     this.constraints = {
       audio: true,
@@ -43,7 +46,7 @@ class Receiver extends EventEmitter {
     this._syncher.subscribe(this._objectDescURL, event.url)
     .then(function(objObserver) {
       console.info("[_onNotification] objObserver ", objObserver);
-      
+
       console.log("event.from: ", event.from);
       _this.handleInvite(objObserver.data, event.from);
       _this.changePeerInformation(objObserver);
@@ -101,7 +104,7 @@ class Receiver extends EventEmitter {
   invitationAccepted(data) {
     let that = this;
     this.createPC();
-    
+
     let offer;
     if (data.connection.ownerPeer.connectionDescription.type == "offer") {
       console.log("OFFER RECEIVED: ", data)
@@ -139,7 +142,7 @@ class Receiver extends EventEmitter {
   }
 
 
-  
+
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
@@ -196,7 +199,7 @@ class Receiver extends EventEmitter {
   }
 
 
-  //////////////////////////////////// 
+  ////////////////////////////////////
 
   // HypertyConnector functions
   changePeerInformation(dataObjectObserver) {
@@ -254,5 +257,3 @@ export default function activate(hypertyURL, bus, configuration) {
     instance: new Receiver(hypertyURL, bus, configuration)
   };
 }
-
-

@@ -16,12 +16,15 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     this._domain = divideURL(hypertyURL).domain;
     this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
+    if (config.env === 'production') {
+      this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
+    }
     this._syncher = new Syncher(hypertyURL, bus, configuration);
     this.hypertyDiscovery = new HypertyDiscovery(hypertyURL, bus);
 
     this.identityManager = new IdentityManager(hypertyURL, configuration.runtimeURL , bus);
 
-    
+
     this.constraints = {
       audio: true,
       video: true
@@ -63,7 +66,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     this._syncher.subscribe(this._objectDescURL, event.url)
     .then(function(objObserver) {
       // console.info("[_onNotification] objObserver ", objObserver);
-      
+
       console.log("event.from: ", event.from);
       _this.objObserver = objObserver;
       _this.changePeerInformation(objObserver);
@@ -109,7 +112,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
         console.error(reason);
         reject(reason);
       });
-    }); 
+    });
 }
 
   // WEBRTC FUNCTIONS HERE
@@ -220,7 +223,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }, 5);
   }
 
-  //////////////////////////////////// 
+  ////////////////////////////////////
 
   // HypertyConnector functions
   changePeerInformation(dataObjectObserver) {
@@ -262,7 +265,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       .catch((e)=>{
         console.log("remote error: ", e)
       });
-      
+
     }
 
     if (data.candidate || data.type == 'candidate') {
@@ -272,7 +275,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       } else {
         _this.remoteIceBuffer.push(data);
       }
-      
+
     }
   }
 
