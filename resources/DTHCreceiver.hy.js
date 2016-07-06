@@ -52,6 +52,10 @@ var _stunTurnserverConfig = require('./stunTurnserverConfig');
 
 var _stunTurnserverConfig2 = _interopRequireDefault(_stunTurnserverConfig);
 
+var _IdentityManager = require('../IdentityManager');
+
+var _IdentityManager2 = _interopRequireDefault(_IdentityManager);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -161,6 +165,9 @@ var Receiver = function (_EventEmitter) {
       console.log('got invite');
       this.trigger('incomingcall', data);
     }
+
+    //set Options for Media the partner get
+
   }, {
     key: 'setMediaOptions',
     value: function setMediaOptions(opt) {
@@ -183,7 +190,7 @@ var Receiver = function (_EventEmitter) {
         console.log("offer was't set in the invitation - data: ", data);
         return;
       }
-      console.log('>>>>>>>>Constrains', this.constraints);
+      console.log('>>>Constrains', this.constraints);
       navigator.mediaDevices.getUserMedia(this.constraints).then(function (stream) {
         that.trigger('localvideo', stream);
         that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
@@ -204,6 +211,9 @@ var Receiver = function (_EventEmitter) {
         });
       });
     }
+
+    // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
+
   }, {
     key: 'setIceServer',
     value: function setIceServer(ice, mode) {
@@ -216,7 +226,6 @@ var Receiver = function (_EventEmitter) {
     key: 'createPC',
     value: function createPC() {
       var _this = this;
-      console.info('DDDDDDDDDDDDDDAAAAAAAAAA', _stunTurnserverConfig2.default);
       this.pc = new RTCPeerConnection({ 'iceServers': _stunTurnserverConfig2.default.ice });
 
       //event handler when a remote stream is added to the peer connection
@@ -330,7 +339,7 @@ var Receiver = function (_EventEmitter) {
     value: function showidentity(url) {
       var _this = this;
       var syncher = _this._syncher;
-      console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%', this.identityManager, "\n 0000000000000000000000000", this.identityManager.discoverUserRegistered(url));
+      console.log('>>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
     }
   }]);
 
@@ -345,7 +354,7 @@ function activate(hypertyURL, bus, configuration) {
 }
 module.exports = exports['default'];
 
-},{"../utils/EventEmitter":4,"../utils/utils":5,"./stunTurnserverConfig":3,"service-framework/dist/Syncher":1}],3:[function(require,module,exports){
+},{"../IdentityManager":4,"../utils/EventEmitter":5,"../utils/utils":6,"./stunTurnserverConfig":3,"service-framework/dist/Syncher":1}],3:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -404,6 +413,113 @@ exports.default = config;
 module.exports = exports['default'];
 
 },{}],4:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 PT Inovação e Sistemas SA
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 INESC-ID
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 QUOBIS NETWORKS SL
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 FRAUNHOFER-GESELLSCHAFT ZUR FOERDERUNG DER ANGEWANDTEN FORSCHUNG E.V
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 ORANGE SA
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 Deutsche Telekom AG
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 Apizee
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Copyright 2016 TECHNISCHE UNIVERSITAT BERLIN
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Licensed under the Apache License, Version 2.0 (the "License");
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * you may not use this file except in compliance with the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * You may obtain a copy of the License at
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     *   http://www.apache.org/licenses/LICENSE-2.0
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     *
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * Unless required by applicable law or agreed to in writing, software
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * distributed under the License is distributed on an "AS IS" BASIS,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * See the License for the specific language governing permissions and
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     * limitations under the License.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     **/
+
+
+var _utils = require('./utils/utils');
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/**
+* Core IdentityManager interface
+* Class to allow applications to search for Identities registered in runtime-core
+*/
+
+var IdentityManager = function () {
+
+  /**
+  * To initialise the IdentityManager, which will provide the support for hyperties to
+  * query about identities registered
+  * @param  {String}          hypertyURL            hypertyURL
+  * @param  {String}          runtimeURL            runtimeURL
+  * @param  {MessageBus}          msgbus                msgbus
+  */
+
+  function IdentityManager(hypertyURL, runtimeURL, msgBus) {
+    _classCallCheck(this, IdentityManager);
+
+    var _this = this;
+    _this.messageBus = msgBus;
+
+    _this.domain = (0, _utils.divideURL)(hypertyURL).domain;
+    _this.hypertyURL = hypertyURL;
+    _this.runtimeURL = runtimeURL;
+  }
+
+  /**
+  * Function to query the runtime registry about the identity to which the hyperty was associated
+  * @param {String}       hypertyURL   (Optional)
+  * @return {Promise}     userURL       userURL associated to the hyperty
+  */
+
+
+  _createClass(IdentityManager, [{
+    key: 'discoverUserRegistered',
+    value: function discoverUserRegistered(hypertyURL) {
+      var _this = this;
+      var activeDomain = void 0;
+      var activeHypertyURL = void 0;
+
+      if (!hypertyURL) {
+        activeHypertyURL = _this.hypertyURL;
+      } else {
+        activeHypertyURL = hypertyURL;
+      }
+
+      var msg = {
+        type: 'read', from: activeHypertyURL, to: _this.runtimeURL + '/registry/', body: { resource: '.', criteria: activeHypertyURL }
+      };
+
+      return new Promise(function (resolve, reject) {
+
+        _this.messageBus.postMessage(msg, function (reply) {
+
+          var userURL = reply.body.resource;
+
+          if (userURL) {
+            resolve(userURL);
+          } else {
+            reject('No user was not found');
+          }
+        });
+      });
+    }
+  }]);
+
+  return IdentityManager;
+}();
+
+exports.default = IdentityManager;
+module.exports = exports['default'];
+
+},{"./utils/utils":6}],5:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -484,7 +600,7 @@ var EventEmitter = function () {
 exports.default = EventEmitter;
 module.exports = exports['default'];
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {

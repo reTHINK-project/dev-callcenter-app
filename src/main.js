@@ -17,7 +17,6 @@ runtimeLoader.install().then(function() {
 }).then(function(hyperties) {
   let $dropDown = $('#navbar');
 
-
   hyperties.forEach(function(key) {
     if(key == "DTHCreceiver"){
       loadHyperty(0,key);
@@ -33,14 +32,11 @@ runtimeLoader.install().then(function() {
   });
   $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div><br><div></div>'+
     '<div><form class="form-horizontal" role="form" id="settings" style="display:none;" class="settings">'+
-
     '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></div>'+
     '<label class="col-sm-1 control-label">Turn</label><div class="col-sm-4"> <input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></div>'+
     '<label><input type="checkbox" id="strictice" >use strict</label></div>'+
-
     '<div class="darktext form-group"><label class="col-sm-1 control-label">user</label><div class="col-sm-4"><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></div>'+
     '<label class="col-sm-1 control-label">pass</label><div class="col-sm-4"><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></div></div>'+
-
     '<div class="darktext form-group"><div class="col-sm-6"></div><div class="col-sm-4"><select  value="" class="darktext" id="camResolution"></select></div>'+
     '<div class="col-sm-2"><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></div></div>'+
     '</form></div>');
@@ -206,7 +202,7 @@ function getIceServers() {
   var turn_user = $("#turn_user").val();
   var turn_pass = $("#turn_pass").val();
   var mode = $("#strictice").is(':checked') ?  "strictice" : null ;
-  console.log('>>>>mode:', mode);
+  console.log('>>>mode:', mode);
   var iceServers = [];
   if (stun)
     iceServers.push({urls: "stun:" + stun});
@@ -255,7 +251,6 @@ function loadProfile() {
   if (profile !== null) {
     var target;
     for (var key in profile) {
-      // set value either in settings-div or if not found there in a plain field with this id
       target=$("#settings #" + key);
       if (target[0]){
         target.attr('type') != "checkbox" ? target.val(profile[key]) : target.attr('checked', profile[key]);
@@ -263,8 +258,6 @@ function loadProfile() {
     }
   }
 }
-
-
 
 var resolutions = {
   "1920x1080": "FHD 16:9 1920x1080",
@@ -278,8 +271,6 @@ var resolutions = {
   "32x20": "CGA 8:5 32x20",
   "4096x2160": "4K 17:9 4096x2160"
 };
-
-
 
 function prepareMediaOptions() {
   var mediaOptions = {};

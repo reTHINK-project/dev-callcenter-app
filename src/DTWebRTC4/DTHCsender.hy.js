@@ -45,12 +45,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     });
   }
 
-  showidentity(url){
-    let _this = this;
-    let syncher = _this._syncher;
-    console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',this.identityManager,
-      "\n 0000000000000000000000000",this.identityManager.discoverUserRegistered(url));
-  }
+  
 
   // reveicing starts here
   _onNotification(event) {
@@ -121,7 +116,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     var that = this;
     this.createPC();
     return new Promise((resolve, reject) => {
-      console.log('>>>>>>>>Constrains', this.constraints );
+      console.log('>>>Constrains', this.constraints );
       navigator.mediaDevices.getUserMedia(this.constraints)
       .then(function(stream){
         console.log("localviodeo")
@@ -141,14 +136,14 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       });
     });
   }
-
+  // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
   setIceServer(ice,mode) {
     config.ice = mode ? ice : ice.concat(config.ice);
   }
+  
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
-    console.info('DDDDDDDDDDDDDDAAAAAAAAAA', config);
     this.pc = new RTCPeerConnection({'iceServers': config.ice});
 
     //event handler for when remote stream is added to peer connection
@@ -191,7 +186,6 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     setTimeout(function() {
       if (that.iceBuffer.length>0) {
         console.log("iceBuffer[0]: ", that.iceBuffer[0]);
-        // if (that.iceBuffer[0]) that.iceBuffer[0].type = 'candidate';
         that.sendIceCandidate(that.iceBuffer[0]);
         that.iceBuffer.splice(0, 1);
         that.rek(that);
@@ -276,6 +270,11 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     }
   }
 
+   showidentity(url){
+    let _this = this;
+    let syncher = _this._syncher;
+    console.log('>>>Identity',this.identityManager,"\n",this.identityManager.discoverUserRegistered(url));
+  }
 }
 
 export default function activate(hypertyURL, bus, configuration) {

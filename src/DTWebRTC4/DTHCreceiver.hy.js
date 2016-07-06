@@ -2,7 +2,8 @@
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter';
-import config from  './stunTurnserverConfig'
+import config from  './stunTurnserverConfig';
+import IdentityManager from '../IdentityManager';
 
 class Receiver extends EventEmitter {
 
@@ -93,6 +94,7 @@ class Receiver extends EventEmitter {
     this.trigger('incomingcall', data);
   }
 
+  //set Options for Media the partner get
   setMediaOptions(opt) {
     this.constraints = opt;
   }
@@ -110,7 +112,7 @@ class Receiver extends EventEmitter {
       console.log("offer was't set in the invitation - data: ", data);
       return;
     }
-    console.log('>>>>>>>>Constrains', this.constraints );
+    console.log('>>>Constrains', this.constraints );
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
       that.trigger('localvideo', stream);
@@ -134,16 +136,14 @@ class Receiver extends EventEmitter {
     });
   }
 
+  // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
   setIceServer(ice,mode) {
     config.ice = mode ? ice : ice.concat(config.ice);
   }
 
-
-  
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
-    console.info('DDDDDDDDDDDDDDAAAAAAAAAA', config);
     this.pc = new RTCPeerConnection({'iceServers': config.ice});
 
     //event handler when a remote stream is added to the peer connection
@@ -242,10 +242,8 @@ class Receiver extends EventEmitter {
   showidentity(url){
     let _this = this;
     let syncher = _this._syncher;
-    console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%',this.identityManager,
-      "\n 0000000000000000000000000",this.identityManager.discoverUserRegistered(url));
+    console.log('>>>Identity',this.identityManager,"\n",this.identityManager.discoverUserRegistered(url));
   }
-
 }
 
 export default function activate(hypertyURL, bus, configuration) {

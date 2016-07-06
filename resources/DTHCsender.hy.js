@@ -146,17 +146,10 @@ var Sender = function (_EventEmitter) {
     return _this2;
   }
 
+  // reveicing starts here
+
+
   _createClass(Sender, [{
-    key: 'showidentity',
-    value: function showidentity(url) {
-      var _this = this;
-      var syncher = _this._syncher;
-      console.log('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%', this.identityManager, "\n 0000000000000000000000000", this.identityManager.discoverUserRegistered(url));
-    }
-
-    // reveicing starts here
-
-  }, {
     key: '_onNotification',
     value: function _onNotification(event) {
       var _this = this;
@@ -232,7 +225,7 @@ var Sender = function (_EventEmitter) {
       var that = this;
       this.createPC();
       return new Promise(function (resolve, reject) {
-        console.log('>>>>>>>>Constrains', _this3.constraints);
+        console.log('>>>Constrains', _this3.constraints);
         navigator.mediaDevices.getUserMedia(_this3.constraints).then(function (stream) {
           console.log("localviodeo");
           document.getElementById('localVideo').srcObject = stream;
@@ -249,18 +242,20 @@ var Sender = function (_EventEmitter) {
         });
       });
     }
+    // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
+
   }, {
     key: 'setIceServer',
     value: function setIceServer(ice, mode) {
       _stunTurnserverConfig2.default.ice = mode ? ice : ice.concat(_stunTurnserverConfig2.default.ice);
     }
+
     //create a peer connection with its event handlers
 
   }, {
     key: 'createPC',
     value: function createPC() {
       var _this = this;
-      console.info('DDDDDDDDDDDDDDAAAAAAAAAA', _stunTurnserverConfig2.default);
       this.pc = new RTCPeerConnection({ 'iceServers': _stunTurnserverConfig2.default.ice });
 
       //event handler for when remote stream is added to peer connection
@@ -314,7 +309,6 @@ var Sender = function (_EventEmitter) {
       setTimeout(function () {
         if (that.iceBuffer.length > 0) {
           console.log("iceBuffer[0]: ", that.iceBuffer[0]);
-          // if (that.iceBuffer[0]) that.iceBuffer[0].type = 'candidate';
           that.sendIceCandidate(that.iceBuffer[0]);
           that.iceBuffer.splice(0, 1);
           that.rek(that);
@@ -401,6 +395,13 @@ var Sender = function (_EventEmitter) {
           _this.remoteIceBuffer.push(data);
         }
       }
+    }
+  }, {
+    key: 'showidentity',
+    value: function showidentity(url) {
+      var _this = this;
+      var syncher = _this._syncher;
+      console.log('>>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
     }
   }]);
 
