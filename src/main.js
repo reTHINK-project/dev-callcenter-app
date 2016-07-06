@@ -54,9 +54,9 @@ loadProfile();
 
 function getListOfHyperties(domain) {
 
-  let hypertiesURL = 'https://' + domain + '/.well-known/hyperty/Hyperties.json';
-  if (config.env === 'production') {
-    hypertiesURL = 'https://catalogue.' + domain + '/.well-known/hyperty/';
+  let hypertiesURL = 'https://catalogue.' + domain + '/.well-known/hyperty/';
+  if (config.env === 'development') {
+    hypertiesURL = 'https://' + domain + '/.well-known/hyperty/Hyperties.json';
   }
 
   return new Promise(function(resolve, reject) {
@@ -88,9 +88,9 @@ function loadHyperty(event,key) {
   }else{
     hypertyName = key;
   }
-  let hypertyPath = 'hyperty-catalogue://' + domain + '/.well-known/hyperties/' + hypertyName;
-  if (config.env === 'production') {
-    hypertyPath = 'hyperty-catalogue://catalogue.' + domain + '/.well-known/hyperty/' + hypertyName;
+  let hypertyPath = 'hyperty-catalogue://catalogue.' + domain + '/.well-known/hyperty/' + hypertyName;
+  if (config.env === 'development') {
+    hypertyPath = 'hyperty-catalogue://' + domain + '/.well-known/hyperties/' + hypertyName;
   }
   runtimeLoader.requireHyperty(hypertyPath).then(hypertyLoaded).catch(hypertyFail);
 }

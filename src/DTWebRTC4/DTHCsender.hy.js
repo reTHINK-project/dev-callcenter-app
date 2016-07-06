@@ -15,9 +15,9 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
     super(); // call event emitter constructor to be able to receive things
 
     this._domain = divideURL(hypertyURL).domain;
-    this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
-    if (config.env === 'production') {
-      this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
+    this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
+    if (config.env === 'development') {
+      this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     }
     this._syncher = new Syncher(hypertyURL, bus, configuration);
     this.hypertyDiscovery = new HypertyDiscovery(hypertyURL, bus);
