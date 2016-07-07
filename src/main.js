@@ -22,9 +22,9 @@ runtimeLoader.install().then(function() {
       loadHyperty(0,key);
     }else if(key == "DTHCsender"){
 
-      $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+ 
+      $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+
         '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
-        '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+ 
+        '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+
         '<button type="submit" style="float: left"  class="btn btn-default btn-sm">Search</button>'+
         '</form></div>');
       $('.searchemail').on('submit',loadHyperty);
@@ -50,9 +50,9 @@ loadProfile();
 
 function getListOfHyperties(domain) {
 
-  let hypertiesURL = 'https://' + domain + '/.well-known/hyperty/Hyperties.json';
-  if (config.env === 'production') {
-    hypertiesURL = 'https://' + domain + '/.well-known/hyperty/';
+  let hypertiesURL = 'https://catalogue.' + domain + '/.well-known/hyperty/';
+  if (config.development) {
+    hypertiesURL = 'https://' + domain + '/.well-known/hyperty/Hyperties.json';
   }
 
   return new Promise(function(resolve, reject) {
@@ -84,7 +84,10 @@ function loadHyperty(event,key) {
   }else{
     hypertyName = key;
   }
-  let hypertyPath = 'hyperty-catalogue://' + domain + '/.well-known/hyperties/' + hypertyName;
+  let hypertyPath = 'hyperty-catalogue://catalogue.' + domain + '/.well-known/hyperty/' + hypertyName;
+  if (config.development) {
+    hypertyPath = 'hyperty-catalogue://' + domain + '/.well-known/hyperties/' + hypertyName;
+  }
   runtimeLoader.requireHyperty(hypertyPath).then(hypertyLoaded).catch(hypertyFail);
 }
 
@@ -163,7 +166,7 @@ function initListeners() {
     if (!confirm('Incoming call. Answer?')) return false;
     hyperty.invitationAccepted(data);
   });
-  
+
   hyperty.addEventListener('localvideo', function(stream) {
     console.log('local stream received');
     document.getElementById('localVideo').srcObject = stream;

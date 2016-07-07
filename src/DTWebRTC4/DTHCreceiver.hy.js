@@ -2,7 +2,8 @@
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter';
-import config from  './stunTurnserverConfig';
+import iceconfig from  './stunTurnserverConfig';
+import config from '../../config.json';
 import IdentityManager from '../IdentityManager';
 
 class Receiver extends EventEmitter {
@@ -14,7 +15,10 @@ class Receiver extends EventEmitter {
     super();
 
     this._domain = divideURL(hypertyURL).domain;
-    this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
+    this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
+    if (config.development) {
+      this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
+    }
     this._syncher = new Syncher(hypertyURL, bus, configuration);
     this.constraints = {
       audio: true,
@@ -44,7 +48,7 @@ class Receiver extends EventEmitter {
     this._syncher.subscribe(this._objectDescURL, event.url)
     .then(function(objObserver) {
       console.info("[_onNotification] objObserver ", objObserver);
-      
+
       console.log("event.from: ", event.from);
       _this.handleInvite(objObserver.data, event.from);
       _this.changePeerInformation(objObserver);
@@ -103,7 +107,7 @@ class Receiver extends EventEmitter {
   invitationAccepted(data) {
     let that = this;
     this.createPC();
-    
+
     let offer;
     if (data.connection.ownerPeer.connectionDescription.type == "offer") {
       console.log("OFFER RECEIVED: ", data)
@@ -138,13 +142,13 @@ class Receiver extends EventEmitter {
 
   // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
   setIceServer(ice,mode) {
-    config.ice = mode ? ice : ice.concat(config.ice);
+    iceconfig.ice = mode ? ice : ice.concat(iceconfig.ice);
   }
 
   //create a peer connection with its event handlers
   createPC() {
     var _this = this;
-    this.pc = new RTCPeerConnection({'iceServers': config.ice});
+    this.pc = new RTCPeerConnection({'iceServers': iceconfig.ice});
 
     //event handler when a remote stream is added to the peer connection
     this.pc.onaddstream = function(obj){
@@ -196,7 +200,7 @@ class Receiver extends EventEmitter {
   }
 
 
-  //////////////////////////////////// 
+  ////////////////////////////////////
 
   // HypertyConnector functions
   changePeerInformation(dataObjectObserver) {
@@ -252,5 +256,3 @@ export default function activate(hypertyURL, bus, configuration) {
     instance: new Receiver(hypertyURL, bus, configuration)
   };
 }
-
-
