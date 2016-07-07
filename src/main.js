@@ -18,16 +18,17 @@ runtimeLoader.install().then(function() {
   let $dropDown = $('#navbar');
 
   hyperties.forEach(function(key) {
-    if(key == "DTHCreceiver"){
+    // if(key == "DTHCreceiver"){
+    //   loadHyperty(0,key);
+    // }else 
+    if(key == "DTHCsender"){
       loadHyperty(0,key);
-    }else if(key == "DTHCsender"){
-
       $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+
         '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
         '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+
         '<button type="submit" style="float: left"  class="btn btn-default btn-sm">Search</button>'+
         '</form></div>');
-      $('.searchemail').on('submit',loadHyperty);
+      $('.searchemail').on('submit',discoverEmail);
     }else{}
   });
   $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div><br><div></div>'+
@@ -107,13 +108,13 @@ function hypertyLoaded(result) {
   initListeners();
   $.getScript("../src/adapter.js");
   hyperty.myUrl = result.runtimeHypertyURL;
-  if(result.name == "SenderDTWebRTC"){
-    // Prepare to discover email:
-    hypertyDiscovery = result.instance.hypertyDiscovery;
-    discoverEmail(0);
-    $('.searchemail').off('submit').on('submit',discoverEmail);
-    // hyperty.showidentity();
-  }
+  // if(result.name == "SenderDTWebRTC"){
+  //   // Prepare to discover email:
+     hypertyDiscovery = result.instance.hypertyDiscovery;
+  //   discoverEmail(0);
+  //   $('.searchemail').off('submit').on('submit',discoverEmail);
+  //   // hyperty.showidentity();
+  // }
 }
 
 function addContent() {
@@ -164,6 +165,7 @@ function initListeners() {
   hyperty.addEventListener('incomingcall', function(data) {
     console.log('incomingcall received');
     if (!confirm('Incoming call. Answer?')) return false;
+    console.log('>>>data', data);
     hyperty.invitationAccepted(data);
   });
 

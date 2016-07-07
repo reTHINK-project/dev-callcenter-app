@@ -63,7 +63,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       console.info("[_onNotification] objObserver ", objObserver);
 
       console.log("event.from: ", event.from);
-      that.sender ? that.objObserver = objObserver : that.handleInvite(objObserver.data, event.from);
+      if(that.sender){ that.objObserver = objObserver }else{ that.handleInvite(objObserver.data, event.from);}
       that.changePeerInformation(objObserver);
 
       objObserver.onChange('connectionDescription', function(event) {
@@ -143,7 +143,8 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
       navigator.mediaDevices.getUserMedia(this.constraints)
       .then(function(stream){
         console.log("localviodeo")
-        document.getElementById('localVideo').srcObject = stream;
+        that.trigger('localvideo', stream);
+        //document.getElementById('localVideo').srcObject = stream;
         that.pc.addStream(stream);
         that.pc.createOffer(that.receivingConstraints)
         .then(function(offer){
@@ -189,7 +190,7 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
               that.objReporter = objReporter;
               that.objReporter.data.peer.connectionDescription = answer;
               that.ice = true;
-              that.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe
+              that.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe####################
             });
           });
         });
@@ -233,7 +234,8 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
   // send ice candidates to the remote hyperty
   sendIceCandidate (c) {
     console.log("this.objReporter.data: ", this.objReporter.data);
-    this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
+    if(this.sender){this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);}
+    else{this.objReporter.data.peer.iceCandidates.push(c);}
   }
 
   //send all ICE candidates from buffer to callee
@@ -297,7 +299,17 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     dataObjectObserver.onChange('*', function(event) {
       console.info('Observer on change message: ', event);
-      that.processPeerInformation(event.data); // this does the trick when ice candidates are trickling ;)
+      
+      // this event also includes the answer from the callee so we need to
+      // process the answer from event.data and the candidates which might trickle
+      // from event.data[0]
+      if(event.data[0]){ // [0] this does the trick when ice candidates are trickling ;)
+        console.log('>>event.data[0]', event.data[0]);
+        that.processPeerInformation(event.data[0]);
+      }else{
+        console.log('>>event.data', event.data);
+        that.processPeerInformation(event.data);
+      }
     });
   }
 
@@ -322,14 +334,13 @@ class Sender extends EventEmitter{ // extends EventEmitter because we need to re
 
     }
 
-    if (data.candidate || data.type == 'candidate') {
+    if (data.candidate) {
       if (!that.sender || that.remoteIce) {
         console.info('Process Ice Candidate: ', data);
         that.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}));
       } else {
         that.remoteIceBuffer.push(data);
       }
-
     }
   }
 

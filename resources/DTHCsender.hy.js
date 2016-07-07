@@ -122,40 +122,40 @@ var Sender = function (_EventEmitter) {
     if (!configuration) throw new Error('The configuration is a needed parameter');
     // call event emitter constructor to be able to receive things
 
-    var _this2 = _possibleConstructorReturn(this, Object.getPrototypeOf(Sender).call(this));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Sender).call(this));
 
-    _this2._domain = (0, _utils.divideURL)(hypertyURL).domain;
-    _this2._objectDescURL = 'hyperty-catalogue://catalogue.' + _this2._domain + '/.well-known/dataschema/Connection';
+    _this._domain = (0, _utils.divideURL)(hypertyURL).domain;
+    _this._objectDescURL = 'hyperty-catalogue://catalogue.' + _this._domain + '/.well-known/dataschema/Connection';
     if (_config2.default.development) {
-      _this2._objectDescURL = 'hyperty-catalogue://' + _this2._domain + '/.well-known/dataschemas/FakeDataSchema';
+      _this._objectDescURL = 'hyperty-catalogue://' + _this._domain + '/.well-known/dataschemas/FakeDataSchema';
     }
-    _this2._syncher = new _Syncher.Syncher(hypertyURL, bus, configuration);
-    _this2.hypertyDiscovery = new _HypertyDiscovery2.default(hypertyURL, bus);
+    _this._syncher = new _Syncher.Syncher(hypertyURL, bus, configuration);
+    _this.hypertyDiscovery = new _HypertyDiscovery2.default(hypertyURL, bus);
+    _this.identityManager = new _IdentityManager2.default(hypertyURL, configuration.runtimeURL, bus);
 
-    _this2.identityManager = new _IdentityManager2.default(hypertyURL, configuration.runtimeURL, bus);
-
-    _this2.constraints = {
+    _this.constraints = {
       audio: true,
       video: true
     };
-    _this2.receivingConstraints = {
+    _this.receivingConstraints = {
       offerToReceiveAudio: 1,
       offerToReceiveVideo: 1
     };
-    _this2.myUrl = null; // this.me = null;
-    _this2.partner = null;
-    _this2.pc = null;
-    _this2.ice = false;
-    _this2.iceBuffer = [];
-    _this2.remoteIce = false;
-    _this2.remoteIceBuffer = [];
+    _this.sender = null; // sender == false --> I'm the receiver @ start
+    _this.myUrl = null; // runtimeurl;
+    _this.partner = null; // hypertyURL of the other hyperty
+    _this.pc = null; // the peer connection object of WebRTC
+    _this.ice = false; // if true then ice candidates will be handled
+    _this.iceBuffer = []; // the buffer for local ice candidates
+    _this.remoteIce = false;
+    _this.remoteIceBuffer = [];
 
     // receiving starts here
-    var _this = _this2;
-    _this2._syncher.onNotification(function (event) {
-      _this._onNotification(event);
+    var that = _this;
+    _this._syncher.onNotification(function (event) {
+      that._onNotification(event);
     });
-    return _this2;
+    return _this;
   }
 
   // reveicing starts here
@@ -164,18 +164,29 @@ var Sender = function (_EventEmitter) {
   _createClass(Sender, [{
     key: '_onNotification',
     value: function _onNotification(event) {
-      var _this = this;
+      var that = this;
+      if (that.sender == null) {
+        that.sender = false;
+      }
       console.info('Event Received: ', event);
       this.trigger('invitation', event.identity);
       event.ack(); // Acknowledge reporter about the Invitation was received
 
       // Subscribe to Object
       this._syncher.subscribe(this._objectDescURL, event.url).then(function (objObserver) {
-        // console.info("[_onNotification] objObserver ", objObserver);
+        console.info("[_onNotification] objObserver ", objObserver);
 
         console.log("event.from: ", event.from);
-        _this.objObserver = objObserver;
-        _this.changePeerInformation(objObserver);
+        if (that.sender) {
+          that.objObserver = objObserver;
+        } else {
+          that.handleInvite(objObserver.data, event.from);
+        }
+        that.changePeerInformation(objObserver);
+
+        objObserver.onChange('connectionDescription', function (event) {
+          console.info('connectionDescription received:', event); // Object was changed
+        });
       }).catch(function (reason) {
         console.error(reason);
       });
@@ -189,25 +200,35 @@ var Sender = function (_EventEmitter) {
       this.partner = hypertyURL;
       var that = this;
       var syncher = that._syncher;
+      if (that.sender == null) {
+        that.sender = true;
+      }
 
       return new Promise(function (resolve, reject) {
         syncher.create(that._objectDescURL, [hypertyURL], {}).then(function (objReporter) {
           console.info('1. Return Created WebRTC Object Reporter', objReporter);
           that.objReporter = objReporter;
-          that.invite().then(function (offer) {
-            // console.log("offer is that: ", offer)
-
-            objReporter.data.connection = { // owner has that
+          if (that.sender) {
+            that.invite().then(function (offer) {
+              // console.log("offer is that: ", offer)
+              objReporter.data.connection = { // owner has that
+                name: '',
+                status: "offer",
+                owner: "hyperty://example.com/alicehy",
+                peer: "connection://example.com/alice/bob27012016",
+                ownerPeer: {
+                  connectionDescription: offer,
+                  iceCandidates: []
+                }
+              };
+            });
+          } else {
+            objReporter.data.peer = {
               name: '',
-              status: "offer",
-              owner: "hyperty://example.com/alicehy",
-              peer: "connection://example.com/alice/bob27012016",
-              ownerPeer: {
-                connectionDescription: offer,
-                iceCandidates: []
-              }
+              connectionDescription: {},
+              iceCandidates: []
             };
-          });
+          }
           objReporter.onSubscription(function (event) {
             console.info('-------- Receiver received subscription request --------- \n');
             event.accept(); // all subscription requested are accepted
@@ -227,20 +248,32 @@ var Sender = function (_EventEmitter) {
     value: function setMediaOptions(opt) {
       this.constraints = opt;
     }
+
+    // callee handles incoming invite from the caller
+
+  }, {
+    key: 'handleInvite',
+    value: function handleInvite(data, partner) {
+      this.partner = partner;
+      console.log('got invite');
+      this.trigger('incomingcall', data);
+    }
+
     // caller invites a callee
 
   }, {
     key: 'invite',
     value: function invite() {
-      var _this3 = this;
+      var _this2 = this;
 
       var that = this;
       this.createPC();
       return new Promise(function (resolve, reject) {
-        console.log('>>>Constrains', _this3.constraints);
-        navigator.mediaDevices.getUserMedia(_this3.constraints).then(function (stream) {
+        console.log('>>>Constrains', _this2.constraints);
+        navigator.mediaDevices.getUserMedia(_this2.constraints).then(function (stream) {
           console.log("localviodeo");
-          document.getElementById('localVideo').srcObject = stream;
+          that.trigger('localvideo', stream);
+          //document.getElementById('localVideo').srcObject = stream;
           that.pc.addStream(stream);
           that.pc.createOffer(that.receivingConstraints).then(function (offer) {
             that.pc.setLocalDescription(new RTCSessionDescription(offer), function () {
@@ -254,6 +287,45 @@ var Sender = function (_EventEmitter) {
         });
       });
     }
+
+    // calle accepted the invitation
+
+  }, {
+    key: 'invitationAccepted',
+    value: function invitationAccepted(data) {
+      var that = this;
+      this.createPC();
+
+      var offer = void 0;
+      if (data.connection.ownerPeer.connectionDescription.type == "offer") {
+        console.log("OFFER RECEIVED: ", data);
+        offer = data.connection.ownerPeer.connectionDescription;
+      } else {
+        console.log("offer was't set in the invitation - data: ", data);
+        return;
+      }
+      console.log('>>>Constrains', this.constraints);
+      navigator.mediaDevices.getUserMedia(this.constraints).then(function (stream) {
+        that.trigger('localvideo', stream);
+        that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
+        that.pc.setRemoteDescription(new RTCSessionDescription(offer), function () {
+          that.pc.createAnswer().then(function (answer) {
+            that.pc.setLocalDescription(new RTCSessionDescription(answer), function () {
+              console.log("answer from callee: ", answer);
+              that.connect(that.partner) // connect to the other hyperty now
+              .then(function (objReporter) {
+                console.log("the objreporter is as follows: ", objReporter);
+                that.objReporter = objReporter;
+                that.objReporter.data.peer.connectionDescription = answer;
+                that.ice = true;
+                that.emptyIceBuffer(); // empty the buffer after the description has been handled to be safe####################
+              });
+            });
+          });
+        });
+      });
+    }
+
     // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
 
   }, {
@@ -267,13 +339,13 @@ var Sender = function (_EventEmitter) {
   }, {
     key: 'createPC',
     value: function createPC() {
-      var _this = this;
+      var that = this;
       this.pc = new RTCPeerConnection({ 'iceServers': _stunTurnserverConfig2.default.ice });
 
       //event handler for when remote stream is added to peer connection
       this.pc.onaddstream = function (obj) {
-        console.log('onaddstream', _this.pc);
-        document.getElementById('remoteVideo').srcObject = obj.stream;
+        console.log('onaddstream', that.pc);
+        that.trigger('remotevideo', obj.stream);
       };
 
       //event handler for when local ice candidate has been found
@@ -282,7 +354,7 @@ var Sender = function (_EventEmitter) {
         var cand = e.candidate;
         if (!cand) return;
         cand.type = 'candidate'; // for compatibility with the hyperty connector
-        if (!_this.ice) _this.addIceCandidate(cand);else _this.sendIceCandidate(cand);
+        if (!that.ice) that.addIceCandidate(cand);else that.sendIceCandidate(cand);
       };
     }
 
@@ -301,7 +373,11 @@ var Sender = function (_EventEmitter) {
     key: 'sendIceCandidate',
     value: function sendIceCandidate(c) {
       console.log("this.objReporter.data: ", this.objReporter.data);
-      this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
+      if (this.sender) {
+        this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
+      } else {
+        this.objReporter.data.peer.iceCandidates.push(c);
+      }
     }
 
     //send all ICE candidates from buffer to callee
@@ -360,59 +436,72 @@ var Sender = function (_EventEmitter) {
   }, {
     key: 'changePeerInformation',
     value: function changePeerInformation(dataObjectObserver) {
-      var _this = this;
+      var that = this;
       var data = dataObjectObserver.data;
       console.log(data);
       var peerData = data && data.connection ? data.connection.ownerPeer : data.peer;
       console.info('Peer Data:', peerData);
 
       if (peerData.hasOwnProperty('connectionDescription')) {
-        _this.processPeerInformation(peerData.connectionDescription);
+        that.processPeerInformation(peerData.connectionDescription);
       }
 
       if (peerData.hasOwnProperty('iceCandidates')) {
         peerData.iceCandidates.forEach(function (ice) {
-          _this.processPeerInformation(ice);
+          that.processPeerInformation(ice);
         });
       }
 
       dataObjectObserver.onChange('*', function (event) {
         console.info('Observer on change message: ', event);
-        _this.processPeerInformation(event.data);
+
+        // this event also includes the answer from the callee so we need to
+        // process the answer from event.data and the candidates which might trickle
+        // from event.data[0]
+        if (event.data[0]) {
+          // [0] this does the trick when ice candidates are trickling ;)
+          console.log('>>event.data[0]', event.data[0]);
+          that.processPeerInformation(event.data[0]);
+        } else {
+          console.log('>>event.data', event.data);
+          that.processPeerInformation(event.data);
+        }
       });
     }
   }, {
     key: 'processPeerInformation',
     value: function processPeerInformation(data) {
-      var _this = this;
+      var that = this;
       console.info("processPeerInformation: ", JSON.stringify(data));
 
       if (data.type === 'offer' || data.type === 'answer') {
         console.info('Process Connection Description: ', data);
-        _this.pc.setRemoteDescription(new RTCSessionDescription(data)).then(function () {
-          console.log("remote success");
-          _this.emptyIceBuffer(); // empty the buffer after the remote description has been set to avoid errors
-          _this.remoteIce = true; // any new ice candidate can be sent now without delay
-          _this.emptyRemoteIceBuffer(); // TODO: remove this as it shouldn't be needed anymore
+        that.pc.setRemoteDescription(new RTCSessionDescription(data)).then(function () {
+          if (that.sender) {
+            console.log("remote success");
+            that.emptyIceBuffer(); // empty the buffer after the remote description has been set to avoid errors
+            that.remoteIce = true; // any new ice candidate can be sent now without delay
+            that.emptyRemoteIceBuffer(); // TODO: remove this as it shouldn't be needed anymore
+          }
         }).catch(function (e) {
           console.log("remote error: ", e);
         });
       }
 
-      if (data.candidate || data.type == 'candidate') {
-        if (_this.remoteIce) {
+      if (data.candidate) {
+        if (!that.sender || that.remoteIce) {
           console.info('Process Ice Candidate: ', data);
-          _this.pc.addIceCandidate(new RTCIceCandidate({ candidate: data.candidate }));
+          that.pc.addIceCandidate(new RTCIceCandidate({ candidate: data.candidate }));
         } else {
-          _this.remoteIceBuffer.push(data);
+          that.remoteIceBuffer.push(data);
         }
       }
     }
   }, {
     key: 'showidentity',
     value: function showidentity(url) {
-      var _this = this;
-      var syncher = _this._syncher;
+      var that = this;
+      var syncher = that._syncher;
       console.log('>>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
     }
   }]);
