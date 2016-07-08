@@ -49,7 +49,7 @@ function getListOfHyperties(domain) {
         let response = [];
         if (typeof result === 'object') {
           Object.keys(result).forEach(function(key) {
-            response.push(key);
+           if(key != 'DTWebRTC'){response.push(key);}
           });
         } else if (typeof result === 'string') {
           response = JSON.parse(result);
