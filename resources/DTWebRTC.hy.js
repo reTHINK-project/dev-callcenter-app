@@ -211,15 +211,16 @@ var DTWebRTC = function (_EventEmitter) {
           if (that.sender) {
             that.invite().then(function (offer) {
               // console.log("offer is that: ", offer)
-              objReporter.data.connection = { // owner has that
+              objReporter.data.Connection = { // owner has that
                 name: '',
                 status: "offer",
                 owner: "hyperty://example.com/alicehy",
-                peer: "connection://example.com/alice/bob27012016",
-                ownerPeer: {
-                  connectionDescription: offer,
-                  iceCandidates: []
-                }
+                peer: "connection://example.com/alice/bob27012016"
+              };
+
+              objReporter.data.ownerPeer = {
+                connectionDescription: offer,
+                iceCandidates: []
               };
             });
           } else {
@@ -297,9 +298,10 @@ var DTWebRTC = function (_EventEmitter) {
       this.createPC();
 
       var offer = void 0;
-      if (data.connection.ownerPeer.connectionDescription.type == "offer") {
+      console.log('>>>data', data);
+      if (data.ownerPeer.connectionDescription.type == "offer") {
         console.log("OFFER RECEIVED: ", data);
-        offer = data.connection.ownerPeer.connectionDescription;
+        offer = data.ownerPeer.connectionDescription;
       } else {
         console.log("offer was't set in the invitation - data: ", data);
         return;
@@ -374,7 +376,7 @@ var DTWebRTC = function (_EventEmitter) {
     value: function sendIceCandidate(c) {
       console.log("this.objReporter.data: ", this.objReporter.data);
       if (this.sender) {
-        this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);
+        this.objReporter.data.ownerPeer.iceCandidates.push(c);
       } else {
         this.objReporter.data.peer.iceCandidates.push(c);
       }
@@ -439,7 +441,7 @@ var DTWebRTC = function (_EventEmitter) {
       var that = this;
       var data = dataObjectObserver.data;
       console.log(data);
-      var peerData = data && data.connection ? data.connection.ownerPeer : data.peer;
+      var peerData = data && data.Connection ? data.ownerPeer : data.peer;
       console.info('Peer Data:', peerData);
 
       if (peerData.hasOwnProperty('connectionDescription')) {

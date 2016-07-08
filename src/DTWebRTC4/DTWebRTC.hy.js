@@ -91,16 +91,17 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
           that.invite()
           .then((offer)=>{
               // console.log("offer is that: ", offer)
-            objReporter.data.connection = { // owner has that
+            objReporter.data.Connection = { // owner has that
               name    : '',
               status  : "offer",
               owner   : "hyperty://example.com/alicehy",
-              peer    : "connection://example.com/alice/bob27012016",
-              ownerPeer : {
+              peer    : "connection://example.com/alice/bob27012016"
+            };
+
+            objReporter.data.ownerPeer = {
                 connectionDescription: offer,
                 iceCandidates: []
-              }
-            };
+              };
           });
         }else{
           objReporter.data.peer = {
@@ -167,9 +168,10 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     this.createPC();
 
     let offer;
-    if (data.connection.ownerPeer.connectionDescription.type == "offer") {
+    console.log('>>>data', data);
+    if (data.ownerPeer.connectionDescription.type == "offer") {
       console.log("OFFER RECEIVED: ", data)
-      offer = data.connection.ownerPeer.connectionDescription;
+      offer = data.ownerPeer.connectionDescription;
     } else {
       console.log("offer was't set in the invitation - data: ", data);
       return;
@@ -234,7 +236,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
   // send ice candidates to the remote hyperty
   sendIceCandidate (c) {
     console.log("this.objReporter.data: ", this.objReporter.data);
-    if(this.sender){this.objReporter.data.connection.ownerPeer.iceCandidates.push(c);}
+    if(this.sender){this.objReporter.data.ownerPeer.iceCandidates.push(c);}
     else{this.objReporter.data.peer.iceCandidates.push(c);}
   }
 
@@ -284,7 +286,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     let that = this;
     let data = dataObjectObserver.data;
     console.log(data);
-    let peerData = data && data.connection ? data.connection.ownerPeer : data.peer;
+    let peerData = data && data.Connection ? data.ownerPeer : data.peer;
     console.info('Peer Data:', peerData);
 
     if (peerData.hasOwnProperty('connectionDescription')) {
