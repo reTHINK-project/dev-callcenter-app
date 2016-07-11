@@ -230,7 +230,8 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
   // save one ICE candidate to the buffer
   addIceCandidate(c){
     // if (!c.type) c.type = 'candidate';
-    this.iceBuffer.push(c);
+    console.log('>>>addICE');
+    if(this.pc && this.pc.signalingState != "closed"){this.iceBuffer.push(c);}
   }
 
   // send ice candidates to the remote hyperty
@@ -351,7 +352,19 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     let syncher = that._syncher;
     console.log('>>>Identity',this.identityManager,"\n",this.identityManager.discoverUserRegistered(url));
   }
+
+  disconnect() {
+    let that = this;
+      try {
+        that.pc.close();
+      } catch (e) {
+        console.log('>>>disconnect', e);
+      }
+    console.log('>>>pc',that.pc)
+  }
 }
+
+
 
 export default function activate(hypertyURL, bus, configuration) {
   return {

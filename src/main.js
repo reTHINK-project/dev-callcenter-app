@@ -104,7 +104,7 @@ var hyperty;
 function hypertyLoaded(result) {
   hyperty = result.instance;
   addContent();
-  $('.hyperty-panel').append('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
+  $('.hyperty-panel').html('<p>Hyperty Observer URL:<br>' + result.runtimeHypertyURL + '</p>');
   initListeners();
   $.getScript("../src/adapter.js");
   hyperty.myUrl = result.runtimeHypertyURL;
@@ -119,17 +119,16 @@ function hypertyLoaded(result) {
 
 function addContent() {
   var place = document.getElementById("box1");
-  $(place).empty();
-  $(place).append('<div class="selection-panel"></div>'+
+  $(place).html(
     '<div class="hyperty-panel"></div>'+
-    '<div class="my-panel"></div>'+
     '<div class="send-panel"></div>'+
     '<div class="invitation-panel"></div>'+
-    '<div id="smth"></div>'+
-    '<div id="smth2">'+
-    '<video id="remoteVideo" class="block7 hide" autoplay  poster="web/media/load3.gif"></video>'+
-    '<video id="localVideo" class="block3 hide" autoplay  poster="web/media/load3.gif"></video>'+
+    '<div id="video"class="hide">'+
+      '<video id="remoteVideo" class="block7 " autoplay poster="web/media/load3.gif" ></video>'+
+      '<video id="localVideo" class="block3 " autoplay poster="web/media/load3.gif" ></video>'+
+      '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>'+
     '</div>');
+  
 }
 
 function webrtcconnectToHyperty(event) {
@@ -137,28 +136,34 @@ function webrtcconnectToHyperty(event) {
   saveProfile();
   getIceServers();
   prepareMediaOptions();
-  let toHypertyForm = $(event.currentTarget);
-  let toHyperty = toHypertyForm.find('.webrtc-hyperty-input').val();
-  toHypertyForm.append('<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center>');
+  let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
+  $('.invitation-panel').html('<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>');
   console.log(toHyperty);
-
+  $('.send-panel').addClass('hide');
   hyperty.connect(toHyperty)
   .then(function(obj) {
     console.log('Webrtc obj: ', obj);
-    $('.send-panel').addClass('hide');
-    $('#smth2').find('.hide').removeClass('hide');
+    $('#hangup').on('click',hangup);
   })
   .catch(function(reason) {
     console.error(reason);
   });
 }
 
+function hangup (){
+  $('.send-panel').removeClass('hide');
+  $('.webrtcconnect').empty();
+  $('.invitation-panel').empty();
+  $('#video').addClass('hide');
+
+  hyperty.disconnect();
+}
+
 // receiving code here
 function initListeners() {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
-    $('.invitation-panel').append(`<p> Invitation received from:\n ` + identity.email +  '</p>');
-    $('#smth2').find('.hide').removeClass('hide');
+    $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email +  '</p>');
     prepareMediaOptions();
   });
 
@@ -177,6 +182,7 @@ function initListeners() {
   hyperty.addEventListener('remotevideo', function(stream) {
     console.log('remotevideo received');
     document.getElementById('remoteVideo').srcObject = stream;
+    $('#video').removeClass('hide');
   });
 }
 
@@ -187,8 +193,7 @@ function discoverEmail(event) {
   var domain = $('.searchemail').find('.friend-domain').val();
   hypertyDiscovery.discoverHypertyPerUser(email, domain)
   .then(function (result) {
-    $('.send-panel').empty();
-    $('.send-panel').append('<br><form class="webrtcconnect">' +
+    $('.send-panel').html('<br><form class="webrtcconnect">' +
       '<input type="text" class="webrtc-hyperty-input form-control ">' +
       '<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>'+
       '</form><br>');

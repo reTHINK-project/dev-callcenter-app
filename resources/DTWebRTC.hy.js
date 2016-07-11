@@ -366,7 +366,10 @@ var DTWebRTC = function (_EventEmitter) {
     key: 'addIceCandidate',
     value: function addIceCandidate(c) {
       // if (!c.type) c.type = 'candidate';
-      this.iceBuffer.push(c);
+      console.log('>>>addICE');
+      if (this.pc && this.pc.signalingState != "closed") {
+        this.iceBuffer.push(c);
+      }
     }
 
     // send ice candidates to the remote hyperty
@@ -505,6 +508,17 @@ var DTWebRTC = function (_EventEmitter) {
       var that = this;
       var syncher = that._syncher;
       console.log('>>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
+    }
+  }, {
+    key: 'disconnect',
+    value: function disconnect() {
+      var that = this;
+      try {
+        that.pc.close();
+      } catch (e) {
+        console.log('>>>disconnect', e);
+      }
+      console.log('>>>pc', that.pc);
     }
   }]);
 
