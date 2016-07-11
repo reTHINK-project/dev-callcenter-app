@@ -40,6 +40,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     this.iceBuffer = [];  // the buffer for local ice candidates
     this.remoteIce = false;
     this.remoteIceBuffer = [];
+    this.mediaStream = null;
 
     // receiving starts here
     let that = this;
@@ -54,24 +55,31 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     let that = this;
     if(that.sender == null){that.sender = false;}
     console.info( 'Event Received: ', event);
-    this.trigger('invitation', event.identity);
-    event.ack(); // Acknowledge reporter about the Invitation was received
+    switch (event.type) {
+      case "create":
+        this.trigger('invitation', event.identity);
+        event.ack(); // Acknowledge reporter about the Invitation was received
 
-    // Subscribe to Object
-    this._syncher.subscribe(this._objectDescURL, event.url)
-    .then(function(objObserver) {
-      console.info("[_onNotification] objObserver ", objObserver);
+        // Subscribe to Object
+        this._syncher.subscribe(this._objectDescURL, event.url)
+        .then(function(objObserver) {
+          console.info("[_onNotification] objObserver ", objObserver);
 
-      console.log("event.from: ", event.from);
-      if(that.sender){ that.objObserver = objObserver }else{ that.handleInvite(objObserver.data, event.from);}
-      that.changePeerInformation(objObserver);
+          console.log("event.from: ", event.from);
+          if(that.sender){ that.objObserver = objObserver }else{ that.handleInvite(objObserver.data, event.from);}
+          that.changePeerInformation(objObserver);
 
-      objObserver.onChange('connectionDescription', function(event) {
-        console.info('connectionDescription received:', event); // Object was changed
-      });
-    }).catch(function(reason) {
-      console.error(reason);
-    });
+          objObserver.onChange('connectionDescription', function(event) {
+            console.info('connectionDescription received:', event); // Object was changed
+          });
+        }).catch(function(reason) {
+          console.error(reason);
+        });
+        break;
+      case "delete":
+        console.log('>>>delete');
+        break;
+    }
   }
 
   // sending starts here
@@ -146,6 +154,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
         console.log("localviodeo")
         that.trigger('localvideo', stream);
         //document.getElementById('localVideo').srcObject = stream;
+        that.mediaStream = stream;
         that.pc.addStream(stream);
         that.pc.createOffer(that.receivingConstraints)
         .then(function(offer){
@@ -180,6 +189,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
       that.trigger('localvideo', stream);
+      that.mediaStream =stream;
       that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
       that.pc.setRemoteDescription(new RTCSessionDescription(offer), function(){
         that.pc.createAnswer()
@@ -212,7 +222,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
 
     //event handler for when remote stream is added to peer connection
     this.pc.onaddstream = function(obj){
-      console.log('onaddstream', that.pc);
+      console.log('>>>onaddstream', that.pc);
       that.trigger('remotevideo', obj.stream);
     }
 
@@ -225,12 +235,14 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
       if(!that.ice)  that.addIceCandidate(cand);
       else           that.sendIceCandidate(cand);
     }
+
+    this.pc.onremovestream = function (a) {
+      console.log('>>>stream removed from remote', a);
+    }
   }
 
   // save one ICE candidate to the buffer
   addIceCandidate(c){
-    // if (!c.type) c.type = 'candidate';
-    console.log('>>>addICE');
     if(this.pc && this.pc.signalingState != "closed"){this.iceBuffer.push(c);}
   }
 
@@ -353,18 +365,24 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     console.log('>>>Identity',this.identityManager,"\n",this.identityManager.discoverUserRegistered(url));
   }
 
+  
+
   disconnect() {
     let that = this;
+    console.log('>>>lets disconnect', that);
+    return new Promise(function(resolve, reject) {
       try {
-        that.pc.close();
+        console.log('>>>streams', that.pc.getLocalStreams());
+        that.pc.getLocalStreams().forEach((stream)=>{
+          that.pc.removeStream(stream);
+        }) 
+        console.log('>>> disconnected', that);
       } catch (e) {
-        console.log('>>>disconnect', e);
+        reject(e);
       }
-    console.log('>>>pc',that.pc)
+    });
   }
 }
-
-
 
 export default function activate(hypertyURL, bus, configuration) {
   return {

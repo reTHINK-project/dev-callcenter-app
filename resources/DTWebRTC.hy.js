@@ -149,6 +149,7 @@ var DTWebRTC = function (_EventEmitter) {
     _this.iceBuffer = []; // the buffer for local ice candidates
     _this.remoteIce = false;
     _this.remoteIceBuffer = [];
+    _this.mediaStream = null;
 
     // receiving starts here
     var that = _this;
@@ -169,27 +170,34 @@ var DTWebRTC = function (_EventEmitter) {
         that.sender = false;
       }
       console.info('Event Received: ', event);
-      this.trigger('invitation', event.identity);
-      event.ack(); // Acknowledge reporter about the Invitation was received
+      switch (event.type) {
+        case "create":
+          this.trigger('invitation', event.identity);
+          event.ack(); // Acknowledge reporter about the Invitation was received
 
-      // Subscribe to Object
-      this._syncher.subscribe(this._objectDescURL, event.url).then(function (objObserver) {
-        console.info("[_onNotification] objObserver ", objObserver);
+          // Subscribe to Object
+          this._syncher.subscribe(this._objectDescURL, event.url).then(function (objObserver) {
+            console.info("[_onNotification] objObserver ", objObserver);
 
-        console.log("event.from: ", event.from);
-        if (that.sender) {
-          that.objObserver = objObserver;
-        } else {
-          that.handleInvite(objObserver.data, event.from);
-        }
-        that.changePeerInformation(objObserver);
+            console.log("event.from: ", event.from);
+            if (that.sender) {
+              that.objObserver = objObserver;
+            } else {
+              that.handleInvite(objObserver.data, event.from);
+            }
+            that.changePeerInformation(objObserver);
 
-        objObserver.onChange('connectionDescription', function (event) {
-          console.info('connectionDescription received:', event); // Object was changed
-        });
-      }).catch(function (reason) {
-        console.error(reason);
-      });
+            objObserver.onChange('connectionDescription', function (event) {
+              console.info('connectionDescription received:', event); // Object was changed
+            });
+          }).catch(function (reason) {
+            console.error(reason);
+          });
+          break;
+        case "delete":
+          console.log('>>>delete');
+          break;
+      }
     }
 
     // sending starts here
@@ -275,6 +283,7 @@ var DTWebRTC = function (_EventEmitter) {
           console.log("localviodeo");
           that.trigger('localvideo', stream);
           //document.getElementById('localVideo').srcObject = stream;
+          that.mediaStream = stream;
           that.pc.addStream(stream);
           that.pc.createOffer(that.receivingConstraints).then(function (offer) {
             that.pc.setLocalDescription(new RTCSessionDescription(offer), function () {
@@ -309,6 +318,7 @@ var DTWebRTC = function (_EventEmitter) {
       console.log('>>>Constrains', this.constraints);
       navigator.mediaDevices.getUserMedia(this.constraints).then(function (stream) {
         that.trigger('localvideo', stream);
+        that.mediaStream = stream;
         that.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
         that.pc.setRemoteDescription(new RTCSessionDescription(offer), function () {
           that.pc.createAnswer().then(function (answer) {
@@ -346,7 +356,7 @@ var DTWebRTC = function (_EventEmitter) {
 
       //event handler for when remote stream is added to peer connection
       this.pc.onaddstream = function (obj) {
-        console.log('onaddstream', that.pc);
+        console.log('>>>onaddstream', that.pc);
         that.trigger('remotevideo', obj.stream);
       };
 
@@ -358,6 +368,10 @@ var DTWebRTC = function (_EventEmitter) {
         cand.type = 'candidate'; // for compatibility with the hyperty connector
         if (!that.ice) that.addIceCandidate(cand);else that.sendIceCandidate(cand);
       };
+
+      this.pc.onremovestream = function (a) {
+        console.log('>>>stream removed from remote', a);
+      };
     }
 
     // save one ICE candidate to the buffer
@@ -365,8 +379,6 @@ var DTWebRTC = function (_EventEmitter) {
   }, {
     key: 'addIceCandidate',
     value: function addIceCandidate(c) {
-      // if (!c.type) c.type = 'candidate';
-      console.log('>>>addICE');
       if (this.pc && this.pc.signalingState != "closed") {
         this.iceBuffer.push(c);
       }
@@ -513,12 +525,18 @@ var DTWebRTC = function (_EventEmitter) {
     key: 'disconnect',
     value: function disconnect() {
       var that = this;
-      try {
-        that.pc.close();
-      } catch (e) {
-        console.log('>>>disconnect', e);
-      }
-      console.log('>>>pc', that.pc);
+      console.log('>>>lets disconnect', that);
+      return new Promise(function (resolve, reject) {
+        try {
+          console.log('>>>streams', that.pc.getLocalStreams());
+          that.pc.getLocalStreams().forEach(function (stream) {
+            that.pc.removeStream(stream);
+          });
+          console.log('>>> disconnected', that);
+        } catch (e) {
+          reject(e);
+        }
+      });
     }
   }]);
 

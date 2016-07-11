@@ -128,6 +128,7 @@ function addContent() {
       '<video id="localVideo" class="block3 " autoplay poster="web/media/load3.gif" ></video>'+
       '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>'+
     '</div>');
+  $('#hangup').on('click',hangup);
   
 }
 
@@ -143,7 +144,6 @@ function webrtcconnectToHyperty(event) {
   hyperty.connect(toHyperty)
   .then(function(obj) {
     console.log('Webrtc obj: ', obj);
-    $('#hangup').on('click',hangup);
   })
   .catch(function(reason) {
     console.error(reason);
@@ -199,6 +199,7 @@ function discoverEmail(event) {
       '</form><br>');
     $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
     $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
+    $('.webrtcconnect').find("button").focus();
   }).catch(function (err) {
     console.error('Email Discovered Error: ', err);
   });
