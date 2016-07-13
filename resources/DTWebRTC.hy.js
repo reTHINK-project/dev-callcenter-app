@@ -195,7 +195,7 @@ var DTWebRTC = function (_EventEmitter) {
           });
           break;
         case "delete":
-          console.log('>>>delete');
+          this.trigger('disconnected');
           break;
       }
     }
@@ -369,9 +369,19 @@ var DTWebRTC = function (_EventEmitter) {
         if (!that.ice) that.addIceCandidate(cand);else that.sendIceCandidate(cand);
       };
 
-      this.pc.onremovestream = function (a) {
-        console.log('>>>stream removed from remote', a);
-      };
+      // unfortunately onremovestream() didn't recognizes the remove of a stream
+      //
+      // this.pc.onremovestream = function (a) {
+      //   console.log('>>>stream removed from remote', a);
+      // }
+
+      // this.pc.onRemoveStream = function (a) {
+      //   console.log('>>>stream removed from remote', a);
+      // }
+
+      // this.pc.onRemoteStreamRemoved = function (a) {
+      //   console.log('>>>stream removed from remote', a);
+      // }
     }
 
     // save one ICE candidate to the buffer
@@ -528,11 +538,17 @@ var DTWebRTC = function (_EventEmitter) {
       console.log('>>>lets disconnect', that);
       return new Promise(function (resolve, reject) {
         try {
-          console.log('>>>streams', that.pc.getLocalStreams());
           that.pc.getLocalStreams().forEach(function (stream) {
             that.pc.removeStream(stream);
           });
-          console.log('>>> disconnected', that);
+          if (that.objReporter) {
+            that.objReporter.delete();
+          }
+          if (that.objObserver) {
+            that.objObserver.delete();
+          }
+          that.pc.close();
+          that.trigger('disconnected');
         } catch (e) {
           reject(e);
         }

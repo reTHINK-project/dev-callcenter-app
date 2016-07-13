@@ -77,7 +77,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
         });
         break;
       case "delete":
-        console.log('>>>delete');
+        this.trigger('disconnected');
         break;
     }
   }
@@ -236,9 +236,19 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
       else           that.sendIceCandidate(cand);
     }
 
-    this.pc.onremovestream = function (a) {
-      console.log('>>>stream removed from remote', a);
-    }
+    // unfortunately onremovestream() didn't recognizes the remove of a stream
+    //
+    // this.pc.onremovestream = function (a) {
+    //   console.log('>>>stream removed from remote', a);
+    // }
+
+    // this.pc.onRemoveStream = function (a) {
+    //   console.log('>>>stream removed from remote', a);
+    // }
+
+    // this.pc.onRemoteStreamRemoved = function (a) {
+    //   console.log('>>>stream removed from remote', a);
+    // }
   }
 
   // save one ICE candidate to the buffer
@@ -365,18 +375,22 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     console.log('>>>Identity',this.identityManager,"\n",this.identityManager.discoverUserRegistered(url));
   }
 
-  
-
   disconnect() {
     let that = this;
     console.log('>>>lets disconnect', that);
     return new Promise(function(resolve, reject) {
       try {
-        console.log('>>>streams', that.pc.getLocalStreams());
         that.pc.getLocalStreams().forEach((stream)=>{
           that.pc.removeStream(stream);
-        }) 
-        console.log('>>> disconnected', that);
+        }); 
+        if (that.objReporter) {
+          that.objReporter.delete();
+        }
+        if (that.objObserver) {
+          that.objObserver.delete();
+        }
+        that.pc.close();
+        that.trigger('disconnected');
       } catch (e) {
         reject(e);
       }

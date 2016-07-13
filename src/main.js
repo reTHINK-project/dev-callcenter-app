@@ -151,11 +151,6 @@ function webrtcconnectToHyperty(event) {
 }
 
 function hangup (){
-  $('.send-panel').removeClass('hide');
-  $('.webrtcconnect').empty();
-  $('.invitation-panel').empty();
-  $('#video').addClass('hide');
-
   hyperty.disconnect();
 }
 
@@ -183,6 +178,14 @@ function initListeners() {
     console.log('remotevideo received');
     document.getElementById('remoteVideo').srcObject = stream;
     $('#video').removeClass('hide');
+  });
+
+   hyperty.addEventListener('disconnected', function() {
+    console.log('>>>disconnected');
+    $('.send-panel').removeClass('hide');
+    $('.webrtcconnect').empty();
+    $('.invitation-panel').empty();
+    $('#video').addClass('hide');
   });
 }
 
