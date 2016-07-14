@@ -134,8 +134,15 @@ var DTWebRTC = function (_EventEmitter) {
     _this.identityManager = new _IdentityManager2.default(hypertyURL, configuration.runtimeURL, bus);
 
     _this.constraints = {
-      audio: true,
-      video: true
+      'audio': true,
+      'video': {
+        mandatory: {
+          minWidth: 200,
+          minHeight: 320,
+          maxWidth: 200,
+          maxHeight: 320
+        }
+      }
     };
     _this.receivingConstraints = {
       offerToReceiveAudio: 1,
@@ -307,7 +314,6 @@ var DTWebRTC = function (_EventEmitter) {
       this.createPC();
 
       var offer = void 0;
-      console.log('>>>data', data);
       if (data.ownerPeer.connectionDescription.type == "offer") {
         console.log("OFFER RECEIVED: ", data);
         offer = data.ownerPeer.connectionDescription;
@@ -371,14 +377,6 @@ var DTWebRTC = function (_EventEmitter) {
 
       // unfortunately onremovestream() didn't recognizes the remove of a stream
       //
-      // this.pc.onremovestream = function (a) {
-      //   console.log('>>>stream removed from remote', a);
-      // }
-
-      // this.pc.onRemoveStream = function (a) {
-      //   console.log('>>>stream removed from remote', a);
-      // }
-
       // this.pc.onRemoteStreamRemoved = function (a) {
       //   console.log('>>>stream removed from remote', a);
       // }
@@ -447,7 +445,7 @@ var DTWebRTC = function (_EventEmitter) {
       setTimeout(function () {
         if (that.remoteIceBuffer.length > 0) {
           console.log("remoteIceBuffer[0]: ", that.remoteIceBuffer[0]);
-          that.pc.addIceCandidate(new RTCIceCandidate({ candidate: that.remoteIceBuffer[0].candidate }));
+          if (that.pc) that.pc.addIceCandidate(new RTCIceCandidate({ candidate: that.remoteIceBuffer[0].candidate }));
           that.remoteIceBuffer.splice(0, 1);
           that.rekRemote(that);
         } else {
@@ -518,7 +516,7 @@ var DTWebRTC = function (_EventEmitter) {
       if (data.candidate) {
         if (!that.sender || that.remoteIce) {
           console.info('Process Ice Candidate: ', data);
-          that.pc.addIceCandidate(new RTCIceCandidate({ candidate: data.candidate }));
+          if (that.pc) that.pc.addIceCandidate(new RTCIceCandidate({ candidate: data.candidate }));
         } else {
           that.remoteIceBuffer.push(data);
         }

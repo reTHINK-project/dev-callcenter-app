@@ -25,8 +25,15 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     this.identityManager = new IdentityManager(hypertyURL, configuration.runtimeURL , bus);
 
     this.constraints = {
-      audio: true,
-      video: true
+      'audio': true,
+      'video': {
+        mandatory: {
+          minWidth: 200,
+          minHeight: 320,
+          maxWidth: 200,
+          maxHeight: 320
+        }
+      }
     };
     this.receivingConstraints = {
       offerToReceiveAudio: 1,
@@ -136,7 +143,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     this.constraints = opt;
   }
 
-    // callee handles incoming invite from the caller
+  // callee handles incoming invite from the caller
   handleInvite(data, partner) {
     this.partner = partner;
     console.log('got invite');
@@ -177,7 +184,6 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     this.createPC();
 
     let offer;
-    console.log('>>>data', data);
     if (data.ownerPeer.connectionDescription.type == "offer") {
       console.log("OFFER RECEIVED: ", data)
       offer = data.ownerPeer.connectionDescription;
@@ -238,14 +244,6 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
 
     // unfortunately onremovestream() didn't recognizes the remove of a stream
     //
-    // this.pc.onremovestream = function (a) {
-    //   console.log('>>>stream removed from remote', a);
-    // }
-
-    // this.pc.onRemoveStream = function (a) {
-    //   console.log('>>>stream removed from remote', a);
-    // }
-
     // this.pc.onRemoteStreamRemoved = function (a) {
     //   console.log('>>>stream removed from remote', a);
     // }
@@ -293,7 +291,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     setTimeout(function() {
       if (that.remoteIceBuffer.length>0) {
         console.log("remoteIceBuffer[0]: ", that.remoteIceBuffer[0]);
-        that.pc.addIceCandidate(new RTCIceCandidate({candidate: that.remoteIceBuffer[0].candidate}));
+        if(that.pc)that.pc.addIceCandidate(new RTCIceCandidate({candidate: that.remoteIceBuffer[0].candidate}));
         that.remoteIceBuffer.splice(0, 1);
         that.rekRemote(that);
       } else {
@@ -362,7 +360,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     if (data.candidate) {
       if (!that.sender || that.remoteIce) {
         console.info('Process Ice Candidate: ', data);
-        that.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}));
+        if(that.pc)that.pc.addIceCandidate(new RTCIceCandidate({candidate: data.candidate}));
       } else {
         that.remoteIceBuffer.push(data);
       }

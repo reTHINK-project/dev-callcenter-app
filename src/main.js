@@ -18,20 +18,24 @@ runtimeLoader.install().then(function() {
   let $dropDown = $('#navbar');
 
   hyperties.forEach(function(key) {
-    // if(key == "DTHCreceiver"){
-    //   loadHyperty(0,key);
-    // }else 
     if(key == "DTWebRTC"){
       loadHyperty(0,key);
       $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+
         '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
         '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+
-        '<button type="submit" style="float: left"  class="btn btn-default btn-sm">Search</button>'+
+        '<div class="btn-group"><button type="submit" style="float: left"  class="btn btn-default btn-sm ">Search</button>'+
+        '<button style="float: left" class="btn btn-default btn-sm "><i style="color: #777;" onclick="toggleSettings();" class="fa fa-cog fa-1x fa-fw"></i></button></div>'+
         '</form></div>');
+
+      $(document.body).append('<div class="modal fade" id="myModal" role="dialog"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">'+
+        '<span class="information" id="modalinfo"></span>'+
+        '<button type="button" id="btn-accept" class=" btn btn-default" data-dismiss="modal">accept</button>'+
+        '<button type="button" id="btn-reject" class=" btn btn-default" data-dismiss="modal">reject</button>'+
+        '</div></div></div></div>');
       $('.searchemail').on('submit',discoverEmail);
     }else{}
   });
-  $dropDown.append('<div><i style="color: #777;" onclick="toggleSettings();" class="center fa fa-cog fa-2x fa-fw"></i></div><br><div></div>'+
+  $dropDown.append('<div></div><br><div></div>'+
     '<div><form class="form-horizontal" role="form" id="settings" style="display:none;" class="settings">'+
     '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></div>'+
     '<label class="col-sm-1 control-label">Turn</label><div class="col-sm-4"> <input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></div>'+
@@ -48,6 +52,8 @@ loadProfile();
 }).catch(function(reason) {
   console.error(reason);
 });
+
+
 
 function getListOfHyperties(domain) {
 
@@ -108,13 +114,8 @@ function hypertyLoaded(result) {
   initListeners();
   $.getScript("../src/adapter.js");
   hyperty.myUrl = result.runtimeHypertyURL;
-  // if(result.name == "SenderDTWebRTC"){
-  //   // Prepare to discover email:
-     hypertyDiscovery = result.instance.hypertyDiscovery;
-  //   discoverEmail(0);
-  //   $('.searchemail').off('submit').on('submit',discoverEmail);
-  //   // hyperty.showidentity();
-  // }
+  hypertyDiscovery = result.instance.hypertyDiscovery;
+  
 }
 
 function addContent() {
@@ -154,19 +155,51 @@ function hangup (){
   hyperty.disconnect();
 }
 
+function pepmodal(calleeInfo){
+  var parseInformation = '<div class="col s12">' +
+  '<div class="row valign-wrapper">' +
+  '<div class="col s2 avatar">' +
+  '<img src="' + calleeInfo.infoToken.picture + '" alt="" class="circle  responsive-img">' +
+  '</div>' +
+  '<span class="col s10">' +
+  '<div >' +
+  '<span class="col s3 text-right">Name: </span>' +
+  '<span class="col s9 black-text">' + calleeInfo.infoToken.name + '</span>' +
+  '</span>' +
+  '<span class="row ">' +
+  '<span class="col s3 text-right">Email: </span>' +
+  '<span class="col s9 black-text">' + calleeInfo.infoToken.email + '</span>' +
+  '</span>' +
+  '<span class="row">' +
+  '<span class="col s3 text-right">locale: </span>' +
+  '<span class="col s9 black-text">' + calleeInfo.infoToken.locale + '</span>' +
+  '</span>' +
+  '</div>' +
+  '</div>';
+
+  $('#modalinfo').html(parseInformation); 
+}
+
+
 // receiving code here
 function initListeners() {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email +  '</p>');
+    pepmodal(identity);
     prepareMediaOptions();
   });
 
   hyperty.addEventListener('incomingcall', function(data) {
     console.log('incomingcall received');
+    $('#myModal').find('#btn-accept').on('click', ()=>{hyperty.invitationAccepted(data)});
+    $('#myModal').find('#btn-reject').on('click', ()=>{hangup});
+    $('#myModal').modal('show');
+
+
     if (!confirm('Incoming call. Answer?')) return false;
-    console.log('>>>data', data);
-    hyperty.invitationAccepted(data);
+     console.log('>>>data', data);
+    // hyperty.invitationAccepted(data);
   });
 
   hyperty.addEventListener('localvideo', function(stream) {
@@ -207,6 +240,10 @@ function discoverEmail(event) {
     console.error('Email Discovered Error: ', err);
   });
 }
+
+// ###################################################################################################################
+// ################################## Profile-Settings ###################################################################
+// ###################################################################################################################
 
 var PROFILE_KEY = "WEBRTC-SIMPLE-SETTINGS";
 
