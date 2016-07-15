@@ -2,16 +2,16 @@ html {
   position: relative;
   min-height: 100%;
 }
-/*@font-face{
+@font-face{
   font-family: "telegrotesk";
   src: url('../font/telegrotesk-halbfett.ttf'),
   url('../font/telegrotesk-normal.ttf'); 
 }
-*/
+
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
-  font-family: "telegrotesk";
+  /*font-family: "telegrotesk";*/
   font-size: 18px;
 }
 

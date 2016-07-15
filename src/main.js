@@ -20,21 +20,26 @@ runtimeLoader.install().then(function() {
   hyperties.forEach(function(key) {
     if(key == "DTWebRTC"){
       loadHyperty(0,key);
-      $dropDown.append('<div><form class="searchemail" data-name="DTHCsender">'+
-        '<input type="email" style="float: left" class="friend-email block2 validate form-control " placeholder="your friends email" id="email" required aria-required="true"  > '+
-        '<input type="text" style="float: left" class="friend-domain block2 validate form-control " placeholder="your friends domain" id="domain"> '+
-        '<div class="btn-group"><button type="submit" style="float: left"  class="btn btn-default btn-sm ">Search</button>'+
-        '<button style="float: left" class="btn btn-default btn-sm "><i style="color: #777;" onclick="toggleSettings();" class="fa fa-cog fa-1x fa-fw"></i></button></div>'+
-        '</form></div>');
+      //add search-form
+      $dropDown.append(
+        '<div><div class="input-group searchemail" data-name="DTHCsender">'+
+        '<input type="email" class="friend-email block2 validate form-control " style="width: 50%; border-right: none;" placeholder="your friends email" id="email"> '+
+        '<input type="text"  class="friend-domain block2 validate form-control" style="width: 50%;" placeholder="your friends domain" id="domain"> '+
+        '<span class="input-group-btn"><button id="gosearch" class="btn btn-default">Search</button>'+
+        '<button  class="btn btn-default"  onclick="toggleSettings();"><i style="color: #777;"  class="fa fa-cog fa-1x fa-fw"></i></button>'+
+        '</span></div></div>');
 
-      $(document.body).append('<div class="modal fade" id="myModal" role="dialog"><div class="modal-dialog modal-sm"><div class="modal-content"><div class="modal-body">'+
-        '<span class="information" id="modalinfo"></span>'+
+      //Add call-answare-modal
+      $(document.body).append('<div class="modal fade" id="myModal" role="dialog"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-body">'+
+        '<div class="information" id="modalinfo"></div>'+
+        '<div class="modal-footer">'+
         '<button type="button" id="btn-accept" class=" btn btn-default" data-dismiss="modal">accept</button>'+
         '<button type="button" id="btn-reject" class=" btn btn-default" data-dismiss="modal">reject</button>'+
-        '</div></div></div></div>');
-      $('.searchemail').on('submit',discoverEmail);
+        '</div></div></div></div></div>');
+      $('#gosearch').on('click',discoverEmail);
     }else{}
   });
+  //add settings-form
   $dropDown.append('<div></div><br><div></div>'+
     '<div><form class="form-horizontal" role="form" id="settings" style="display:none;" class="settings">'+
     '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></div>'+
@@ -155,29 +160,11 @@ function hangup (){
   hyperty.disconnect();
 }
 
-function pepmodal(calleeInfo){
-  var parseInformation = '<div class="col s12">' +
-  '<div class="row valign-wrapper">' +
-  '<div class="col s2 avatar">' +
-  '<img src="' + calleeInfo.infoToken.picture + '" alt="" class="circle  responsive-img">' +
-  '</div>' +
-  '<span class="col s10">' +
-  '<div >' +
-  '<span class="col s3 text-right">Name: </span>' +
-  '<span class="col s9 black-text">' + calleeInfo.infoToken.name + '</span>' +
-  '</span>' +
-  '<span class="row ">' +
-  '<span class="col s3 text-right">Email: </span>' +
-  '<span class="col s9 black-text">' + calleeInfo.infoToken.email + '</span>' +
-  '</span>' +
-  '<span class="row">' +
-  '<span class="col s3 text-right">locale: </span>' +
-  '<span class="col s9 black-text">' + calleeInfo.infoToken.locale + '</span>' +
-  '</span>' +
-  '</div>' +
-  '</div>';
-
-  $('#modalinfo').html(parseInformation); 
+function fillmodal(calleeInfo){
+  $('#modalinfo').html(
+  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
+  '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ calleeInfo.infoToken.name + '</span></div><div><span class=" black-text">Email: ' + calleeInfo.infoToken.email + '</span></div><div><span class=" black-text">Ort: ' + calleeInfo.infoToken.locale + '</span></div>' +
+  '</div></div></div>'); 
 }
 
 
@@ -186,7 +173,7 @@ function initListeners() {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email +  '</p>');
-    pepmodal(identity);
+    fillmodal(identity);
     prepareMediaOptions();
   });
 
@@ -196,9 +183,8 @@ function initListeners() {
     $('#myModal').find('#btn-reject').on('click', ()=>{hangup});
     $('#myModal').modal('show');
 
-
-    if (!confirm('Incoming call. Answer?')) return false;
-     console.log('>>>data', data);
+    console.log('>>>data', data);
+    // if (!confirm('Incoming call. Answer?')) return false;
     // hyperty.invitationAccepted(data);
   });
 
@@ -227,6 +213,7 @@ function discoverEmail(event) {
 
   var email = $('.searchemail').find('.friend-email').val();
   var domain = $('.searchemail').find('.friend-domain').val();
+  console.log('>>>email',email,domain);
   hypertyDiscovery.discoverHypertyPerUser(email, domain)
   .then(function (result) {
     $('.send-panel').html('<br><form class="webrtcconnect">' +

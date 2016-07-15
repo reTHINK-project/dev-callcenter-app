@@ -181,7 +181,6 @@ var DTWebRTC = function (_EventEmitter) {
         case "create":
           this.trigger('invitation', event.identity);
           event.ack(); // Acknowledge reporter about the Invitation was received
-
           // Subscribe to Object
           this._syncher.subscribe(this._objectDescURL, event.url).then(function (objObserver) {
             console.info("[_onNotification] objObserver ", objObserver);
@@ -499,7 +498,8 @@ var DTWebRTC = function (_EventEmitter) {
       var that = this;
       console.info("processPeerInformation: ", JSON.stringify(data));
 
-      if (data.type === 'offer' || data.type === 'answer') {
+      // if (data.type === 'offer' || data.type === 'answer') {
+      if (data.type === 'answer') {
         console.info('Process Connection Description: ', data);
         that.pc.setRemoteDescription(new RTCSessionDescription(data)).then(function () {
           if (that.sender) {
@@ -516,7 +516,7 @@ var DTWebRTC = function (_EventEmitter) {
       if (data.candidate) {
         if (!that.sender || that.remoteIce) {
           console.info('Process Ice Candidate: ', data);
-          if (that.pc) that.pc.addIceCandidate(new RTCIceCandidate({ candidate: data.candidate }));
+          if (that.pc && that.pc.signalingState != "closed") that.pc.addIceCandidate(new RTCIceCandidate({ candidate: data.candidate }));
         } else {
           that.remoteIceBuffer.push(data);
         }
