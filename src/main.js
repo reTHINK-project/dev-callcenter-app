@@ -120,7 +120,7 @@ function hypertyLoaded(result) {
   $.getScript("../src/adapter.js");
   hyperty.myUrl = result.runtimeHypertyURL;
   hypertyDiscovery = result.instance.hypertyDiscovery;
-  
+
 }
 
 function addContent() {
@@ -135,7 +135,7 @@ function addContent() {
       '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>'+
     '</div>');
   $('#hangup').on('click',hangup);
-  
+
 }
 
 function webrtcconnectToHyperty(event) {
@@ -164,7 +164,7 @@ function fillmodal(calleeInfo){
   $('#modalinfo').html(
   '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
   '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ calleeInfo.infoToken.name + '</span></div><div><span class=" black-text">Email: ' + calleeInfo.infoToken.email + '</span></div><div><span class=" black-text">Ort: ' + calleeInfo.infoToken.locale + '</span></div>' +
-  '</div></div></div>'); 
+  '</div></div></div>');
 }
 
 
@@ -298,6 +298,7 @@ function loadProfile() {
 }
 
 var resolutions = {
+  "any": "--- any ---",
   "1920x1080": "FHD 16:9 1920x1080",
   "1680x1050": "WSXGA+ 16:10 1680x1050",
   "1600x1200": "UXGA 4:3 1600x1200",
@@ -311,22 +312,26 @@ var resolutions = {
 };
 
 function prepareMediaOptions() {
-  var mediaOptions = {};
-  var selectedRes = $("#camResolution").val();
-  var resolutionArr = selectedRes.split("x");
-  console.log("Selected Resolution: " + selectedRes);
-  console.log("minWidth: " + resolutionArr[0]);
-  mediaOptions = {
+  var mediaOptions = {
     'audio': true,
-    'video': {
-      mandatory: {
-        minWidth: resolutionArr[0],
-        minHeight: resolutionArr[1],
-        maxWidth: resolutionArr[0],
-        maxHeight: resolutionArr[1]
-      }
-    }
+    'video': true
   };
+  var selectedRes = $("#camResolution").val();
+  console.log("Selected Resolution: " + selectedRes);
+  if ( selectedRes !== "any") {
+    var resolutionArr = selectedRes.split("x");
+    console.log("minWidth: " + resolutionArr[0]);
+    mediaOptions.video = {
+      width: {
+        min: resolutionArr[0],
+        max: resolutionArr[0]
+      },
+      height: {
+        min: resolutionArr[1],
+        max: resolutionArr[1]
+      }
+    };
+  }
   hyperty.setMediaOptions(mediaOptions);
 }
 
