@@ -26,14 +26,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
 
     this.constraints = {
       'audio': true,
-      'video': {
-        mandatory: {
-          minWidth: 200,
-          minHeight: 320,
-          maxWidth: 200,
-          maxHeight: 320
-        }
-      }
+      'video': true
     };
     this.receivingConstraints = {
       offerToReceiveAudio: 1,
@@ -80,7 +73,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
           });
         }).catch(function(reason) {
           console.error(reason);
-        });         
+        });
         break;
       case "delete":
         this.trigger('disconnected');
@@ -190,7 +183,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
       console.log("offer was't set in the invitation - data: ", data);
       return;
     }
-    console.log('>>>Constrains', this.constraints );
+    console.log('>>>Constraints', this.constraints );
     navigator.mediaDevices.getUserMedia(this.constraints)
     .then(function(stream){
       that.trigger('localvideo', stream);
@@ -219,7 +212,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
   setIceServer(ice,mode) {
     iceconfig.ice = mode ? ice : ice.concat(iceconfig.ice);
   }
-  
+
   //create a peer connection with its event handlers
   createPC() {
     var that = this;
@@ -321,7 +314,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
 
     dataObjectObserver.onChange('*', function(event) {
       console.info('Observer on change message: ', event);
-      
+
       // this event also includes the answer from the callee so we need to
       // process the answer from event.data and the candidates which might trickle
       // from event.data[0]
@@ -380,7 +373,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
       try {
         that.pc.getLocalStreams().forEach((stream)=>{
           that.pc.removeStream(stream);
-        }); 
+        });
         if (that.objReporter) {
           that.objReporter.delete();
         }
