@@ -322,14 +322,8 @@ function prepareMediaOptions() {
     var resolutionArr = selectedRes.split("x");
     console.log("minWidth: " + resolutionArr[0]);
     mediaOptions.video = {
-      width: {
-        min: resolutionArr[0],
-        max: resolutionArr[0]
-      },
-      height: {
-        min: resolutionArr[1],
-        max: resolutionArr[1]
-      }
+      width: { exact : resolutionArr[0] },
+      height: { exact : resolutionArr[1] }
     };
   }
   hyperty.setMediaOptions(mediaOptions);
