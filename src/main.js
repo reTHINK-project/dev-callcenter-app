@@ -162,7 +162,8 @@ function hangup (){
 
 function fillmodal(calleeInfo){
   $('#modalinfo').html(
-  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
+//  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
+  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="" ></div>'+
   '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ calleeInfo.infoToken.name + '</span></div><div><span class=" black-text">Email: ' + calleeInfo.infoToken.email + '</span></div><div><span class=" black-text">Ort: ' + calleeInfo.infoToken.locale + '</span></div>' +
   '</div></div></div>');
 }
