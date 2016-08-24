@@ -9,6 +9,7 @@ window.KJUR = {};
 let domain = config.domain;
 let runtime = 'https://catalogue.' + domain + '/.well-known/runtime/Runtime';
 let runtimeLoader = new RuntimeLoader(installerFactory, runtime);
+let autoConnect = false;
 var hypertyDiscovery;
 
 
@@ -121,6 +122,26 @@ function hypertyLoaded(result) {
   hyperty.myUrl = result.runtimeHypertyURL;
   hypertyDiscovery = result.instance.hypertyDiscovery;
 
+  // extract params from browser url (found here: http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters)
+  var params = window.location.search
+    .substring(1)
+    .split("&")
+    .map(v => v.split("="))
+    .reduce((map, [key, value]) => map.set(key, decodeURIComponent(value)), new Map());
+
+  let uid = params.get("target_uid");
+  let domain = params.get("target_domain");
+  console.log("############# URL: " + window.location.search );
+  console.log("############# uid: " + uid);
+  console.log("############# domain: " + domain);
+  // put them to the search fields
+  if ( uid && domain ) {
+    $('.searchemail').find('.friend-email').val(uid);
+    $('.searchemail').find('.friend-domain').val(domain);
+    // and start discovery automatically
+    autoConnect = true;
+    discoverEmail();
+  }
 }
 
 function addContent() {
@@ -139,7 +160,9 @@ function addContent() {
 }
 
 function webrtcconnectToHyperty(event) {
-  event.preventDefault();
+  if (event) {
+    event.preventDefault();
+  }
   saveProfile();
   getIceServers();
   prepareMediaOptions();
@@ -225,6 +248,12 @@ function discoverEmail(event) {
     $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
     $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
     $('.webrtcconnect').find("button").focus();
+    // if params where given and automatic search was done, do an auto-connect to the disocvered Hyperty
+    if ( autoConnect ) {
+      console.log("performing an auto-connect to the discoverd hyperty ...");
+      $('.webrtcconnect').find("button").click();
+      // webrtcconnectToHyperty();
+    }
   }).catch(function (err) {
     console.error('Email Discovered Error: ', err);
   });

@@ -50,13 +50,9 @@ gulp.task('server', function(done) {
   browserSync.init({
     open: false,
     online: true,
-    port: 443,
+    port: 8080,
     minify: false,
     ghostMode: false,
-    https: {
-      key: 'rethink-certificate.key',
-      cert: 'rethink-certificate.cert'
-    },
     server: {
       baseDir: './',
       middleware: function(req, res, next) {
