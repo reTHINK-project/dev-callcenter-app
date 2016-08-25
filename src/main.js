@@ -184,9 +184,13 @@ function hangup (){
 }
 
 function fillmodal(calleeInfo){
+  let picture = calleeInfo.infoToken ? calleeInfo.infoToken.picture : calleeInfo.userProfile ? calleeInfo.userProfile.avatar : "";
+  let name = calleeInfo.infoToken ? calleeInfo.infoToken.name : calleeInfo.userProfile ? calleeInfo.userProfile.cn : "";
+  let email = calleeInfo.infoToken ? calleeInfo.infoToken.email : calleeInfo.userProfile ? calleeInfo.userProfile.username : "";
+  let locale = calleeInfo.infoToken ? calleeInfo.infoToken.locale : calleeInfo.userProfile ? calleeInfo.userProfile.locale : "";
   $('#modalinfo').html(
-  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
-  '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ calleeInfo.infoToken.name + '</span></div><div><span class=" black-text">Email: ' + calleeInfo.infoToken.email + '</span></div><div><span class=" black-text">Ort: ' + calleeInfo.infoToken.locale + '</span></div>' +
+  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + picture + '" ></div>'+
+  '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ name + '</span></div><div><span class=" black-text">Email: ' + email + '</span></div><div><span class=" black-text">Ort: ' + locale + '</span></div>' +
   '</div></div></div>');
 }
 
@@ -195,7 +199,7 @@ function fillmodal(calleeInfo){
 function initListeners() {
   hyperty.addEventListener('invitation', function(identity) {
     console.log('Invitation event received from:', identity);
-    $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email +  '</p>');
+    $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username +  '</p>');
     fillmodal(identity);
     prepareMediaOptions();
   });
