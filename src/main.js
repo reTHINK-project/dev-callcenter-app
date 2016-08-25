@@ -43,10 +43,10 @@ runtimeLoader.install().then(function() {
   //add settings-form
   $dropDown.append('<div></div><br><div></div>'+
     '<div><form class="form-horizontal" role="form" id="settings" style="display:none;" class="settings">'+
-    '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder="192.168.7.126:3478"></div>'+
-    '<label class="col-sm-1 control-label">Turn</label><div class="col-sm-4"> <input id="turn" class="form-control" value="" size="20" placeholder="192.168.7.126"></div>'+
+    '<div class="darktext form-group"><label class="col-sm-1 control-label">Stun</label><div class="col-sm-4"> <input id="stun" class="form-control" value="" placeholder=""></div>'+
+    '<label class="col-sm-1 control-label">Turn</label><div class="col-sm-4"> <input id="turn" class="form-control" value="numb.viagenie.ca" size="20" placeholder="numb.viagenie.ca"></div>'+
     '<label><input type="checkbox" id="strictice" >use strict</label></div>'+
-    '<div class="darktext form-group"><label class="col-sm-1 control-label">user</label><div class="col-sm-4"><input id="turn_user"  class="form-control" value="" size="10" placeholder="wonder"></div>'+
+    '<div class="darktext form-group"><label class="col-sm-1 control-label">user</label><div class="col-sm-4"><input id="turn_user"  class="form-control" value="steffen.druesedow@telekom.de" size="10" placeholder="steffen.druesedow@telekom.de"></div>'+
     '<label class="col-sm-1 control-label">pass</label><div class="col-sm-4"><input id="turn_pass"  class="form-control" value="" size="10" type="password" /></div></div>'+
     '<div class="darktext form-group"><div class="col-sm-6"></div><div class="col-sm-4"><select  value="" class="darktext" id="camResolution"></select></div>'+
     '<div class="col-sm-2"><button type="submit" id="saveConfig" class="btn btn-default btn-sm" >Save profile</button></div></div>'+
@@ -185,10 +185,8 @@ function hangup (){
 
 function fillmodal(calleeInfo){
   $('#modalinfo').html(
-//  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
-  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="" ></div>'+
-  // '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ calleeInfo.infoToken.name + '</span></div><div><span class=" black-text">Email: ' + calleeInfo.infoToken.email + '</span></div><div><span class=" black-text">Ort: ' + calleeInfo.infoToken.locale + '</span></div>' +
-  '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: disabled name display for now</span></div><div><span class=" black-text">Email: disabled</span></div><div><span class=" black-text">Ort: disabled</span></div>' +
+  '<div class="container-fluid"><div class="row"><div class="col-sm-2 avatar"><img src="' + calleeInfo.infoToken.picture + '" ></div>'+
+  '<div class="col-sm-9 col-sm-offset-1"><div><span class=" black-text">Name: '+ calleeInfo.infoToken.name + '</span></div><div><span class=" black-text">Email: ' + calleeInfo.infoToken.email + '</span></div><div><span class=" black-text">Ort: ' + calleeInfo.infoToken.locale + '</span></div>' +
   '</div></div></div>');
 }
 
@@ -266,6 +264,9 @@ function discoverEmail(event) {
 var PROFILE_KEY = "WEBRTC-SIMPLE-SETTINGS";
 
 function getIceServers() {
+//  {"url":"stun:stun.l.google.com:19302"},
+//  {"url":"turn:185.17.229.168:3478","credential":"luis123","username":"luis"}
+
   var stun = $("#stun").val();
   var turn = $("#turn").val();
   var turn_user = $("#turn_user").val();
@@ -273,6 +274,11 @@ function getIceServers() {
   var mode = $("#strictice").is(':checked') ?  "strictice" : null ;
   console.log('>>>mode:', mode);
   var iceServers = [];
+  if ( ! turn ) {
+    turn = "numb.viagenie.ca";
+    turn_user = "steffen.druesedow@telekom.de";
+    turn_pass = "w0nd3r";
+  }
   if (stun)
     iceServers.push({urls: "stun:" + stun});
   if (turn)
@@ -282,6 +288,7 @@ function getIceServers() {
       credential: turn_pass
     });
   hyperty.setIceServer(iceServers,mode);
+
 }
 
 function saveProfile() {
