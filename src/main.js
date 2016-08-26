@@ -1,19 +1,46 @@
 // jshint browser:true, jquery: true
 // jshint varstmt: true
-import RuntimeLoader from 'service-framework/dist/RuntimeLoader';
-import InstallerFactory from '../resources/factories/InstallerFactory';
+import rethink from '../resources/factories/rethink';
 import config from '../config.json';
 
-let installerFactory = new InstallerFactory();
 window.KJUR = {};
+
 let domain = config.domain;
-let runtime = 'https://catalogue.' + domain + '/.well-known/runtime/Runtime';
-let runtimeLoader = new RuntimeLoader(installerFactory, runtime);
+let runtimeLoader;
 let autoConnect = false;
-var hypertyDiscovery;
+let hypertyDiscovery;
 
+// Hack to convert the environment variables from docker to a boolean;
+// without this the config.development is equal to 'true';
+let development = JSON.parse(config.development);
 
-runtimeLoader.install().then(function() {
+console.log('Configuration file before:', config, development);
+
+if (development) {
+
+  config.domain = window.location.hostname;
+  config.runtimeURL = config.runtimeURL.replace(domain, window.location.hostname);
+
+  console.log('Configuration file in development mode after:', config);
+
+}
+
+rethink.install(config).then(function(result) {
+  runtimeLoader = result;
+
+  if (development) {
+
+    console.info('Runtime Installed in development mode:', result, development);
+
+    return loadStubs().then((result) => {
+      console.log('Stubs load: ', result);
+      return getListOfHyperties(domain);
+    });
+  } else {
+    console.info('Runtime Installed in production mode:', result, development);
+    return getListOfHyperties(domain);
+  }
+
   return getListOfHyperties(domain);
 }).then(function(hyperties) {
   let $dropDown = $('#navbar');
@@ -59,7 +86,48 @@ loadProfile();
   console.error(reason);
 });
 
+function loadStubs() {
 
+  domain = window.location.hostname;
+  let protostubsURL = 'https://' + domain + '/.well-known/protocolstub/ProtoStubs.json';
+
+  return new Promise(function(resolve, reject) {
+    $.ajax({
+      url: protostubsURL,
+      success: function(result) {
+        let response = [];
+        if (typeof result === 'object') {
+          Object.keys(result).forEach(function(key) {
+            response.push(key);
+          });
+        } else if (typeof result === 'string') {
+          response = JSON.parse(result);
+        }
+
+        let stubs = response.filter((stub) => {
+          return stub !== 'default';
+        });
+
+        if (stubs.length) {
+
+          let loadAllStubs = [];
+          stubs.forEach((stub) => {
+            loadAllStubs.push(runtimeLoader.requireProtostub('https://' + stub + '/.well-known/protocolstub/' + stub));
+          });
+
+          Promise.all(loadAllStubs).then((result) => {
+            resolve(result);
+          }).catch(reason => reject(reason));
+        }
+
+      },
+      fail: function(reason) {
+        reject(reason);
+        notification(reason, 'warn');
+      }
+    });
+  });
+}
 
 function getListOfHyperties(domain) {
 
@@ -101,7 +169,11 @@ function loadHyperty(event,key) {
   if (config.development) {
     hypertyPath = 'hyperty-catalogue://' + domain + '/.well-known/hyperties/' + hypertyName;
   }
-  runtimeLoader.requireHyperty(hypertyPath).then(hypertyLoaded).catch(hypertyFail);
+  runtimeLoader.requireHyperty(hypertyPath).then(
+    hypertyLoaded
+  ).catch(
+    hypertyFail
+  );
 }
 
 function hypertyFail(reason) {

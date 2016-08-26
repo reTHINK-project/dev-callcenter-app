@@ -98,7 +98,7 @@ gulp.task('watch', function(done) {
 gulp.task('main-watch', ['js'], browserSync.reload);
 gulp.task('hyperties-watch', ['hyperties'], browserSync.reload);
 
-gulp.task('js', ['js2'], function() {
+gulp.task('js', [], function() {
 
   return gulp.src('./src/main.js')
   .on('end', function() {
@@ -115,22 +115,6 @@ gulp.task('js', ['js2'], function() {
 
 });
 
-gulp.task('js2', ['hyperties'], function() {
-
-  return gulp.src('./src/main2.js')
-  .on('end', function() {
-    var fileObject = path.parse('./src/main2.js');
-    gutil.log('-----------------------------------------------------------');
-    gutil.log('Converting ' + fileObject.base + ' from ES6 to ES5');
-  })
-  .pipe(transpile({destination: __dirname + '/dist', debug: false}))
-  .on('end', function() {
-    gutil.log('The main file was created like a distribution file on /dist');
-    gutil.log('-----------------------------------------------------------');
-    browserSync.reload();
-  });
-
-});
 
 // process JS files and return the stream.
 gulp.task('hyperties', function() {
