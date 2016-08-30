@@ -1,5 +1,6 @@
 /* jshint undef: true */
-import HypertyDiscovery from 'service-framework/dist/HypertyDiscovery';
+//import HypertyDiscovery from 'service-framework/dist/HypertyDiscovery';
+import Discovery from 'service-framework/dist/Discovery';
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
 import EventEmitter from '../utils/EventEmitter'; // for receiving
@@ -21,7 +22,8 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
       this._objectDescURL = 'hyperty-catalogue://' + this._domain + '/.well-known/dataschemas/FakeDataSchema';
     }
     this._syncher = new Syncher(hypertyURL, bus, configuration);
-    this.hypertyDiscovery = new HypertyDiscovery(hypertyURL, bus);
+  //  this.hypertyDiscovery = new HypertyDiscovery(hypertyURL, bus);
+    this.hypertyDiscovery = new Discovery(hypertyURL, bus);
     this.identityManager = new IdentityManager(hypertyURL, configuration.runtimeURL , bus);
 
     this.constraints = {
@@ -235,10 +237,10 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     }
 
     // unfortunately onremovestream() didn't recognizes the remove of a stream
-    //
-    // this.pc.onRemoteStreamRemoved = function (a) {
-    //   console.log('>>>stream removed from remote', a);
-    // }
+
+    this.pc.onRemoteStreamRemoved = function (a) {
+      console.log('>>>stream removed from remote', a);
+    }
   }
 
   // save one ICE candidate to the buffer
@@ -372,7 +374,8 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     return new Promise(function(resolve, reject) {
       try {
         that.pc.getLocalStreams().forEach((stream)=>{
-          that.pc.removeStream(stream);
+          // that.pc.removeStream(stream);
+          stream.stop();
         });
         if (that.objReporter) {
           that.objReporter.delete();
@@ -381,6 +384,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
           that.objObserver.delete();
         }
         that.pc.close();
+        thap.pc = null;
         that.trigger('disconnected');
       } catch (e) {
         reject(e);
