@@ -296,6 +296,7 @@ function initListeners() {
     console.log('remotevideo received');
     document.getElementById('remoteVideo').srcObject = stream;
     $('#video').removeClass('hide');
+    $('.invitation-panel').empty();
   });
 
    hyperty.addEventListener('disconnected', function() {
