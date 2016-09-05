@@ -382,8 +382,6 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
         if (that.objObserver) {
           that.objObserver.delete();
         }
-        if ( that.mediaStream)
-          that.mediaStream.stop();
         that.pc.close();
         thap.pc = null;
         that.trigger('disconnected');
