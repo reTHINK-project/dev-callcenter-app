@@ -374,8 +374,7 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
     return new Promise(function(resolve, reject) {
       try {
         that.pc.getLocalStreams().forEach((stream)=>{
-          // that.pc.removeStream(stream);
-          stream.stop();
+          that.pc.removeStream(stream);
         });
         if (that.objReporter) {
           that.objReporter.delete();
@@ -383,6 +382,8 @@ class DTWebRTC extends EventEmitter{ // extends EventEmitter because we need to 
         if (that.objObserver) {
           that.objObserver.delete();
         }
+        if ( that.mediaStream)
+          that.mediaStream.stop();
         that.pc.close();
         thap.pc = null;
         that.trigger('disconnected');
