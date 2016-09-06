@@ -50,7 +50,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     if (that.sender == null) {
       that.sender = false;
     }
-    console.info('Event Received: ', event);
+    console.info('[DTWebRTC]: Event Received: ', event);
     switch (event.type) {
       case "create":
         this.trigger('invitation', event.identity);
@@ -103,8 +103,8 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
                 objReporter.data.Connection = { // owner has that
                   name: '',
                   status: "offer",
-                  owner: "hyperty://example.com/alicehy",
-                  peer: "connection://example.com/alice/bob27012016"
+                  owner: that.myUrl,
+                  peer: ""
                 };
 
                 objReporter.data.ownerPeer = {
