@@ -256,7 +256,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
       if (that.sender) {
         that.objReporter.data.ownerPeer.iceCandidates.push(icecandidate);
       } else {
-        that.objReporter.data.peer.iceCandidates.push(icecandidate);
+        that.objReporter.data.Peer.iceCandidates.push(icecandidate);
       }
     }
 
