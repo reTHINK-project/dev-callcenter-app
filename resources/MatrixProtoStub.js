@@ -66,19 +66,38 @@ class MatrixProtoStub {
         return;
       }
 
-      // create socket to the MN
-      this._ws = new WebSocket(this._configuration.messagingnode + "?runtimeURL=" + encodeURIComponent(this._runtimeURL));
-      this._ws.onmessage = (m) => { this._onWSMessage(m) };
-      this._ws.onclose = () => { this._onWSClose() };
-      this._ws.onerror = () => { this._onWSError() };
-
-      this._ws.onopen = () => {
-        this._onWSOpen();
-        // resolve if not rejected
-        resolve();
-      };
+      // connect if not initialized or in CLOSED state
+      if ( (! this._ws) || this._ws.readyState === 3) {
+        // create socket to the MN
+        this._ws = new WebSocket(this._configuration.messagingnode + "?runtimeURL=" + encodeURIComponent(this._runtimeURL));
+        this._ws.onmessage = (m) => { this._onWSMessage(m) };
+        this._ws.onclose = () => { this._onWSClose() };
+        this._ws.onerror = () => { this._onWSError() };
+        this._ws.onopen = () => {
+          this._waitReady( () => {
+            this._onWSOpen();
+            resolve();
+          });
+        };
+      } else  if ( this._ws.readyState === 0 ) {
+        // CONNECTING --> wait for CONNECTED
+        this._waitReady( () => {
+          resolve();
+        });
+      }
 
     });
+  }
+
+  _waitReady(callback) {
+    let _this = this;
+    if (this._ws.readyState === 1) {
+      callback();
+    } else {
+      setTimeout(() => {
+        _this._waitReady(callback);
+      });
+    }
   }
 
   /**
@@ -109,10 +128,11 @@ class MatrixProtoStub {
 
   _sendWSMsg(msg) {
     if ( this._filter(msg) ) {
-      if ( this._assumeOpen )
+      if ( this._assumeOpen ) {
         this.connect().then( () => {
           this._ws.send(JSON.stringify(msg));
         });
+      }
     }
   }
 

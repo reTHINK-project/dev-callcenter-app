@@ -304,6 +304,8 @@ function initListeners() {
     $('.send-panel').removeClass('hide');
     $('.webrtcconnect').empty();
     $('.invitation-panel').empty();
+    document.getElementById('localVideo').src = "";
+    document.getElementById('remoteVideo').src = "";
     $('#video').addClass('hide');
   });
 }

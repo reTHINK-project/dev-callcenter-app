@@ -80,6 +80,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
           });
         break;
       case "delete":
+        this.cleanupPC();
         this.trigger('disconnected');
         break;
     }
@@ -335,7 +336,17 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
   showidentity(url) {
     let that = this;
     let syncher = that._syncher;
-    console.log('>>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
+    console.log('[DTWebRTC]: >>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
+  }
+
+  cleanupPC() {
+    if ( this.mediaStream ) {
+      let tracks = this.mediaStream.getTracks();
+      tracks.forEach((track) => { track.stop() } );
+    }
+    this.pc.removeStream(this.mediaStream);
+    this.pc.close();
+    this.pc = null;
   }
 
   disconnect() {
@@ -343,17 +354,14 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     console.log('>>>lets disconnect', that);
     return new Promise(function(resolve, reject) {
       try {
-        that.pc.getLocalStreams().forEach((stream) => {
-          that.pc.removeStream(stream);
-        });
         if (that.objReporter) {
           that.objReporter.delete();
         }
         if (that.objObserver) {
           that.objObserver.delete();
         }
-        that.pc.close();
-        that.pc = null;
+        that.cleanupPC();
+
         that.trigger('disconnected');
       } catch (e) {
         reject(e);
