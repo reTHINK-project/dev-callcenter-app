@@ -195,7 +195,7 @@ function discoverEmail(event) {
 
   var msg = 'searching for:  ' + email + ' in domain:  ' + domain + ' ...';
   if ( ! domain )
-    msg = 'searching for:  ' + email + ' the own domain ...';
+    msg = 'searching for:  ' + email + ' in the own domain ...';
 
   $('.send-panel').html(msg);
 
