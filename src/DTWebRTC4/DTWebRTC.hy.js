@@ -1,5 +1,4 @@
 /* jshint undef: true */
-//import HypertyDiscovery from 'service-framework/dist/HypertyDiscovery';
 import Discovery from 'service-framework/dist/Discovery';
 import {Syncher} from 'service-framework/dist/Syncher';
 import {divideURL} from '../utils/utils';
@@ -21,7 +20,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     this._domain = divideURL(hypertyURL).domain;
     this._objectDescURL = 'hyperty-catalogue://catalogue.' + this._domain + '/.well-known/dataschema/Connection';
     this._syncher = new Syncher(hypertyURL, bus, configuration);
-    this.hypertyDiscovery = new Discovery(hypertyURL, bus);
+    this.discovery = new Discovery(hypertyURL, bus);
     this.identityManager = new IdentityManager(hypertyURL, configuration.runtimeURL, bus);
     this.objObserver;
     this.objReporter;
