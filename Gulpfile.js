@@ -50,13 +50,9 @@ gulp.task('server', function(done) {
   browserSync.init({
     open: false,
     online: true,
-    port: 443,
+    port: 8080,
     minify: false,
     ghostMode: false,
-    https: {
-      key: 'rethink-certificate.key',
-      cert: 'rethink-certificate.cert'
-    },
     server: {
       baseDir: './',
       middleware: function(req, res, next) {
@@ -102,7 +98,7 @@ gulp.task('watch', function(done) {
 gulp.task('main-watch', ['js'], browserSync.reload);
 gulp.task('hyperties-watch', ['hyperties'], browserSync.reload);
 
-gulp.task('js', ['hyperties'], function() {
+gulp.task('js', [], function() {
 
   return gulp.src('./src/main.js')
   .on('end', function() {
@@ -118,6 +114,7 @@ gulp.task('js', ['hyperties'], function() {
   });
 
 });
+
 
 // process JS files and return the stream.
 gulp.task('hyperties', function() {
