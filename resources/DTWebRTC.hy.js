@@ -78,6 +78,7 @@ var DTWebRTC=function(_EventEmitter){_inherits(DTWebRTC,_EventEmitter);// extend
 function DTWebRTC(hypertyURL,bus,configuration){_classCallCheck(this,DTWebRTC);if(!hypertyURL)throw new Error('The hypertyURL is a needed parameter');if(!bus)throw new Error('The MiniBus is a needed parameter');if(!configuration)throw new Error('The configuration is a needed parameter');// call event emitter constructor to be able to receive things
 var _this=_possibleConstructorReturn(this,(DTWebRTC.__proto__||Object.getPrototypeOf(DTWebRTC)).call(this));_this._domain=(0,_utils.divideURL)(hypertyURL).domain;_this._objectDescURL='hyperty-catalogue://catalogue.'+_this._domain+'/.well-known/dataschema/Connection';_this._syncher=new _Syncher.Syncher(hypertyURL,bus,configuration);_this.discovery=new _Discovery2.default(hypertyURL,bus);_this.identityManager=new _IdentityManager2.default(hypertyURL,configuration.runtimeURL,bus);_this.objObserver;_this.objReporter;_this.constraints={'audio':true,'video':true};_this.receivingConstraints={offerToReceiveAudio:1,offerToReceiveVideo:1};_this.sender=null;// sender == false --> I'm the receiver @ start
 _this.myUrl=null;// runtimeurl;
+_this.myIdentity=null;// own identity
 _this.partner=null;// hypertyURL of the other hyperty
 _this.pc=null;// the peer connection object of WebRTC
 _this.mediaStream=null;// receiving starts here

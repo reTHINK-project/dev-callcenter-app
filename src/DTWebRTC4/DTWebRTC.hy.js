@@ -35,6 +35,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     };
     this.sender = null; // sender == false --> I'm the receiver @ start
     this.myUrl = null; // runtimeurl;
+    this.myIdentity = null; // own identity
     this.partner = null; // hypertyURL of the other hyperty
     this.pc = null; // the peer connection object of WebRTC
     this.mediaStream = null;

@@ -54,25 +54,44 @@ function hypertyLoaded(result) {
   hyperty.myUrl = result.runtimeHypertyURL;
   addContent();
 
-  $('.hyperty-panel').html('<p>Hyperty URL:<br>' + result.runtimeHypertyURL + '</p>');
+  // get registered user
+  hyperty.identityManager.discoverUserRegistered().then((identity) => {
+    console.log("[DTWebRTC.main]: registered user is: ", identity);
+    hyperty.myIdentity = identity;
+    let userInfo = "<p>Authenticated as: <br> " +
+        (hyperty.myIdentity.avatar ? '<img src="' + hyperty.myIdentity.avatar + '" class="logo" />' : "") + "<br>" +
+        (hyperty.myIdentity.cn ? hyperty.myIdentity.cn : "") + ", " +
+        (hyperty.myIdentity.username ? hyperty.myIdentity.username : "") +
+      "</p>";
+      $('.hyperty-panel').html( userInfo + '<p>Hyperty URL:<br>' + result.runtimeHypertyURL + '</p>');
+  }).catch((reason) => {
+    console.log("[DTWebRTC.main]: error while discovery of registered user. Error is ", reason);
+    $('.hyperty-panel').html( userInfo + '<p>Hyperty URL:<br>' + result.runtimeHypertyURL + '</p>');
+  });
+
   initListeners();
   $.getScript("../src/adapter.js");
 
-  console.log("############ hyperty loaded, result is:", result);
+  console.log("[DTWebRTC.main]:############ hyperty loaded, result is:", result);
 
+  // try to perform an automatic discovery and connect, if suitable params where given
+  tryAutoConnect();
+}
+
+function tryAutoConnect() {
   // extract params from browser url (found here: http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters)
   var params = window.location.search
-    .substring(1)
-    .split("&")
-    .map(v => v.split("="))
-    .reduce((map, [key, value]) => map.set(key, decodeURIComponent(value)), new Map());
+  .substring(1)
+  .split("&")
+  .map(v => v.split("="))
+  .reduce((map, [key, value]) => map.set(key, decodeURIComponent(value)), new Map());
 
   let uid = params.get("target_uid");
   let domain = params.get("target_domain");
 
-  console.log("############# URL: " + window.location.search);
-  console.log("############# uid: " + uid);
-  console.log("############# domain: " + domain);
+  console.log("[DTWebRTC.main]:############# URL: " + window.location.search);
+  console.log("[DTWebRTC.main]:############# uid: " + uid);
+  console.log("[DTWebRTC.main]:############# domain: " + domain);
 
   // put them to the search fields
   if (uid && domain) {
@@ -211,7 +230,7 @@ function discoverEmail(event) {
       $('.webrtcconnect').find("button").focus();
       // if params where given and automatic search was done, do an auto-connect to the disocvered Hyperty
       if (autoConnect) {
-        console.log("performing an auto-connect to the discoverd hyperty ...");
+        console.log("[DTWebRTC.main]:performing an auto-connect to the discoverd hyperty ...");
         $('.webrtcconnect').find("button").click();
         // webrtcconnectToHyperty();
       }
@@ -262,7 +281,7 @@ function getIceServers() {
 function saveProfile() {
   event.preventDefault();
   var profile = {};
-  console.log("save profile " + PROFILE_KEY);
+  console.log("[DTWebRTC.main]:save profile " + PROFILE_KEY);
   // transfer all values from all text-inputs of the settings div to profile
   $("#settings :text").each(function(i) {
     profile[$(this).attr('id')] = $(this).val();
@@ -281,14 +300,14 @@ function saveProfile() {
 }
 
 function loadProfile() {
-  console.log("loading profile " + PROFILE_KEY);
+  console.log("[DTWebRTC.main]:loading profile " + PROFILE_KEY);
   var profile = null;
   var s = localStorage.getItem(PROFILE_KEY);
   if (s) {
     try {
       profile = JSON.parse(s);
     } catch (e) {
-      console.log("error while parsing settings from local storage");
+      console.log("[DTWebRTC.main]:error while parsing settings from local storage");
     }
   }
   if (profile !== null) {
@@ -322,10 +341,10 @@ function prepareMediaOptions() {
     'video': true
   };
   var selectedRes = $("#camResolution").val();
-  console.log("Selected Resolution: " + selectedRes);
+  console.log("[DTWebRTC.main]:Selected Resolution: " + selectedRes);
   if (selectedRes !== "any") {
     var resolutionArr = selectedRes.split("x");
-    console.log("minWidth: " + resolutionArr[0]);
+    console.log("[DTWebRTC.main]:minWidth: " + resolutionArr[0]);
     mediaOptions.video = {
       width: {
         exact: resolutionArr[0]
