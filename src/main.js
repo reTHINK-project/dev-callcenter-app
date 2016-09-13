@@ -159,6 +159,7 @@ function fillmodal(calleeInfo) {
 function initListeners() {
 
   hyperty.addEventListener('invitation', function(identity) {
+    // preparing the modal dialog with the given identity info
     console.log('incomingcall event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
     fillmodal(identity);

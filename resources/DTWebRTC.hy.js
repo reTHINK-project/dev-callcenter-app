@@ -77,26 +77,28 @@ console.log("read-response: ",t),200===t.body.code?e(t.body.value):o(t.body.desc
 var DTWebRTC=function(_EventEmitter){_inherits(DTWebRTC,_EventEmitter);// extends EventEmitter because we need to recieve events
 function DTWebRTC(hypertyURL,bus,configuration){_classCallCheck(this,DTWebRTC);if(!hypertyURL)throw new Error('The hypertyURL is a needed parameter');if(!bus)throw new Error('The MiniBus is a needed parameter');if(!configuration)throw new Error('The configuration is a needed parameter');// call event emitter constructor to be able to receive things
 var _this=_possibleConstructorReturn(this,(DTWebRTC.__proto__||Object.getPrototypeOf(DTWebRTC)).call(this));_this._domain=(0,_utils.divideURL)(hypertyURL).domain;_this._objectDescURL='hyperty-catalogue://catalogue.'+_this._domain+'/.well-known/dataschema/Connection';_this._syncher=new _Syncher.Syncher(hypertyURL,bus,configuration);_this.discovery=new _Discovery2.default(hypertyURL,bus);_this.identityManager=new _IdentityManager2.default(hypertyURL,configuration.runtimeURL,bus);_this.objObserver;_this.objReporter;_this.constraints={'audio':true,'video':true};_this.receivingConstraints={offerToReceiveAudio:1,offerToReceiveVideo:1};_this.sender=null;// sender == false --> I'm the receiver @ start
-_this.myUrl=null;// runtimeurl;
+_this.myUrl=hypertyURL;// own hypertyUrl
 _this.partner=null;// hypertyURL of the other hyperty
 _this.pc=null;// the peer connection object of WebRTC
 _this.mediaStream=null;// receiving starts here
-_this._syncher.onNotification(function(event){_this._onNotification(event);});return _this;}// reveicing starts here
-_createClass(DTWebRTC,[{key:'_onNotification',value:function _onNotification(event){var _this2=this;if(this.sender==null){this.sender=false;}console.info('[DTWebRTC]: Event Received: ',event);switch(event.type){case"create":this.trigger('invitation',event.identity);event.ack();// Acknowledge reporter about the Invitation was received
+_this._syncher.onNotification(function(event){_this._onNotification(event);});return _this;}_createClass(DTWebRTC,[{key:'_onNotification',value:function _onNotification(event){var _this2=this;if(this.sender==null){this.sender=false;}console.info('[DTWebRTC]: Event Received: ',event);switch(event.type){case"create":// the peer has created an object and we are requested to subscribe for changes to this remote object
+this.trigger('invitation',event.identity);event.ack();// Acknowledge reporter about the Invitation was received
 // Subscribe to Object
-this._syncher.subscribe(this._objectDescURL,event.url).then(function(objObserver){console.info("[DTWebRTC]: [_onNotification] objObserver ",objObserver);console.log("[DTWebRTC]: event.from: ",event.from);if(_this2.sender){_this2.objObserver=objObserver;}else{_this2.handleInvite(objObserver.data,event.from);}_this2.changePeerInformation(objObserver);objObserver.onChange('connectionDescription',function(event){console.info('connectionDescription received:',event);// Object was changed
-});}).catch(function(reason){console.error(reason);});break;case"delete":this.cleanupPC();this.trigger('disconnected');break;}}// invoked in both roles caller and callee
-},{key:'connect',value:function connect(hypertyURL){var _this3=this;this.partner=hypertyURL;if(this.sender==null){this.sender=true;}return new Promise(function(resolve,reject){// initial data for sync object
-var dataObject=_connection.connection;// prepare dataObject for either offer or answer
+this._syncher.subscribe(this._objectDescURL,event.url).then(function(objObserver){console.info("[DTWebRTC]: [_onNotification] objObserver ",objObserver);// if successful, we get an observer object back
+_this2.objObserver=objObserver;// if we are not the initiator of the call, then signal and handle this invite
+if(!_this2.sender){_this2.partner=event.from;console.log('got invite');_this2.trigger('incomingcall',objObserver.data);}_this2.changePeerInformation(objObserver);}).catch(function(reason){console.error(reason);});break;case"delete":this.cleanupPC();this.trigger('disconnected');break;}}/**
+    Establishing a connection to the remote side by invoking syncher.subscribe.
+    This will be called for the invite as well as for the the accept. It returns
+    an objectReporter object, if successfully.
+   **/},{key:'connect',value:function connect(hypertyURL){var _this3=this;this.partner=hypertyURL;if(this.sender==null){this.sender=true;}return new Promise(function(resolve,reject){// initial data for sync object
+var dataObject=_connection.connection;// prepare dataObject for offer or answer
 if(_this3.sender){// offer
-// console.log("[DTWebRTC]: offer is this: ", offer)
 dataObject.name="Connection";dataObject.status="";dataObject.owner=_this3.myUrl;dataObject.peer=_this3.partner;}else{// answer
-dataObject.Peer={connectionDescription:{},iceCandidates:[]};}_this3._syncher.create(_this3._objectDescURL,[hypertyURL],dataObject).then(function(objReporter){console.info('1. Return Created WebRTC Object Reporter',objReporter);_this3.objReporter=objReporter;if(_this3.sender){// offer
-// ensure this the objReporter object is created before we create the offer
+dataObject.Peer={connectionDescription:{},iceCandidates:[]};}// ensure this the objReporter object is created before we create the offer
+_this3._syncher.create(_this3._objectDescURL,[hypertyURL],dataObject).then(function(objReporter){console.info('1. Return Created WebRTC Object Reporter',objReporter);_this3.objReporter=objReporter;if(_this3.sender){// offer
 _this3.invite().then(function(offer){_this3.objReporter.data.ownerPeer={connectionDescription:offer,iceCandidates:[]};});}objReporter.onSubscription(function(event){console.info('-------- Receiver received subscription request --------- \n');event.accept();// all subscription requested are accepted
 resolve(objReporter);});}).catch(function(reason){console.error(reason);reject(reason);});});}// WEBRTC FUNCTIONS HERE
-},{key:'setMediaOptions',value:function setMediaOptions(opt){this.constraints=opt;}// callee handles incoming invite from the caller
-},{key:'handleInvite',value:function handleInvite(data,partner){this.partner=partner;console.log('got invite');this.trigger('incomingcall',data);}// caller invites a callee
+},{key:'setMediaOptions',value:function setMediaOptions(opt){this.constraints=opt;}// caller invites a callee
 },{key:'invite',value:function invite(){var _this4=this;this.createPC();return new Promise(function(resolve,reject){console.log('>>>Constrains',_this4.constraints);navigator.mediaDevices.getUserMedia(_this4.constraints).then(function(stream){console.log("[DTWebRTC]: localviodeo");_this4.trigger('localvideo',stream);//document.getElementById('localVideo').srcObject = stream;
 _this4.mediaStream=stream;_this4.pc.addStream(stream);_this4.pc.createOffer(_this4.receivingConstraints).then(function(offer){_this4.pc.setLocalDescription(new RTCSessionDescription(offer),function(){resolve(offer);},function(){reject();});}).catch(function(e){reject("Create Offer failed: ",e);});});});}// calle accepted the invitation
 },{key:'invitationAccepted',value:function invitationAccepted(data){var _this5=this;// ensure that a PC is existing
@@ -106,8 +108,7 @@ _this5.connect(_this5.partner).then(function(objReporter){console.log("[DTWebRTC
 },{key:'setIceServer',value:function setIceServer(ice,mode){_stunTurnserverConfig2.default.ice=mode?ice:ice.concat(_stunTurnserverConfig2.default.ice);}//create a peer connection with its event handlers
 },{key:'createPC',value:function createPC(){var _this6=this;if(this.pc)return;this.pc=new RTCPeerConnection({'iceServers':_stunTurnserverConfig2.default.ice});console.log("[DTWebRTC]: created PeerConnection",this.pc);//event handler for when remote stream is added to peer connection
 this.pc.onaddstream=function(obj){console.log('>>>onaddstream',_this6.pc);_this6.trigger('remotevideo',obj.stream);};//event handler for when local ice candidate has been found
-this.pc.onicecandidate=function(e){console.log("[DTWebRTC]: icecandidateevent occured: ",e);if(!e.candidate)return;var icecandidate={type:'candidate',candidate:e.candidate.candidate,// SD: these two lines where not present before
-sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex};if(!_this6.objReporter){console.log("[DTWebRTC]: got  iceCandidate before objReporter ... skipping");return;}if(_this6.sender){_this6.objReporter.data.ownerPeer.iceCandidates.push(icecandidate);}else{_this6.objReporter.data.Peer.iceCandidates.push(icecandidate);}};// unfortunately onremovestream() didn't recognizes the remove of a stream
+this.pc.onicecandidate=function(e){console.log("[DTWebRTC]: icecandidateevent occured: ",e);if(!e.candidate)return;var icecandidate={type:'candidate',candidate:e.candidate.candidate,sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex};if(!_this6.objReporter){console.log("[DTWebRTC]: got  iceCandidate before objReporter ... skipping");return;}if(_this6.sender){_this6.objReporter.data.ownerPeer.iceCandidates.push(icecandidate);}else{_this6.objReporter.data.Peer.iceCandidates.push(icecandidate);}};// unfortunately onremovestream() didn't recognizes the remove of a stream
 this.pc.onRemoteStreamRemoved=function(a){console.log('>>>stream removed from remote',a);};}////////////////////////////////////
 // HypertyConnector functions
 },{key:'changePeerInformation',value:function changePeerInformation(dataObjectObserver){var _this7=this;var data=dataObjectObserver.data;console.log("[DTWebRTC]: changePeerInformation: data",data);var peerData=data.Peer?data.Peer:data.ownerPeer;console.info("[DTWebRTC]: Peer Data:",peerData);if(peerData.hasOwnProperty('connectionDescription')){this.processPeerInformation(peerData.connectionDescription);}if(peerData.hasOwnProperty('iceCandidates')){peerData.iceCandidates.forEach(function(ice){console.log("[DTWebRTC]: changePeerInformation for ice",ice);_this7.processPeerInformation(ice);});}dataObjectObserver.onChange('*',function(event){console.info('[DTWebRTC]: Observer on change message: ',event);// this event also includes the answer from the callee so we need to

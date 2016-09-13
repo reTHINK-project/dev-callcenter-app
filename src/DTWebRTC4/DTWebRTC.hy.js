@@ -45,8 +45,6 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     });
   }
 
-
-  // reveicing starts here
   _onNotification(event) {
     if (this.sender == null) {
       this.sender = false;
@@ -54,26 +52,26 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     console.info('[DTWebRTC]: Event Received: ', event);
     switch (event.type) {
       case "create":
+        // the peer has created an object and we are requested to subscribe for changes to this remote object
         this.trigger('invitation', event.identity);
         event.ack(); // Acknowledge reporter about the Invitation was received
         // Subscribe to Object
         this._syncher.subscribe(this._objectDescURL, event.url).then((objObserver) => {
-            console.info("[DTWebRTC]: [_onNotification] objObserver ", objObserver);
+          console.info("[DTWebRTC]: [_onNotification] objObserver ", objObserver);
+          // if successful, we get an observer object back
+          this.objObserver = objObserver
 
-            console.log("[DTWebRTC]: event.from: ", event.from);
-            if (this.sender) {
-              this.objObserver = objObserver
-            } else {
-              this.handleInvite(objObserver.data, event.from);
-            }
-            this.changePeerInformation(objObserver);
+          // if we are not the initiator of the call, then signal and handle this invite
+          if (! this.sender) {
+            this.partner = event.from;
+            console.log('got invite');
+            this.trigger('incomingcall', objObserver.data);
+          }
 
-            objObserver.onChange('connectionDescription', function(event) {
-              console.info('connectionDescription received:', event); // Object was changed
-            });
-          }).catch((reason) => {
-            console.error(reason);
-          });
+          this.changePeerInformation(objObserver);
+        }).catch((reason) => {
+          console.error(reason);
+        });
         break;
       case "delete":
         this.cleanupPC();
@@ -82,7 +80,11 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     }
   }
 
-  // invoked in both roles caller and callee
+  /**
+    Establishing a connection to the remote side by invoking syncher.subscribe.
+    This will be called for the invite as well as for the the accept. It returns
+    an objectReporter object, if successfully.
+   **/
   connect(hypertyURL) {
     this.partner = hypertyURL;
     if (this.sender == null) {
@@ -134,13 +136,6 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
   // WEBRTC FUNCTIONS HERE
   setMediaOptions(opt) {
     this.constraints = opt;
-  }
-
-  // callee handles incoming invite from the caller
-  handleInvite(data, partner) {
-    this.partner = partner;
-    console.log('got invite');
-    this.trigger('incomingcall', data);
   }
 
   // caller invites a callee
