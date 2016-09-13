@@ -85,7 +85,6 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
   // invoked in both roles caller and callee
   connect(hypertyURL) {
     this.partner = hypertyURL;
-    let syncher = this._syncher;
     if (this.sender == null) {
       this.sender = true;
     }
@@ -107,7 +106,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
         };
       }
 
-      syncher.create(this._objectDescURL, [hypertyURL], dataObject).then((objReporter) => {
+      this._syncher.create(this._objectDescURL, [hypertyURL], dataObject).then((objReporter) => {
           console.info('1. Return Created WebRTC Object Reporter', objReporter);
           this.objReporter = objReporter;
           if (this.sender) {  // offer
@@ -172,6 +171,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
 
   // calle accepted the invitation
   invitationAccepted(data) {
+    // ensure that a PC is existing
     this.createPC();
 
     let offer;
@@ -184,24 +184,24 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     }
     console.log('>>>Constraints', this.constraints);
     navigator.mediaDevices.getUserMedia(this.constraints).then( (stream) => {
-        this.trigger('localvideo', stream);
-        this.mediaStream = stream;
-        this.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
-        this.pc.setRemoteDescription(new RTCSessionDescription(offer), () => {
-          // connect to the other hyperty now
-          this.connect(this.partner).then((objReporter) => {
-            console.log("[DTWebRTC]: the objreporter is as follows: ", objReporter);
-            this.objReporter = objReporter;
+      this.trigger('localvideo', stream);
+      this.mediaStream = stream;
+      this.pc.addStream(stream); // add the stream to the peer connection so the other peer can receive it later
+      this.pc.setRemoteDescription(new RTCSessionDescription(offer), () => {
+        // connect to the other hyperty now
+        this.connect(this.partner).then( (objReporter) => {
+          console.log("[DTWebRTC]: objReporter created successfully: ", objReporter);
+          this.objReporter = objReporter;
 
-            this.pc.createAnswer().then( (answer) => {
-              this.objReporter.data.Peer.connectionDescription = answer;
-              this.pc.setLocalDescription(new RTCSessionDescription(answer), () => {
-                console.log("[DTWebRTC]: answer for callee: ", answer);
-              });
+          this.pc.createAnswer().then( (answer) => {
+            this.objReporter.data.Peer.connectionDescription = answer;
+            this.pc.setLocalDescription(new RTCSessionDescription(answer), () => {
+              console.log("[DTWebRTC]: localDescription (answer) successfully set: ", answer);
             });
           });
         });
       });
+    });
   }
 
   // choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
@@ -226,7 +226,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     }
 
     //event handler for when local ice candidate has been found
-    this.pc.onicecandidate = function(e) {
+    this.pc.onicecandidate = (e) => {
       console.log("[DTWebRTC]: icecandidateevent occured: ", e)
       if (!e.candidate) return;
       let icecandidate = {
@@ -250,7 +250,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
 
     // unfortunately onremovestream() didn't recognizes the remove of a stream
 
-    this.pc.onRemoteStreamRemoved = function(a) {
+    this.pc.onRemoteStreamRemoved = (a) => {
       console.log('>>>stream removed from remote', a);
     }
   }
@@ -314,12 +314,8 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     }
   }
 
-  showidentity(url) {
-    let syncher = this._syncher;
-    console.log('[DTWebRTC]: >>>Identity', this.identityManager, "\n", this.identityManager.discoverUserRegistered(url));
-  }
-
   cleanupPC() {
+    this.sender = null;
     if ( this.mediaStream ) {
       let tracks = this.mediaStream.getTracks();
       tracks.forEach((track) => { track.stop() } );

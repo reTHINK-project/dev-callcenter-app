@@ -15,7 +15,7 @@ rethink.install(config).then(function(result) {
 
   console.info('Runtime Installed in production mode:', result);
 
-}).then(function(hyperties) {
+}).then( function(hyperties) {
 
   // init some click handlers
   $('#gosearch').on('click', discoverEmail);
@@ -159,23 +159,21 @@ function fillmodal(calleeInfo) {
 function initListeners() {
 
   hyperty.addEventListener('invitation', function(identity) {
-    console.log('Invitation event received from:', identity);
+    console.log('incomingcall event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
     fillmodal(identity);
     prepareMediaOptions();
   });
 
   hyperty.addEventListener('incomingcall', function(data) {
-    console.log('incomingcall received');
     $('#myModal').find('#btn-accept').on('click', () => {
-      hyperty.invitationAccepted(data)
+      hyperty.invitationAccepted(data);
     });
     $('#myModal').find('#btn-reject').on('click', () => {
       hangup
     });
     $('#myModal').modal('show');
 
-    console.log('>>>data', data);
     // if (!confirm('Incoming call. Answer?')) return false;
     // hyperty.invitationAccepted(data);
   });
