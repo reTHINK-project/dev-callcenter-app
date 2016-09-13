@@ -34,7 +34,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
       offerToReceiveVideo: 1
     };
     this.sender = null; // sender == false --> I'm the receiver @ start
-    this.myUrl = null; // runtimeurl;
+    this.myUrl = hypertyURL; // own hypertyUrl
     this.partner = null; // hypertyURL of the other hyperty
     this.pc = null; // the peer connection object of WebRTC
     this.mediaStream = null;
@@ -92,9 +92,8 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     return new Promise((resolve, reject) => {
       // initial data for sync object
       let dataObject = connection;
-      // prepare dataObject for either offer or answer
+      // prepare dataObject for offer or answer
       if (this.sender) {  // offer
-            // console.log("[DTWebRTC]: offer is this: ", offer)
             dataObject.name = "Connection";
             dataObject.status = "";
             dataObject.owner = this.myUrl;
@@ -106,12 +105,12 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
         };
       }
 
+      // ensure this the objReporter object is created before we create the offer
       this._syncher.create(this._objectDescURL, [hypertyURL], dataObject).then((objReporter) => {
           console.info('1. Return Created WebRTC Object Reporter', objReporter);
           this.objReporter = objReporter;
           if (this.sender) {  // offer
-            // ensure this the objReporter object is created before we create the offer
-            this.invite().then((offer) => {
+            this.invite().then( (offer) => {
                 this.objReporter.data.ownerPeer = {
                   connectionDescription: offer,
                   iceCandidates: []
@@ -232,7 +231,6 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
       let icecandidate = {
         type: 'candidate',
         candidate: e.candidate.candidate,
-        // SD: these two lines where not present before
         sdpMid: e.candidate.sdpMid,
         sdpMLineIndex: e.candidate.sdpMLineIndex
       };
