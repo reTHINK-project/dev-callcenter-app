@@ -271,7 +271,7 @@ function getIceServers() {
   var mode = $("#strictice").is(':checked') ? "strictice" : null;
   console.log('>>>mode:', mode);
   var iceServers = [];
-  if (!turn) {
+  if (!turn || !turn_user || !turn_pass) {
     turn = "numb.viagenie.ca";
     turn_user = "steffen.druesedow@telekom.de";
     turn_pass = "w0nd3r";
