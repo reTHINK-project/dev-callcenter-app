@@ -286,7 +286,11 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
 
   processPeerInformation(data) {
     console.info("[DTWebRTC]: processPeerInformation: ", JSON.stringify(data));
-    this.createPC();
+    //this.createPC();
+    if ( ! this.pc ) {
+      console.info("[DTWebRTC]: processPeerInformation: no PeerConnection existing --> maybe in disconnecting process. --> ignoring this update");
+      return;
+    }
 
     if (data.type === 'offer' || data.type === 'answer') {
       // if (data.type === 'answer') {
@@ -312,9 +316,11 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     if ( this.mediaStream ) {
       let tracks = this.mediaStream.getTracks();
       tracks.forEach((track) => { track.stop() } );
+      if ( this.pc ) {
+        this.pc.removeStream(this.mediaStream);
+      }
     }
-    this.pc.removeStream(this.mediaStream);
-    this.pc.close();
+    if ( this.pc ) this.pc.close();
     this.pc = null;
   }
 

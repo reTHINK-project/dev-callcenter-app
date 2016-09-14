@@ -183,7 +183,7 @@ function initListeners() {
       hyperty.invitationAccepted(data);
     });
     $('#myModal').find('#btn-reject').on('click', () => {
-      hangup
+      hangup();
     });
     $('#myModal').modal('show');
 
@@ -209,6 +209,7 @@ function initListeners() {
     $('.send-panel').removeClass('hide');
     $('.webrtcconnect').empty();
     $('.invitation-panel').empty();
+    $('#myModal').modal('hide');
     document.getElementById('localVideo').src = "";
     document.getElementById('remoteVideo').src = "";
     $('#video').addClass('hide');
