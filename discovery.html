@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+  <title>reTHINK-Simple-Discovery</title>
+  <meta name="description" content="Discovery">
+  <meta name="author" content="Steffen Drüsedow">
+  <link rel="icon" href="web/media/matrix.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.css" rel="stylesheet">
+  <link href="web/css/dark.css" rel="stylesheet">
+  <link href="web/css/style.css" rel="stylesheet">
+</head>
+
+<body class="dark" data-spy="scroll" data-target="navbar">
+  <!-- Fixed navbar -->
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid ">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+          <i style="color: #444444;" class="fa fa-bars"></i>
+        </button>
+        <img class="navbar-brand logo" id="logo" src="web/media/logo.png" href="#">
+        <a class="navbar-brand big-text" rel="home" href="#">
+              reTHINK-SimpleDiscovery
+            </a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse ">
+        <div class="input-group searchemail" data-name="DTHCsender">
+          <input type="email" class="friend-email block2 validate form-control " style="width: 50%; border-right: none;" placeholder="your friends email" id="email">
+          <input type="text" class="friend-domain block2 validate form-control" style="width: 50%;" placeholder="your friends domain" id="domain">
+          <span class="input-group-btn"><button id="gosearch" class="btn btn-default">Search</button>
+          </span>
+        </div>
+        <br>
+      </div>
+    </div>
+  </nav>
+  <!-- Begin page content -->
+  <div class="main-content container">
+    <!-- <div class="main-content container-fluid"> -->
+    <div class="row">
+      <div class="col-sm-1"></div>
+      <div id="content" class="content col-sm-10"></div>
+      <div class="col-sm-1"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer navbar-fixed-bottom">
+    <img class=" navbar-brand logo" id="logo" src="web/media/logo.png" href="#">
+  </footer>
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.js"></script>
+  <!-- Hyperty Toolkit main file -->
+  <script src="../dist/simpleDiscovery.js"></script>
+
+  <script src="web/js/custom.js"></script>
+
+</body>
+
+</html>

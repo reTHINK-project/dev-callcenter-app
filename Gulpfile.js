@@ -34,7 +34,7 @@ gulp.task('serve', function(done) {
 
   process.env.environment = environment;
 
-  var sequence = ['environment', 'js', 'server'];
+  var sequence = ['environment', 'js', 'js-discovery', 'server'];
   if (environment !== 'production') {
     sequence.push('watch');
   }
@@ -95,7 +95,7 @@ gulp.task('watch', function(done) {
 
 });
 
-gulp.task('main-watch', ['js'], browserSync.reload);
+gulp.task('main-watch', ['js', 'js-discovery'], browserSync.reload);
 gulp.task('hyperties-watch', ['hyperties'], browserSync.reload);
 
 gulp.task('js', [], function() {
@@ -109,6 +109,23 @@ gulp.task('js', [], function() {
   .pipe(transpile({destination: __dirname + '/dist', debug: false}))
   .on('end', function() {
     gutil.log('The main file was created like a distribution file on /dist');
+    gutil.log('-----------------------------------------------------------');
+    browserSync.reload();
+  });
+
+});
+
+gulp.task('js-discovery', [], function() {
+
+  return gulp.src('./src/simpleDiscovery.js')
+  .on('end', function() {
+    var fileObject = path.parse('./src/simpleDiscovery.js');
+    gutil.log('-----------------------------------------------------------');
+    gutil.log('Converting ' + fileObject.base + ' from ES6 to ES5');
+  })
+  .pipe(transpile({destination: __dirname + '/dist', debug: false}))
+  .on('end', function() {
+    gutil.log('The simpleDiscovery file was created like a distribution file on /dist');
     gutil.log('-----------------------------------------------------------');
     browserSync.reload();
   });
