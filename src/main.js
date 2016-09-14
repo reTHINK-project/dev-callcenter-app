@@ -5,10 +5,14 @@ import config from '../config.json';
 
 window.KJUR = {};
 
+let STATUS_DISCONNECTED = 0;
+let STATUS_CONNECTED = 1;
+
 let HYPERTY_NAME = "DTWebRTC";
 let hyperty;
 let runtimeLoader;
 let autoConnect = false;
+let status = STATUS_DISCONNECTED;
 
 rethink.install(config).then(function(result) {
   runtimeLoader = result;
@@ -125,13 +129,21 @@ function webrtcconnectToHyperty(event) {
   getIceServers();
   prepareMediaOptions();
 
+  this.status = STATUS_DISCONNECTED;
   let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
-  $('.invitation-panel').html('<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>');
+  let connect_html = '<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>';
+  $('.invitation-panel').html(connect_html);
+
+  setTimeout( () => {
+    if ( this.status === STATUS_DISCONNECTED ) {
+      $('.invitation-panel').append( '<button id="cancel"  class="btn btn-default btn-sm ">Cancel</button>' );
+      $('#cancel').on('click', hangup );
+    }
+  }, 6000);
 
   console.log(toHyperty);
   $('.send-panel').addClass('hide');
-  hyperty.connect(toHyperty)
-    .then(function(obj) {
+  hyperty.connect(toHyperty).then((obj) => {
       console.log('Webrtc obj: ', obj);
     })
     .catch(function(reason) {
@@ -189,6 +201,7 @@ function initListeners() {
     document.getElementById('remoteVideo').srcObject = stream;
     $('#video').removeClass('hide');
     $('.invitation-panel').empty();
+    this.status = STATUS_CONNECTED;
   });
 
   hyperty.addEventListener('disconnected', function() {
