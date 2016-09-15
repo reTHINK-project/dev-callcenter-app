@@ -129,13 +129,13 @@ function webrtcconnectToHyperty(event) {
   getIceServers();
   prepareMediaOptions();
 
-  this.status = STATUS_DISCONNECTED;
+  status = STATUS_DISCONNECTED;
   let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
   let connect_html = '<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>';
   $('.invitation-panel').html(connect_html);
 
   setTimeout( () => {
-    if ( this.status === STATUS_DISCONNECTED ) {
+    if ( status === STATUS_DISCONNECTED ) {
       $('.invitation-panel').append( '<button id="cancel"  class="btn btn-default btn-sm ">Cancel</button>' );
       $('#cancel').on('click', hangup );
     }
@@ -201,7 +201,7 @@ function initListeners() {
     document.getElementById('remoteVideo').srcObject = stream;
     $('#video').removeClass('hide');
     $('.invitation-panel').empty();
-    this.status = STATUS_CONNECTED;
+    status = STATUS_CONNECTED;
   });
 
   hyperty.addEventListener('disconnected', () => {
