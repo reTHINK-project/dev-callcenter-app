@@ -170,7 +170,7 @@ function fillmodal(calleeInfo) {
 // receiving code here
 function initListeners() {
 
-  hyperty.addEventListener('invitation', function(identity) {
+  hyperty.addEventListener('invitation', (identity) => {
     // preparing the modal dialog with the given identity info
     console.log('incomingcall event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
@@ -178,7 +178,7 @@ function initListeners() {
     prepareMediaOptions();
   });
 
-  hyperty.addEventListener('incomingcall', function(data) {
+  hyperty.addEventListener('incomingcall', (data) => {
     $('#myModal').find('#btn-accept').on('click', () => {
       hyperty.invitationAccepted(data);
     });
@@ -191,12 +191,12 @@ function initListeners() {
     // hyperty.invitationAccepted(data);
   });
 
-  hyperty.addEventListener('localvideo', function(stream) {
+  hyperty.addEventListener('localvideo', (stream) => {
     console.log('local stream received');
     document.getElementById('localVideo').srcObject = stream;
   });
 
-  hyperty.addEventListener('remotevideo', function(stream) {
+  hyperty.addEventListener('remotevideo', (stream) => {
     console.log('remotevideo received');
     document.getElementById('remoteVideo').srcObject = stream;
     $('#video').removeClass('hide');
@@ -204,7 +204,7 @@ function initListeners() {
     this.status = STATUS_CONNECTED;
   });
 
-  hyperty.addEventListener('disconnected', function() {
+  hyperty.addEventListener('disconnected', () => {
     console.log('>>>disconnected');
     $('.send-panel').removeClass('hide');
     $('.webrtcconnect').empty();

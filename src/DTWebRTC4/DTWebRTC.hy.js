@@ -54,24 +54,30 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
       case "create":
         // the peer has created an object and we are requested to subscribe for changes to this remote object
         this.trigger('invitation', event.identity);
-        event.ack(); // Acknowledge reporter about the Invitation was received
-        // Subscribe to Object
-        this._syncher.subscribe(this._objectDescURL, event.url).then((objObserver) => {
-          console.info("[DTWebRTC]: [_onNotification] objObserver ", objObserver);
-          // if successful, we get an observer object back
-          this.objObserver = objObserver
 
-          // if we are not the initiator of the call, then signal and handle this invite
-          if (! this.sender) {
-            this.partner = event.from;
-            console.log('got invite');
-            this.trigger('incomingcall', objObserver.data);
-          }
+        console.info("[DTWebRTC]: [_onNotification] sending event.ack() ");
+        let result = event.ack(); // Acknowledge reporter about the Invitation was received
+        console.info("[DTWebRTC]: [_onNotification] event.ack() result is:", result);
 
-          this.changePeerInformation(objObserver);
-        }).catch((reason) => {
-          console.error(reason);
-        });
+        setTimeout( () => {
+          // Subscribe to Object
+          this._syncher.subscribe(this._objectDescURL, event.url).then((objObserver) => {
+            console.info("[DTWebRTC]: [_onNotification] objObserver ", objObserver);
+            // if successful, we get an observer object back
+            this.objObserver = objObserver
+
+            // if we are not the initiator of the call, then signal and handle this invite
+            if (! this.sender) {
+              this.partner = event.from;
+              console.log('got invite');
+              this.trigger('incomingcall', objObserver.data);
+            }
+
+            this.changePeerInformation(objObserver);
+          }).catch((reason) => {
+            console.error(reason);
+          });
+        }, 500);
         break;
       case "delete":
         this.cleanupPC();

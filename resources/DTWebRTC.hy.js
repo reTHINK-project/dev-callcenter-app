@@ -82,11 +82,11 @@ _this.partner=null;// hypertyURL of the other hyperty
 _this.pc=null;// the peer connection object of WebRTC
 _this.mediaStream=null;// receiving starts here
 _this._syncher.onNotification(function(event){_this._onNotification(event);});return _this;}_createClass(DTWebRTC,[{key:'_onNotification',value:function _onNotification(event){var _this2=this;if(this.sender==null){this.sender=false;}console.info('[DTWebRTC]: Event Received: ',event);switch(event.type){case"create":// the peer has created an object and we are requested to subscribe for changes to this remote object
-this.trigger('invitation',event.identity);event.ack();// Acknowledge reporter about the Invitation was received
-// Subscribe to Object
-this._syncher.subscribe(this._objectDescURL,event.url).then(function(objObserver){console.info("[DTWebRTC]: [_onNotification] objObserver ",objObserver);// if successful, we get an observer object back
+this.trigger('invitation',event.identity);console.info("[DTWebRTC]: [_onNotification] sending event.ack() ");var result=event.ack();// Acknowledge reporter about the Invitation was received
+console.info("[DTWebRTC]: [_onNotification] event.ack() result is:",result);setTimeout(function(){// Subscribe to Object
+_this2._syncher.subscribe(_this2._objectDescURL,event.url).then(function(objObserver){console.info("[DTWebRTC]: [_onNotification] objObserver ",objObserver);// if successful, we get an observer object back
 _this2.objObserver=objObserver;// if we are not the initiator of the call, then signal and handle this invite
-if(!_this2.sender){_this2.partner=event.from;console.log('got invite');_this2.trigger('incomingcall',objObserver.data);}_this2.changePeerInformation(objObserver);}).catch(function(reason){console.error(reason);});break;case"delete":this.cleanupPC();this.trigger('disconnected');break;}}/**
+if(!_this2.sender){_this2.partner=event.from;console.log('got invite');_this2.trigger('incomingcall',objObserver.data);}_this2.changePeerInformation(objObserver);}).catch(function(reason){console.error(reason);});},500);break;case"delete":this.cleanupPC();this.trigger('disconnected');break;}}/**
     Establishing a connection to the remote side by invoking syncher.subscribe.
     This will be called for the invite as well as for the the accept. It returns
     an objectReporter object, if successfully.
