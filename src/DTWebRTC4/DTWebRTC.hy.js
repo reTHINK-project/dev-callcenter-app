@@ -52,6 +52,9 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
     console.info('[DTWebRTC]: Event Received: ', event);
     switch (event.type) {
       case "create":
+        // ensure that a PC is existing
+        this.createPC();
+
         // the peer has created an object and we are requested to subscribe for changes to this remote object
         this.trigger('invitation', event.identity);
 
@@ -171,9 +174,6 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
 
   // calle accepted the invitation
   invitationAccepted(data) {
-    // ensure that a PC is existing
-    this.createPC();
-
     let offer;
     if (data.ownerPeer.connectionDescription.type == "offer") {
       console.log("[DTWebRTC]: OFFER RECEIVED: ", data)
@@ -221,7 +221,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
 
     //event handler for when remote stream is added to peer connection
     this.pc.onaddstream = (obj) => {
-      console.log('>>>onaddstream', this.pc);
+      console.log('[DTWebRTC]: >>>onaddstream', this.pc);
       this.trigger('remotevideo', obj.stream);
     }
 
