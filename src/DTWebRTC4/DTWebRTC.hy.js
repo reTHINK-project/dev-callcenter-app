@@ -77,7 +77,7 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
           }).catch((reason) => {
             console.error(reason);
           });
-        }, 500);
+        }, 750);
         break;
       case "delete":
         this.cleanupPC();
