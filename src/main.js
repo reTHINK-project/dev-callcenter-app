@@ -107,12 +107,14 @@ function tryAutoConnect() {
 function addContent() {
   var place = document.getElementById("content");
   $(place).html(
-    '<div class="hyperty-panel"></div>' +
-    '<div class="send-panel"></div>' +
-    '<div class="invitation-panel"></div>' +
+    '<div id="info">' +
+      '<div class="hyperty-panel"></div>' +
+      '<div class="send-panel"></div>' +
+      '<div class="invitation-panel"></div>' +
+    '</div>' +
     '<div id="video" class="hide">' +
-      '<video id="remoteVideo" class="block7 " autoplay poster="web/media/load3.gif" ></video>' +
-      '<video id="localVideo" class="block3 " muted autoplay poster="web/media/load3.gif" ></video>' +
+      '<video id="remoteVideo" class="smallVideo " autoplay poster="web/media/load3.gif" ></video>' +
+      '<video id="localVideo" class="fullVideo " muted autoplay poster="web/media/load3.gif" ></video>' +
       '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>' +
     '</div>');
   $('#hangup').on('click', hangup);
@@ -194,9 +196,14 @@ function initListeners() {
   });
 
   hyperty.addEventListener('remotevideo', (stream) => {
-    console.log('remotevideo received');
-    document.getElementById('remoteVideo').srcObject = stream;
+    $('#info').addClass('hide');
     $('#video').removeClass('hide');
+    let rv = document.getElementById('remoteVideo');
+    let lv = document.getElementById('localVideo');
+    rv.srcObject = stream;
+    $('#remoteVideo').removeClass('smallVideo').addClass('fullVideo');
+    $('#localVideo').removeClass('fullVideo').addClass('smallVideo');
+    console.log('remotevideo received');
     $('.invitation-panel').empty();
     status = STATUS_CONNECTED;
   });
@@ -207,8 +214,14 @@ function initListeners() {
     $('.webrtcconnect').empty();
     $('.invitation-panel').empty();
     $('#myModal').modal('hide');
-    document.getElementById('localVideo').src = "";
-    document.getElementById('remoteVideo').src = "";
+    let rv = document.getElementById('remoteVideo');
+    let lv = document.getElementById('localVideo');
+    $('#localVideo').removeClass('smallVideo').addClass('fullVideo');
+    $('#remoteVideo').removeClass('fullVideo').addClass('smallVideo');
+    rv.src = "";
+    lv.src = "";
+
+    $('#info').removeClass('hide');
     $('#video').addClass('hide');
   });
 }
@@ -228,8 +241,7 @@ function discoverEmail(event) {
 
   $('.send-panel').html(msg);
 
-  hyperty.discovery.discoverHypertyPerUser(email, domain)
-    .then(function(result) {
+  hyperty.discovery.discoverHypertyPerUser(email, domain).then( (result) => {
       $('.send-panel').html(
         '<br><form class="webrtcconnect">' +
           '<input type="text" class="webrtc-hyperty-input form-control ">' +
@@ -244,7 +256,7 @@ function discoverEmail(event) {
         $('.webrtcconnect').find("button").click();
         // webrtcconnectToHyperty();
       }
-    }).catch(function(err) {
+    }).catch((err) => {
       $('.send-panel').html(
         '<div>No hyperty found!</div>'
       );

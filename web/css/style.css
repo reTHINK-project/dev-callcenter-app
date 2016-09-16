@@ -70,6 +70,26 @@ input {
   width: 100%;
 }
 
+.fullVideo  {
+    width:98%;
+    height:auto;
+    transition:height 1s;
+    -moz-transition:width 1s; /* Firefox 4 */
+    -webkit-transition:width 1s; /* Safari and Chrome */
+    -o-transition:width 1s; /* Opera */
+}
+.smallVideo  {
+    position: absolute;
+    width:20%;
+    height:auto;
+    top: 5%;
+    left: 5%;
+    transition:height 1s;
+    -moz-transition:width 1s; /* Firefox 4 */
+    -webkit-transition:width 1s; /* Safari and Chrome */
+    -o-transition:width 1s; /* Opera */
+}
+
 .block7 {
   /*display: block;*/
   width: 70%;
