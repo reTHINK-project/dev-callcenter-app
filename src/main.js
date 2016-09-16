@@ -62,15 +62,12 @@ function hypertyLoaded(result) {
   hyperty.identityManager.discoverUserRegistered().then((identity) => {
     console.log("[DTWebRTC.main]: registered user is: ", identity);
     hyperty.myIdentity = identity;
-    let userInfo = "<p>Authenticated as: <br> " +
-        (hyperty.myIdentity.avatar ? '<img src="' + hyperty.myIdentity.avatar + '" class="logo" />' : "") + "<br>" +
-        (hyperty.myIdentity.cn ? hyperty.myIdentity.cn : "") + ", " +
-        (hyperty.myIdentity.username ? hyperty.myIdentity.username : "") +
-      "</p>";
-      $('.hyperty-panel').html( userInfo + '<p>Hyperty URL:<br>' + result.runtimeHypertyURL + '</p>');
+    let info = "Authenticated as:</br>" + identity.cn + ",  " + identity.username + '<img src="' + hyperty.myIdentity.avatar + '" class="logo" /></br>' +
+               "Hyperty URL:</br>" + result.runtimeHypertyURL;
+      $('.hyperty-panel').html( info );
   }).catch((reason) => {
     console.log("[DTWebRTC.main]: error while discovery of registered user. Error is ", reason);
-    $('.hyperty-panel').html( userInfo + '<p>Hyperty URL:<br>' + result.runtimeHypertyURL + '</p>');
+    $('.hyperty-panel').html('<p>Hyperty URL:   ' + result.runtimeHypertyURL + '</p>');
   });
 
   initListeners();
@@ -113,10 +110,10 @@ function addContent() {
     '<div class="hyperty-panel"></div>' +
     '<div class="send-panel"></div>' +
     '<div class="invitation-panel"></div>' +
-    '<div id="video"class="hide">' +
-    '<video id="remoteVideo" class="block7 " autoplay poster="web/media/load3.gif" ></video>' +
-    '<video id="localVideo" class="block3 " autoplay poster="web/media/load3.gif" ></video>' +
-    '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>' +
+    '<div id="video" class="hide">' +
+      '<video id="remoteVideo" class="block7 " autoplay poster="web/media/load3.gif" ></video>' +
+      '<video id="localVideo" class="block3 " muted autoplay poster="web/media/load3.gif" ></video>' +
+      '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>' +
     '</div>');
   $('#hangup').on('click', hangup);
 }
@@ -262,15 +259,12 @@ function discoverEmail(event) {
 var PROFILE_KEY = "WEBRTC-SIMPLE-SETTINGS";
 
 function getIceServers() {
-  //  {"url":"stun:stun.l.google.com:19302"},
-  //  {"url":"turn:185.17.229.168:3478","credential":"luis123","username":"luis"}
-
   var stun = $("#stun").val();
   var turn = $("#turn").val();
   var turn_user = $("#turn_user").val();
   var turn_pass = $("#turn_pass").val();
   var mode = $("#strictice").is(':checked') ? "strictice" : null;
-  console.log('>>>mode:', mode);
+  console.log('[DTWebRTC] IceServer mode:', mode);
   var iceServers = [];
   if (!turn || !turn_user || !turn_pass) {
     turn = "numb.viagenie.ca";

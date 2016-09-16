@@ -158,7 +158,8 @@ class DTWebRTC extends EventEmitter { // extends EventEmitter because we need to
           //document.getElementById('localVideo').srcObject = stream;
           this.mediaStream = stream;
           this.pc.addStream(stream);
-            this.pc.createOffer(this.receivingConstraints).then( (offer) => {
+            // this.pc.createOffer(this.receivingConstraints).then( (offer) => {
+            this.pc.createOffer().then( (offer) => {
               this.pc.setLocalDescription(new RTCSessionDescription(offer), () => {
                 resolve(offer);
               }, function() {
