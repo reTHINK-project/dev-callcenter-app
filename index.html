@@ -80,12 +80,46 @@
       </div>
     </div>
   </nav>
+
   <!-- Begin page content -->
   <div class="main-content container">
     <!-- <div class="main-content container-fluid"> -->
     <div class="row">
       <!--div class="col-sm-1"></div-->
-      <div id="content" class="content col-sm-10"></div>
+      <div id="content" class="content col-sm-12 hide">
+        <div id="info">
+          <div class="hyperty-panel"></div>
+          <div class="send-panel"></div>
+          <div class="invitation-panel"></div>
+        </div>
+        <div id="video" class="row hide">
+          <div class="col-sm-10">
+            <video id="remoteVideo" class="smallVideo " autoplay poster="web/media/load3.gif" ></video>
+            <video id="localVideo" class="fullVideo " muted autoplay poster="web/media/load3.gif" ></video>
+          </div>
+          <div class="col-sm-2">
+            <fieldset class="form-fieldset">
+              <legend>local media</legend>
+              <div class="form-checkbox-set">
+                <label><input type="checkbox" id="local-video" value="1" class="form-checkbox" checked>video</label>
+              </div>
+              <div class="form-checkbox-set">
+                <label><input type="checkbox" id="local-audio" value="1" class="form-checkbox" checked>audio</label>
+              </div>
+            </fieldset>
+            <fieldset class="form-fieldset">
+              <legend>remote media</legend>
+              <div class="form-checkbox-set">
+                <label><input type="checkbox" id="remote-video" value="1" class="form-checkbox" checked>video</label>
+              </div>
+              <div class="form-checkbox-set">
+                <label><input type="checkbox" id="remote-audio" value="1" class="form-checkbox" checked>audio</label>
+              </div>
+              <button id="hangup"  class="btn btn-default btn-sm ">hangup</button>
+            </fieldset>
+          </div>
+        </div>
+      </div>
       <!--div class="col-sm-1"></div-->
     </div>
   </div>

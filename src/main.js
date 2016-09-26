@@ -56,7 +56,32 @@ function hypertyFail(reason) {
 function hypertyLoaded(result) {
   hyperty = result.instance;
   hyperty.myUrl = result.runtimeHypertyURL;
-  addContent();
+  $('#content').removeClass('hide');
+  $('#hangup').on('click', hangup);
+  $('#local-audio').on('click', () => {
+    // let the hyperty switch stream-tracks
+    hyperty.switchLocalAudio( $('#local-audio').is(":checked") )
+  });
+  $('#local-video').on('click', () => {
+    // let the hyperty switch stream-tracks
+    hyperty.switchLocalVideo( $('#local-video').is(":checked") )
+  });
+
+  $('#remote-audio').on('click', () => {
+    console.log('[DTWebRTC] --> setting remote audio to: ' + $('#remote-audio').is(":checked"));
+    let rv = document.getElementById('remoteVideo');
+    rv.muted = $('#remote-audio').is(":checked");
+  })
+  ;
+  $('#remote-video').on('click', () => {
+    console.log('[DTWebRTC] --> setting remote video to: ' + $('#remote-video').is(":checked"));
+    let rv = document.getElementById('remoteVideo');
+    if ($('#remote-video').is(":checked"))
+       rv.play();
+    else
+      rv.pause();
+  });
+
 
   // get registered user
   hyperty.identityManager.discoverUserRegistered().then((identity) => {
@@ -102,22 +127,6 @@ function tryAutoConnect() {
     autoConnect = true;
     discoverEmail();
   }
-}
-
-function addContent() {
-  var place = document.getElementById("content");
-  $(place).html(
-    '<div id="info">' +
-      '<div class="hyperty-panel"></div>' +
-      '<div class="send-panel"></div>' +
-      '<div class="invitation-panel"></div>' +
-    '</div>' +
-    '<div id="video" class="hide">' +
-      '<video id="remoteVideo" class="smallVideo " autoplay poster="web/media/load3.gif" ></video>' +
-      '<video id="localVideo" class="fullVideo " muted autoplay poster="web/media/load3.gif" ></video>' +
-      '<button id="hangup"  class="btn btn-default btn-sm ">hangup</button>' +
-    '</div>');
-  $('#hangup').on('click', hangup);
 }
 
 function webrtcconnectToHyperty(event) {
