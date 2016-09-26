@@ -73,84 +73,6 @@ console.log("read-response: ",t),200===t.body.code?e(t.body.value):o(t.body.desc
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
-'use strict';Object.defineProperty(exports,"__esModule",{value:true});var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();exports.default=activate;var _Discovery=require('service-framework/dist/Discovery');var _Discovery2=_interopRequireDefault(_Discovery);var _Syncher=require('service-framework/dist/Syncher');var _utils=require('../utils/utils');var _EventEmitter2=require('../utils/EventEmitter');var _EventEmitter3=_interopRequireDefault(_EventEmitter2);var _stunTurnserverConfig=require('./stunTurnserverConfig');var _stunTurnserverConfig2=_interopRequireDefault(_stunTurnserverConfig);var _config=require('../../config.json');var _config2=_interopRequireDefault(_config);var _IdentityManager=require('../IdentityManager');var _IdentityManager2=_interopRequireDefault(_IdentityManager);var _connection=require('./connection');function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}function _possibleConstructorReturn(self,call){if(!self){throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return call&&(typeof call==="object"||typeof call==="function")?call:self;}function _inherits(subClass,superClass){if(typeof superClass!=="function"&&superClass!==null){throw new TypeError("Super expression must either be null or a function, not "+typeof superClass);}subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,enumerable:false,writable:true,configurable:true}});if(superClass)Object.setPrototypeOf?Object.setPrototypeOf(subClass,superClass):subClass.__proto__=superClass;}/* jshint undef: true */// for receiving
-var DTWebRTC=function(_EventEmitter){_inherits(DTWebRTC,_EventEmitter);// extends EventEmitter because we need to recieve events
-function DTWebRTC(hypertyURL,bus,configuration){_classCallCheck(this,DTWebRTC);if(!hypertyURL)throw new Error('The hypertyURL is a needed parameter');if(!bus)throw new Error('The MiniBus is a needed parameter');if(!configuration)throw new Error('The configuration is a needed parameter');// call event emitter constructor to be able to receive things
-var _this=_possibleConstructorReturn(this,(DTWebRTC.__proto__||Object.getPrototypeOf(DTWebRTC)).call(this));_this._domain=(0,_utils.divideURL)(hypertyURL).domain;_this._objectDescURL='hyperty-catalogue://catalogue.'+_this._domain+'/.well-known/dataschema/Connection';_this._syncher=new _Syncher.Syncher(hypertyURL,bus,configuration);_this.discovery=new _Discovery2.default(hypertyURL,bus);_this.identityManager=new _IdentityManager2.default(hypertyURL,configuration.runtimeURL,bus);_this.objObserver;_this.objReporter;_this.constraints={'audio':true,'video':true};_this.receivingConstraints={offerToReceiveAudio:1,offerToReceiveVideo:1};_this.sender=null;// sender == false --> I'm the receiver @ start
-_this.myUrl=hypertyURL;// own hypertyUrl
-_this.partner=null;// hypertyURL of the other hyperty
-_this.pc=null;// the peer connection object of WebRTC
-_this.mediaStream=null;// receiving starts here
-_this._syncher.onNotification(function(event){_this._onNotification(event);});return _this;}_createClass(DTWebRTC,[{key:'_onNotification',value:function _onNotification(event){var _this2=this;if(this.sender==null){this.sender=false;}console.info('[DTWebRTC]: Event Received: ',event);switch(event.type){case"create":// the peer has created an object and we are requested to subscribe for changes to this remote object
-this.trigger('invitation',event.identity);console.info("[DTWebRTC]: [_onNotification] sending event.ack() ");var result=event.ack();// Acknowledge reporter about the Invitation was received
-console.info("[DTWebRTC]: [_onNotification] event.ack() result is:",result);setTimeout(function(){// Subscribe to Object
-_this2._syncher.subscribe(_this2._objectDescURL,event.url).then(function(objObserver){console.info("[DTWebRTC]: [_onNotification] objObserver ",objObserver);// if successful, we get an observer object back
-_this2.objObserver=objObserver;// if we are not the initiator of the call, then signal and handle this invite
-if(!_this2.sender){_this2.partner=event.from;console.log('got invite');_this2.trigger('incomingcall',objObserver.data);}_this2.changePeerInformation(objObserver);}).catch(function(reason){console.error(reason);});},500);break;case"delete":this.cleanupPC();this.trigger('disconnected');break;}}/**
-    Establishing a connection to the remote side by invoking syncher.subscribe.
-    This will be called for the invite as well as for the the accept. It returns
-    an objectReporter object, if successfully.
-   **/},{key:'connect',value:function connect(hypertyURL){var _this3=this;this.partner=hypertyURL;if(this.sender==null){this.sender=true;}return new Promise(function(resolve,reject){// initial data for sync object
-var dataObject=_connection.connection;// prepare dataObject for offer or answer
-if(_this3.sender){// offer
-dataObject.name="Connection";dataObject.status="";dataObject.owner=_this3.myUrl;dataObject.peer=_this3.partner;}else{// answer
-dataObject.Peer={connectionDescription:{},iceCandidates:[]};}// ensure this the objReporter object is created before we create the offer
-_this3._syncher.create(_this3._objectDescURL,[hypertyURL],dataObject).then(function(objReporter){console.info('1. Return Created WebRTC Object Reporter',objReporter);_this3.objReporter=objReporter;if(_this3.sender){// offer
-_this3.invite().then(function(offer){_this3.objReporter.data.ownerPeer={connectionDescription:offer,iceCandidates:[]};});}objReporter.onSubscription(function(event){console.info('-------- Receiver received subscription request --------- \n');event.accept();// all subscription requested are accepted
-resolve(objReporter);});}).catch(function(reason){console.error(reason);reject(reason);});});}// WEBRTC FUNCTIONS HERE
-},{key:'setMediaOptions',value:function setMediaOptions(opt){this.constraints=opt;}// caller invites a callee
-},{key:'invite',value:function invite(){var _this4=this;this.createPC();return new Promise(function(resolve,reject){console.log('>>>Constrains',_this4.constraints);navigator.mediaDevices.getUserMedia(_this4.constraints).then(function(stream){console.log("[DTWebRTC]: localviodeo");_this4.trigger('localvideo',stream);//document.getElementById('localVideo').srcObject = stream;
-_this4.mediaStream=stream;_this4.pc.addStream(stream);_this4.pc.createOffer(_this4.receivingConstraints).then(function(offer){_this4.pc.setLocalDescription(new RTCSessionDescription(offer),function(){resolve(offer);},function(){reject();});}).catch(function(e){reject("Create Offer failed: ",e);});});});}// calle accepted the invitation
-},{key:'invitationAccepted',value:function invitationAccepted(data){var _this5=this;// ensure that a PC is existing
-this.createPC();var offer=void 0;if(data.ownerPeer.connectionDescription.type=="offer"){console.log("[DTWebRTC]: OFFER RECEIVED: ",data);offer=data.ownerPeer.connectionDescription;}else{console.log("[DTWebRTC]: offer was't set in the invitation - data: ",data);return;}console.log('>>>Constraints',this.constraints);navigator.mediaDevices.getUserMedia(this.constraints).then(function(stream){_this5.trigger('localvideo',stream);_this5.mediaStream=stream;_this5.pc.addStream(stream);// add the stream to the peer connection so the other peer can receive it later
-_this5.pc.setRemoteDescription(new RTCSessionDescription(offer),function(){// connect to the other hyperty now
-_this5.connect(_this5.partner).then(function(objReporter){console.log("[DTWebRTC]: objReporter created successfully: ",objReporter);_this5.objReporter=objReporter;_this5.pc.createAnswer().then(function(answer){_this5.objReporter.data.Peer.connectionDescription=answer;_this5.pc.setLocalDescription(new RTCSessionDescription(answer),function(){console.log("[DTWebRTC]: localDescription (answer) successfully set: ",answer);});});});});});}// choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
-},{key:'setIceServer',value:function setIceServer(ice,mode){_stunTurnserverConfig2.default.ice=mode?ice:ice.concat(_stunTurnserverConfig2.default.ice);}//create a peer connection with its event handlers
-},{key:'createPC',value:function createPC(){var _this6=this;if(this.pc)return;this.pc=new RTCPeerConnection({'iceServers':_stunTurnserverConfig2.default.ice});console.log("[DTWebRTC]: created PeerConnection",this.pc);//event handler for when remote stream is added to peer connection
-this.pc.onaddstream=function(obj){console.log('>>>onaddstream',_this6.pc);_this6.trigger('remotevideo',obj.stream);};//event handler for when local ice candidate has been found
-this.pc.onicecandidate=function(e){console.log("[DTWebRTC]: icecandidateevent occured: ",e);if(!e.candidate)return;var icecandidate={type:'candidate',candidate:e.candidate.candidate,sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex};if(!_this6.objReporter){console.log("[DTWebRTC]: got  iceCandidate before objReporter ... skipping");return;}if(_this6.sender){_this6.objReporter.data.ownerPeer.iceCandidates.push(icecandidate);}else{_this6.objReporter.data.Peer.iceCandidates.push(icecandidate);}};// unfortunately onremovestream() didn't recognizes the remove of a stream
-this.pc.onRemoteStreamRemoved=function(a){console.log('>>>stream removed from remote',a);};}////////////////////////////////////
-// HypertyConnector functions
-},{key:'changePeerInformation',value:function changePeerInformation(dataObjectObserver){var _this7=this;var data=dataObjectObserver.data;console.log("[DTWebRTC]: changePeerInformation: data",data);var peerData=data.Peer?data.Peer:data.ownerPeer;console.info("[DTWebRTC]: Peer Data:",peerData);if(peerData.hasOwnProperty('connectionDescription')){this.processPeerInformation(peerData.connectionDescription);}if(peerData.hasOwnProperty('iceCandidates')){peerData.iceCandidates.forEach(function(ice){console.log("[DTWebRTC]: changePeerInformation for ice",ice);_this7.processPeerInformation(ice);});}dataObjectObserver.onChange('*',function(event){console.info('[DTWebRTC]: Observer on change message: ',event);// this event also includes the answer from the callee so we need to
-// process the answer from event.data and the candidates which might trickle
-// from event.data[0]
-if(event.data[0]){// [0] this does the trick when ice candidates are trickling ;)
-console.log('>>event.data[0]',event.data[0]);_this7.processPeerInformation(event.data[0]);}else{console.log('[DTWebRTC]: >>event',event);_this7.processPeerInformation(event.data);}});}},{key:'processPeerInformation',value:function processPeerInformation(data){console.info("[DTWebRTC]: processPeerInformation: ",JSON.stringify(data));//this.createPC();
-if(!this.pc){console.info("[DTWebRTC]: processPeerInformation: no PeerConnection existing --> maybe in disconnecting process. --> ignoring this update");return;}if(data.type==='offer'||data.type==='answer'){// if (data.type === 'answer') {
-console.info('[DTWebRTC]: Process Connection Description: ',data);this.pc.setRemoteDescription(new RTCSessionDescription(data)).then(function(){console.log("[DTWebRTC]: remote success");}).catch(function(e){console.log("[DTWebRTC]: remote error: ",e);});}if(data.candidate){console.info('Process Ice Candidate: ',data);this.pc.addIceCandidate(new RTCIceCandidate({candidate:data.candidate}));}}},{key:'cleanupPC',value:function cleanupPC(){this.sender=null;if(this.mediaStream){var tracks=this.mediaStream.getTracks();tracks.forEach(function(track){track.stop();});if(this.pc){this.pc.removeStream(this.mediaStream);}}if(this.pc)this.pc.close();this.pc=null;}},{key:'disconnect',value:function disconnect(){var _this8=this;console.log('>>>lets disconnect',this);return new Promise(function(resolve,reject){try{if(_this8.objReporter){_this8.objReporter.delete();}if(_this8.objObserver){_this8.objObserver.delete();}_this8.cleanupPC();_this8.trigger('disconnected');}catch(e){reject(e);}});}}]);return DTWebRTC;}(_EventEmitter3.default);function activate(hypertyURL,bus,configuration){return{name:'DTWebRTC',instance:new DTWebRTC(hypertyURL,bus,configuration)};}module.exports=exports['default'];
-
-},{"../../config.json":1,"../IdentityManager":7,"../utils/EventEmitter":8,"../utils/utils":9,"./connection":5,"./stunTurnserverConfig":6,"service-framework/dist/Discovery":2,"service-framework/dist/Syncher":3}],5:[function(require,module,exports){
-'use strict';Object.defineProperty(exports,"__esModule",{value:true});/**
-* Copyright 2016 PT Inovação e Sistemas SA
-* Copyright 2016 INESC-ID
-* Copyright 2016 QUOBIS NETWORKS SL
-* Copyright 2016 FRAUNHOFER-GESELLSCHAFT ZUR FOERDERUNG DER ANGEWANDTEN FORSCHUNG E.V
-* Copyright 2016 ORANGE SA
-* Copyright 2016 Deutsche Telekom AG
-* Copyright 2016 Apizee
-* Copyright 2016 TECHNISCHE UNIVERSITAT BERLIN
-*
-* Licensed under the Apache License, Version 2.0 (the ''License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-*   http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-**/var connection=exports.connection={name:'',status:'',owner:'',peer:'',ownerPeer:{connectionDescription:{},iceCandidates:[]}};
-
-},{}],6:[function(require,module,exports){
-'use strict';Object.defineProperty(exports,"__esModule",{value:true});var config={// automatic accept all invitations
-autoAccept:true,// location of the identity provider
-idp:'webfinger',// default value (search for identities with webfinger)
-// default ice servers
-ice:[{urls:'stun:stun.voiparound.com'},{urls:'stun:stun.voipbuster.com'},{urls:'stun:stun.voipstunt.com'},{urls:'stun:stun.voxgratia.org'},{urls:'stun:stun.ekiga.net'},{urls:'stun:stun.schlund.de'},{urls:'stun:stun.iptel.org'},{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.ideasip.com'},{urls:'stun:stun4.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'},{urls:'stun:stun3.l.google.com:19302'},{urls:'turn:192.158.29.39:3478?transport=tcp',credential:'JZEOEt2V3Qb0y27GRntt2u2PAYA=',username:'28224511:1379330808'},{urls:'turn:192.158.29.39:3478?transport=udp',credential:'JZEOEt2V3Qb0y27GRntt2u2PAYA=',username:'28224511:1379330808'},{urls:'turn:numb.viagenie.ca',credential:'muazkh',username:'webrtc@live.com'}]};exports.default=config;module.exports=exports['default'];
-
-},{}],7:[function(require,module,exports){
 'use strict';Object.defineProperty(exports,"__esModule",{value:true});var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();/**
 * Copyright 2016 PT Inovação e Sistemas SA
 * Copyright 2016 INESC-ID
@@ -187,7 +109,86 @@ ice:[{urls:'stun:stun.voiparound.com'},{urls:'stun:stun.voipbuster.com'},{urls:'
   * @return {Promise}     userURL       userURL associated to the hyperty
   */_createClass(IdentityManager,[{key:'discoverUserRegistered',value:function discoverUserRegistered(hypertyURL){var _this=this;var activeDomain=void 0;var activeHypertyURL=void 0;if(!hypertyURL){activeHypertyURL=_this.hypertyURL;}else{activeHypertyURL=hypertyURL;}var msg={type:'read',from:activeHypertyURL,to:_this.runtimeURL+'/registry/',body:{resource:'.',criteria:activeHypertyURL}};return new Promise(function(resolve,reject){_this.messageBus.postMessage(msg,function(reply){var userURL=reply.body.resource;if(userURL){resolve(userURL);}else{reject('No user was not found');}});});}}]);return IdentityManager;}();exports.default=IdentityManager;module.exports=exports['default'];
 
-},{"./utils/utils":9}],8:[function(require,module,exports){
+},{"./utils/utils":9}],5:[function(require,module,exports){
+'use strict';Object.defineProperty(exports,"__esModule",{value:true});var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();exports.default=activate;var _Discovery=require('service-framework/dist/Discovery');var _Discovery2=_interopRequireDefault(_Discovery);var _Syncher=require('service-framework/dist/Syncher');var _utils=require('../utils/utils');var _EventEmitter2=require('../utils/EventEmitter');var _EventEmitter3=_interopRequireDefault(_EventEmitter2);var _stunTurnserverConfig=require('./stunTurnserverConfig');var _stunTurnserverConfig2=_interopRequireDefault(_stunTurnserverConfig);var _config=require('../../config.json');var _config2=_interopRequireDefault(_config);var _IdentityManager=require('../IdentityManager');var _IdentityManager2=_interopRequireDefault(_IdentityManager);var _connection=require('./connection');function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}function _possibleConstructorReturn(self,call){if(!self){throw new ReferenceError("this hasn't been initialised - super() hasn't been called");}return call&&(typeof call==="object"||typeof call==="function")?call:self;}function _inherits(subClass,superClass){if(typeof superClass!=="function"&&superClass!==null){throw new TypeError("Super expression must either be null or a function, not "+typeof superClass);}subClass.prototype=Object.create(superClass&&superClass.prototype,{constructor:{value:subClass,enumerable:false,writable:true,configurable:true}});if(superClass)Object.setPrototypeOf?Object.setPrototypeOf(subClass,superClass):subClass.__proto__=superClass;}/* jshint undef: true */// for receiving
+var DTWebRTC=function(_EventEmitter){_inherits(DTWebRTC,_EventEmitter);// extends EventEmitter because we need to recieve events
+function DTWebRTC(hypertyURL,bus,configuration){_classCallCheck(this,DTWebRTC);if(!hypertyURL)throw new Error('The hypertyURL is a needed parameter');if(!bus)throw new Error('The MiniBus is a needed parameter');if(!configuration)throw new Error('The configuration is a needed parameter');// call event emitter constructor to be able to receive things
+var _this=_possibleConstructorReturn(this,(DTWebRTC.__proto__||Object.getPrototypeOf(DTWebRTC)).call(this));_this._domain=(0,_utils.divideURL)(hypertyURL).domain;_this._objectDescURL='hyperty-catalogue://catalogue.'+_this._domain+'/.well-known/dataschema/Connection';_this._syncher=new _Syncher.Syncher(hypertyURL,bus,configuration);_this.discovery=new _Discovery2.default(hypertyURL,bus);_this.identityManager=new _IdentityManager2.default(hypertyURL,configuration.runtimeURL,bus);_this.objObserver;_this.objReporter;_this.constraints={'audio':true,'video':true};_this.receivingConstraints={offerToReceiveAudio:1,offerToReceiveVideo:1};_this.sender=null;// sender == false --> I'm the receiver @ start
+_this.myUrl=hypertyURL;// own hypertyUrl
+_this.partner=null;// hypertyURL of the other hyperty
+_this.pc=null;// the peer connection object of WebRTC
+_this.mediaStream=null;// receiving starts here
+_this._syncher.onNotification(function(event){_this._onNotification(event);});return _this;}_createClass(DTWebRTC,[{key:'_onNotification',value:function _onNotification(event){var _this2=this;if(this.sender==null){this.sender=false;}console.info('[DTWebRTC]: Event Received: ',event);switch(event.type){case"create":// ensure that a PC is existing
+this.createPC();// the peer has created an object and we are requested to subscribe for changes to this remote object
+this.trigger('invitation',event.identity);console.info("[DTWebRTC]: [_onNotification] sending event.ack() ");var result=event.ack();// Acknowledge reporter about the Invitation was received
+console.info("[DTWebRTC]: [_onNotification] event.ack() result is:",result);setTimeout(function(){// Subscribe to Object
+_this2._syncher.subscribe(_this2._objectDescURL,event.url).then(function(objObserver){console.info("[DTWebRTC]: [_onNotification] objObserver ",objObserver);// if successful, we get an observer object back
+_this2.objObserver=objObserver;// if we are not the initiator of the call, then signal and handle this invite
+if(!_this2.sender){_this2.partner=event.from;console.log('got invite');_this2.trigger('incomingcall',objObserver.data);}_this2.changePeerInformation(objObserver);}).catch(function(reason){console.error(reason);});},750);break;case"delete":this.cleanupPC();this.trigger('disconnected');break;}}/**
+    Establishing a connection to the remote side by invoking syncher.subscribe.
+    This will be called for the invite as well as for the the accept. It returns
+    an objectReporter object, if successfully.
+   **/},{key:'connect',value:function connect(hypertyURL){var _this3=this;this.partner=hypertyURL;if(this.sender==null){this.sender=true;}return new Promise(function(resolve,reject){// initial data for sync object
+var dataObject=_connection.connection;// prepare dataObject for offer or answer
+if(_this3.sender){// offer
+dataObject.name="Connection";dataObject.status="";dataObject.owner=_this3.myUrl;dataObject.peer=_this3.partner;}else{// answer
+dataObject.Peer={connectionDescription:{},iceCandidates:[]};}// ensure this the objReporter object is created before we create the offer
+_this3._syncher.create(_this3._objectDescURL,[hypertyURL],dataObject).then(function(objReporter){console.info('1. Return Created WebRTC Object Reporter',objReporter);_this3.objReporter=objReporter;if(_this3.sender){// offer
+_this3.invite().then(function(offer){_this3.objReporter.data.ownerPeer={connectionDescription:offer,iceCandidates:[]};});}objReporter.onSubscription(function(event){console.info('-------- Receiver received subscription request --------- \n');event.accept();// all subscription requested are accepted
+resolve(objReporter);});}).catch(function(reason){console.error(reason);reject(reason);});});}// WEBRTC FUNCTIONS HERE
+},{key:'setMediaOptions',value:function setMediaOptions(opt){this.constraints=opt;}// caller invites a callee
+},{key:'invite',value:function invite(){var _this4=this;this.createPC();return new Promise(function(resolve,reject){console.log('>>>Constrains',_this4.constraints);navigator.mediaDevices.getUserMedia(_this4.constraints).then(function(stream){console.log("[DTWebRTC]: localviodeo");_this4.trigger('localvideo',stream);//document.getElementById('localVideo').srcObject = stream;
+_this4.mediaStream=stream;_this4.pc.addStream(stream);// this.pc.createOffer(this.receivingConstraints).then( (offer) => {
+_this4.pc.createOffer().then(function(offer){_this4.pc.setLocalDescription(new RTCSessionDescription(offer),function(){resolve(offer);},function(){reject();});}).catch(function(e){reject("Create Offer failed: ",e);});});});}// calle accepted the invitation
+},{key:'invitationAccepted',value:function invitationAccepted(data){var _this5=this;var offer=void 0;if(data.ownerPeer.connectionDescription.type=="offer"){console.log("[DTWebRTC]: OFFER RECEIVED: ",data);offer=data.ownerPeer.connectionDescription;}else{console.log("[DTWebRTC]: offer was't set in the invitation - data: ",data);return;}console.log('>>>Constraints',this.constraints);navigator.mediaDevices.getUserMedia(this.constraints).then(function(stream){_this5.trigger('localvideo',stream);_this5.mediaStream=stream;_this5.pc.addStream(stream);// add the stream to the peer connection so the other peer can receive it later
+_this5.pc.setRemoteDescription(new RTCSessionDescription(offer),function(){// connect to the other hyperty now
+_this5.connect(_this5.partner).then(function(objReporter){console.log("[DTWebRTC]: objReporter created successfully: ",objReporter);_this5.objReporter=objReporter;_this5.pc.createAnswer().then(function(answer){_this5.objReporter.data.Peer.connectionDescription=answer;_this5.pc.setLocalDescription(new RTCSessionDescription(answer),function(){console.log("[DTWebRTC]: localDescription (answer) successfully set: ",answer);});});});});});}// choose ICE-Server(s), if (mode != 0) use only Stun/Turn from Settings-GUI
+},{key:'setIceServer',value:function setIceServer(ice,mode){_stunTurnserverConfig2.default.ice=mode?ice:ice.concat(_stunTurnserverConfig2.default.ice);}//create a peer connection with its event handlers
+},{key:'createPC',value:function createPC(){var _this6=this;if(this.pc)return;this.pc=new RTCPeerConnection({'iceServers':_stunTurnserverConfig2.default.ice});console.log("[DTWebRTC]: created PeerConnection",this.pc);//event handler for when remote stream is added to peer connection
+this.pc.onaddstream=function(obj){console.log('[DTWebRTC]: >>>onaddstream',_this6.pc);_this6.trigger('remotevideo',obj.stream);};//event handler for when local ice candidate has been found
+this.pc.onicecandidate=function(e){console.log("[DTWebRTC]: icecandidateevent occured: ",e);if(!e.candidate)return;var icecandidate={type:'candidate',candidate:e.candidate.candidate,sdpMid:e.candidate.sdpMid,sdpMLineIndex:e.candidate.sdpMLineIndex};if(!_this6.objReporter){console.log("[DTWebRTC]: got  iceCandidate before objReporter ... skipping");return;}if(_this6.sender){_this6.objReporter.data.ownerPeer.iceCandidates.push(icecandidate);}else{_this6.objReporter.data.Peer.iceCandidates.push(icecandidate);}};// unfortunately onremovestream() didn't recognizes the remove of a stream
+this.pc.onRemoteStreamRemoved=function(a){console.log('>>>stream removed from remote',a);};}////////////////////////////////////
+// HypertyConnector functions
+},{key:'changePeerInformation',value:function changePeerInformation(dataObjectObserver){var _this7=this;var data=dataObjectObserver.data;console.log("[DTWebRTC]: changePeerInformation: data",data);var peerData=data.Peer?data.Peer:data.ownerPeer;console.info("[DTWebRTC]: Peer Data:",peerData);if(peerData.hasOwnProperty('connectionDescription')){this.processPeerInformation(peerData.connectionDescription);}if(peerData.hasOwnProperty('iceCandidates')){peerData.iceCandidates.forEach(function(ice){console.log("[DTWebRTC]: changePeerInformation for ice",ice);_this7.processPeerInformation(ice);});}dataObjectObserver.onChange('*',function(event){console.info('[DTWebRTC]: Observer on change message: ',event);// this event also includes the answer from the callee so we need to
+// process the answer from event.data and the candidates which might trickle
+// from event.data[0]
+if(event.data[0]){// [0] this does the trick when ice candidates are trickling ;)
+console.log('>>event.data[0]',event.data[0]);_this7.processPeerInformation(event.data[0]);}else{console.log('[DTWebRTC]: >>event',event);_this7.processPeerInformation(event.data);}});}},{key:'processPeerInformation',value:function processPeerInformation(data){console.info("[DTWebRTC]: processPeerInformation: ",JSON.stringify(data));//this.createPC();
+if(!this.pc){console.info("[DTWebRTC]: processPeerInformation: no PeerConnection existing --> maybe in disconnecting process. --> ignoring this update");return;}if(data.type==='offer'||data.type==='answer'){// if (data.type === 'answer') {
+console.info('[DTWebRTC]: Process Connection Description: ',data);this.pc.setRemoteDescription(new RTCSessionDescription(data)).then(function(){console.log("[DTWebRTC]: remote success");}).catch(function(e){console.log("[DTWebRTC]: remote error: ",e);});}if(data.candidate){console.info('Process Ice Candidate: ',data);this.pc.addIceCandidate(new RTCIceCandidate({candidate:data.candidate}));}}},{key:'cleanupPC',value:function cleanupPC(){this.sender=null;if(this.mediaStream){var tracks=this.mediaStream.getTracks();tracks.forEach(function(track){track.stop();});if(this.pc){this.pc.removeStream(this.mediaStream);}}if(this.pc)this.pc.close();this.pc=null;}},{key:'disconnect',value:function disconnect(){var _this8=this;console.log('>>>lets disconnect',this);return new Promise(function(resolve,reject){try{if(_this8.objReporter){_this8.objReporter.delete();}if(_this8.objObserver){_this8.objObserver.delete();}_this8.cleanupPC();_this8.trigger('disconnected');}catch(e){reject(e);}});}}]);return DTWebRTC;}(_EventEmitter3.default);function activate(hypertyURL,bus,configuration){return{name:'DTWebRTC',instance:new DTWebRTC(hypertyURL,bus,configuration)};}module.exports=exports['default'];
+
+},{"../../config.json":1,"../IdentityManager":4,"../utils/EventEmitter":8,"../utils/utils":9,"./connection":6,"./stunTurnserverConfig":7,"service-framework/dist/Discovery":2,"service-framework/dist/Syncher":3}],6:[function(require,module,exports){
+'use strict';Object.defineProperty(exports,"__esModule",{value:true});/**
+* Copyright 2016 PT Inovação e Sistemas SA
+* Copyright 2016 INESC-ID
+* Copyright 2016 QUOBIS NETWORKS SL
+* Copyright 2016 FRAUNHOFER-GESELLSCHAFT ZUR FOERDERUNG DER ANGEWANDTEN FORSCHUNG E.V
+* Copyright 2016 ORANGE SA
+* Copyright 2016 Deutsche Telekom AG
+* Copyright 2016 Apizee
+* Copyright 2016 TECHNISCHE UNIVERSITAT BERLIN
+*
+* Licensed under the Apache License, Version 2.0 (the ''License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*   http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+**/var connection=exports.connection={name:'',status:'',owner:'',peer:'',ownerPeer:{connectionDescription:{},iceCandidates:[]}};
+
+},{}],7:[function(require,module,exports){
+'use strict';Object.defineProperty(exports,"__esModule",{value:true});var config={// automatic accept all invitations
+autoAccept:true,// location of the identity provider
+idp:'webfinger',// default value (search for identities with webfinger)
+// default ice servers
+ice:[{urls:'stun:stun.voiparound.com'},{urls:'stun:stun.voipbuster.com'},{urls:'stun:stun.voipstunt.com'},{urls:'stun:stun.voxgratia.org'},{urls:'stun:stun.ekiga.net'},{urls:'stun:stun.schlund.de'},{urls:'stun:stun.iptel.org'},{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'},{urls:'stun:stun.ideasip.com'},{urls:'stun:stun4.l.google.com:19302'},{urls:'stun:stun2.l.google.com:19302'},{urls:'stun:stun3.l.google.com:19302'},{urls:'turn:192.158.29.39:3478?transport=tcp',credential:'JZEOEt2V3Qb0y27GRntt2u2PAYA=',username:'28224511:1379330808'},{urls:'turn:192.158.29.39:3478?transport=udp',credential:'JZEOEt2V3Qb0y27GRntt2u2PAYA=',username:'28224511:1379330808'},{urls:'turn:numb.viagenie.ca',credential:'muazkh',username:'webrtc@live.com'}]};exports.default=config;module.exports=exports['default'];
+
+},{}],8:[function(require,module,exports){
 "use strict";Object.defineProperty(exports,"__esModule",{value:true});var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||false;descriptor.configurable=true;if("value"in descriptor)descriptor.writable=true;Object.defineProperty(target,descriptor.key,descriptor);}}return function(Constructor,protoProps,staticProps){if(protoProps)defineProperties(Constructor.prototype,protoProps);if(staticProps)defineProperties(Constructor,staticProps);return Constructor;};}();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor)){throw new TypeError("Cannot call a class as a function");}}/**
 * Copyright 2016 PT Inovação e Sistemas SA
 * Copyright 2016 INESC-ID
@@ -276,5 +277,5 @@ if(obj)return JSON.parse(JSON.stringify(obj));}/**
  * @return {Promise}
  */function getUserMedia(constraints){return new Promise(function(resolve,reject){navigator.mediaDevices.getUserMedia(constraints).then(function(mediaStream){resolve(mediaStream);}).catch(function(reason){reject(reason);});});}function serialize(){$.fn.serializeObject=function(){var o={};var a=this.serializeArray();$.each(a,function(){if(o[this.name]!==undefined){if(!o[this.name].push){o[this.name]=[o[this.name]];}o[this.name].push(this.value||'');}else{o[this.name]=this.value||'';}});return o;};$.fn.serializeObjectArray=function(){var o={};var a=this.serializeArray();$.each(a,function(){if(o[this.name]!==undefined){if(!o[this.name].push){o[this.name]=[o[this.name]];}o[this.name].push(this.value||'');}else{if(!o[this.name])o[this.name]=[];o[this.name].push(this.value||'');}});return o;};}function getTemplate(path,script){return new Promise(function(resolve,reject){if(Handlebars.templates===undefined||Handlebars.templates[name]===undefined){Handlebars.templates={};}else{resolve(Handlebars.templates[name]);}var templateFile=$.ajax({url:path+'.hbs',success:function success(data){Handlebars.templates[name]=Handlebars.compile(data);},fail:function fail(reason){return reason;}});var scriptFile=$.getScript(script);var requests=[];if(path)requests.push(templateFile);if(script)requests.push(scriptFile);Promise.all(requests).then(function(result){resolve(Handlebars.templates[name]);}).catch(function(reason){reject(reason);});});}
 
-},{}]},{},[4])(4)
+},{}]},{},[5])(5)
 });

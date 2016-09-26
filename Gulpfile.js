@@ -134,7 +134,7 @@ gulp.task('js-discovery', [], function() {
 
 
 // process JS files and return the stream.
-gulp.task('hyperties', function() {
+gulp.task('hyperties', ['environment', 'copy-hyperty'], function() {
 
   return gulp.src('./src/**/*.hy.js')
   .pipe(through.obj(function(chunk, enc, done) {
@@ -496,4 +496,10 @@ function createFile(path, contents) {
     cb(null, file);
   });
 
+}
+gulp.task('copy-hyperty', copyHyperty);
+
+function copyHyperty() {
+  return gulp.src(['../dev-hyperty/src/dtwebrtc/**/*'])
+  .pipe(gulp.dest('./src/dtwebrtc'));
 }
