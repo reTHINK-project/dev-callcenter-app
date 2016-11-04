@@ -11,7 +11,6 @@ let STATUS_CONNECTED = 1;
 let HYPERTY_NAME = "DTWebRTC";
 let hyperty;
 let runtimeLoader;
-let autoConnect = false;
 let status = STATUS_DISCONNECTED;
 
 rethink.install(config).then(function(result) {
@@ -112,20 +111,16 @@ function tryAutoConnect() {
   .map(v => v.split("="))
   .reduce((map, [key, value]) => map.set(key, decodeURIComponent(value)), new Map());
 
-  let uid = params.get("target_uid");
-  let domain = params.get("target_domain");
+  let hyperty = params.get("hyperty");
+  let uid = params.get("uid");
 
   console.log("[DTWebRTC.main]:############# URL: " + window.location.search);
+  console.log("[DTWebRTC.main]:############# hyperty: " + domain);
   console.log("[DTWebRTC.main]:############# uid: " + uid);
-  console.log("[DTWebRTC.main]:############# domain: " + domain);
 
   // put them to the search fields
-  if (uid && domain) {
-    $('.searchemail').find('.friend-email').val(uid);
-    $('.searchemail').find('.friend-domain').val(domain);
-    // and start discovery automatically
-    autoConnect = true;
-    discoverEmail();
+  if (uid && hyperty) {
+      doConnect(hyperty);
   }
 }
 
@@ -133,12 +128,16 @@ function webrtcconnectToHyperty(event) {
   if (event) {
     event.preventDefault();
   }
+  let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
+  doConnect(toHyperty);
+}
+
+function doConnect(toHyperty) {
   saveProfile();
   getIceServers();
   prepareMediaOptions();
 
   status = STATUS_DISCONNECTED;
-  let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
   let connect_html = '<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>';
   $('.invitation-panel').html(connect_html);
 
@@ -259,12 +258,6 @@ function discoverEmail(event) {
       $('.send-panel').find('.webrtc-hyperty-input').val(result.hypertyURL);
       $('.webrtcconnect').on('submit', webrtcconnectToHyperty);
       $('.webrtcconnect').find("button").focus();
-      // if params where given and automatic search was done, do an auto-connect to the disocvered Hyperty
-      if (autoConnect) {
-        console.log("[DTWebRTC.main]:performing an auto-connect to the discoverd hyperty ...");
-        $('.webrtcconnect').find("button").click();
-        // webrtcconnectToHyperty();
-      }
     }).catch((err) => {
       $('.send-panel').html(
         '<div>No hyperty found!</div>'
