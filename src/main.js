@@ -177,25 +177,21 @@ function fillmodal(calleeInfo) {
 // receiving code here
 function initListeners() {
 
-  hyperty.addEventListener('invitation', (identity) => {
+  hyperty.addEventListener('incomingcall', (identity) => {
     // preparing the modal dialog with the given identity info
     console.log('incomingcall event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
     fillmodal(identity);
     prepareMediaOptions();
-  });
 
-  hyperty.addEventListener('incomingcall', (data) => {
     $('#myModal').find('#btn-accept').on('click', () => {
-      hyperty.invitationAccepted(data);
+      hyperty.acceptCall();
     });
     $('#myModal').find('#btn-reject').on('click', () => {
       hangup();
     });
     $('#myModal').modal('show');
 
-    // if (!confirm('Incoming call. Answer?')) return false;
-    // hyperty.invitationAccepted(data);
   });
 
   hyperty.addEventListener('localvideo', (stream) => {
