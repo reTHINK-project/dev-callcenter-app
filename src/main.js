@@ -22,7 +22,7 @@ rethink.install(config).then(function(result) {
 
   // init some click handlers
   $('#gosearch').on('click', discoverEmail);
-  $('#settings').on('submit', saveProfile);
+  $('#settings').on('submit', () => { saveProfile() });
   $('#settings').on('submit', toggleSettings);
 
   fillResoultionSelector();
@@ -127,9 +127,9 @@ function tryAutoConnect() {
 function webrtcconnectToHyperty(event) {
   if (event) {
     event.preventDefault();
+    let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
+    doConnect(toHyperty);
   }
-  let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
-  doConnect(toHyperty);
 }
 
 function doConnect(toHyperty) {
@@ -302,8 +302,7 @@ function getIceServers() {
 
 }
 
-function saveProfile() {
-  event.preventDefault();
+function saveProfile(event) {
   var profile = {};
   console.log("[DTWebRTC.main]:save profile " + PROFILE_KEY);
   // transfer all values from all text-inputs of the settings div to profile
