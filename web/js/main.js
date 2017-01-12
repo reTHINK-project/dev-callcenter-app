@@ -1,7 +1,3 @@
-// jshint browser:true, jquery: true
-// jshint varstmt: true
-import rethink from '../resources/factories/rethink';
-import config from '../config.json';
 
 window.KJUR = {};
 
@@ -13,7 +9,7 @@ let hyperty;
 let runtimeLoader;
 let status = STATUS_DISCONNECTED;
 
-rethink.install(config).then(function(result) {
+rethink.default.install(config).then(function(result) {
   runtimeLoader = result;
 
   console.info('Runtime Installed in production mode:', result);

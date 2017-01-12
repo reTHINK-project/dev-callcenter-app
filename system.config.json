@@ -1,11 +1,5 @@
-{
-  "development" : {
-    "development": true,
-    "domain": "matrix2.rethink.com"
-  },
-  "production" : {
-    "development": false,
-    "runtimeURL": "hyperty-catalogue://catalogue.matrix2.rethink.com/.well-known/runtime/Runtime",
-    "domain": "matrix2.rethink.com"
-  }
+config = {
+  "development": false,
+  "runtimeURL": "hyperty-catalogue://catalogue.matrix2.rethink.com/.well-known/runtime/Runtime",
+  "domain": "matrix2.rethink.com"
 }
