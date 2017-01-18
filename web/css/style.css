@@ -145,3 +145,17 @@ input {
 .darktext {
   color: #777;
 }
+
+.hyperty-id {
+  color: #e20074;
+  font-size: 18px;
+  font-weight: bold;
+}
+.placeholder {
+  background-color: #CCCCCC;
+  border: 1px;
+}
+
+.chat {
+  width: 100%;
+}

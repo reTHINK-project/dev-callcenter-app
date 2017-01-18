@@ -4,10 +4,16 @@ window.KJUR = {};
 let STATUS_DISCONNECTED = 0;
 let STATUS_CONNECTED = 1;
 
-let HYPERTY_NAME = "DTWebRTC";
-let hyperty;
+let HYPERTY_WEBRTC = "DTWebRTC";
+let HYPERTY_CHAT = "GroupChatManager";
+let hypertyWebRTC;
+let hypertyChat;
+let hypertyChatUrl;
+let chat;
+
 let runtimeLoader;
 let status = STATUS_DISCONNECTED;
+let searchResults = [];
 
 rethink.default.install(config).then(function(result) {
   runtimeLoader = result;
@@ -25,17 +31,28 @@ rethink.default.install(config).then(function(result) {
   loadProfile();
 
   // actually load the hyperty
-  loadHyperty((0, HYPERTY_NAME));
+  loadHyperties();
 
 }).catch(function(reason) {
   console.error(reason);
 });
 
-function loadHyperty(hypertyName) {
-  let hypertyPath = 'hyperty-catalogue://catalogue.' + config.domain + '/.well-known/hyperty/' + hypertyName;
-  runtimeLoader.requireHyperty(hypertyPath).then(
-    hypertyLoaded
-  ).catch(
+function loadHyperties() {
+  let hypertyPathWebRTC = 'hyperty-catalogue://catalogue.' + config.domain + '/.well-known/hyperty/' + HYPERTY_WEBRTC;
+  let hypertyPathChat   = 'hyperty-catalogue://catalogue.' + config.domain + '/.well-known/hyperty/' + HYPERTY_CHAT;
+  runtimeLoader.requireHyperty(hypertyPathWebRTC).then( (result) => {
+    hypertyWebRTC = result.instance;
+    hypertyWebRTC.myUrl = result.runtimeHypertyURL;
+
+    runtimeLoader.requireHyperty(hypertyPathChat).then((result) => {
+      hypertyChat =  result.instance;
+      hypertyChatUrl = result.runtimeHypertyURL;
+      chat = new Chat(result, document.getElementById("chat-content"), document.getElementById("chat-input") );
+      hypertiesLoaded();
+    }).catch(
+      hypertyFail
+    )
+  }).catch(
     hypertyFail
   );
 }
@@ -48,18 +65,16 @@ function hypertyFail(reason) {
 // ################################## DTCallCenter ###################################################################
 // ###################################################################################################################
 
-function hypertyLoaded(result) {
-  hyperty = result.instance;
-  hyperty.myUrl = result.runtimeHypertyURL;
+function hypertiesLoaded() {
   $('#content').removeClass('hide');
   $('#hangup').on('click', hangup);
   $('#local-audio').on('click', () => {
     // let the hyperty switch stream-tracks
-    hyperty.switchLocalAudio( $('#local-audio').is(":checked") )
+    hypertyWebRTC.switchLocalAudio( $('#local-audio').is(":checked") )
   });
   $('#local-video').on('click', () => {
     // let the hyperty switch stream-tracks
-    hyperty.switchLocalVideo( $('#local-video').is(":checked") )
+    hypertyWebRTC.switchLocalVideo( $('#local-video').is(":checked") )
   });
 
   $('#remote-audio').on('click', () => {
@@ -79,56 +94,43 @@ function hypertyLoaded(result) {
 
 
   // get registered user
-  hyperty.search.myIdentity().then(function(identity) {
+  hypertyWebRTC.search.myIdentity().then(function(identity) {
     console.log("[DTWebRTC.main]: registered user is: ", identity);
-    hyperty.myIdentity = identity;
-    let info = "Authenticated as:</br>" + identity.cn + ",  " + identity.username + '<img src="' + hyperty.myIdentity.avatar + '" class="logo" /></br>' +
-               "Hyperty URL:</br>" + result.runtimeHypertyURL;
+    hypertyWebRTC.myIdentity = identity;
+    let info = "Authenticated as:</br>" + identity.cn + ",  " + identity.username + '<img src="' + hypertyWebRTC.myIdentity.avatar + '" class="logo" /></br>' +
+               "WebRTC Hyperty URL:  " + hypertyWebRTC.myUrl + "</br>" +
+               "Chat Hyperty URL:  " + hypertyChatUrl + "</br>";
       $('.hyperty-panel').html( info );
   }).catch((reason) => {
     console.log("[DTWebRTC.main]: error while discovery of registered user. Error is ", reason);
-    $('.hyperty-panel').html('<p>Hyperty URL:   ' + result.runtimeHypertyURL + '</p>');
+    $('.hyperty-panel').html('<p>WebRTC Hyperty URL:   ' + hypertyWebRTC.myUrl + '</p>' +
+                             '<p>Chat Hyperty URL:   ' + hypertyChatUrl + '</p>');
   });
 
   initListeners();
-  $.getScript("../src/adapter.js");
-
-  console.log("[DTWebRTC.main]:############ hyperty loaded, result is:", result);
-
-  // try to perform an automatic discovery and connect, if suitable params where given
-  tryAutoConnect();
 }
 
-function tryAutoConnect() {
-  // extract params from browser url (found here: http://stackoverflow.com/questions/979975/how-to-get-the-value-from-the-get-parameters)
-  var params = window.location.search
-  .substring(1)
-  .split("&")
-  .map(v => v.split("="))
-  .reduce((map, [key, value]) => map.set(key, decodeURIComponent(value)), new Map());
-
-  let hyperty = params.get("hyperty");
-  let uid = params.get("uid");
-
-  console.log("[DTWebRTC.main]:############# URL: " + window.location.search);
-  console.log("[DTWebRTC.main]:############# hyperty: " + domain);
-  console.log("[DTWebRTC.main]:############# uid: " + uid);
-
-  // put them to the search fields
-  if (uid && hyperty) {
-      doConnect(hyperty);
+function connect(event) {
+  event.preventDefault();
+  let resultIndex = event.currentTarget.value;
+  console.log("RESULT INDEX = " + resultIndex);
+  if ( resultIndex > searchResults.length || resultIndex < 0 ) {
+    console.log("[DTWebRTC.main] invalid search result index: " + resultIndex );
+    return;
   }
-}
-
-function webrtcconnectToHyperty(event) {
-  if (event) {
-    event.preventDefault();
-    let toHyperty = $(event.currentTarget).find('.webrtc-hyperty-input').val();
-    doConnect(toHyperty);
+  let h = searchResults[resultIndex];
+  if ( h.dataSchemes.indexOf("comm") >=0 ) {
+    console.log("CONNECT to TARGET HYPERTY via Chat: " + h);
+    doChatConnect(h.hypertyID);
   }
+  else {
+    console.log("CONNECT to TARGET HYPERTY via WebRTC: " + h);
+    doWebRTCConnect(h);
+  }
+
 }
 
-function doConnect(toHyperty) {
+function doWebRTCConnect(toHyperty) {
   saveProfile();
   getIceServers();
   prepareMediaOptions();
@@ -146,7 +148,7 @@ function doConnect(toHyperty) {
 
   console.log(toHyperty);
   $('.send-panel').addClass('hide');
-  hyperty.connect(toHyperty).then((obj) => {
+  hypertyWebRTC.connect(toHyperty).then((obj) => {
       console.log('Webrtc obj: ', obj);
     })
     .catch(function(reason) {
@@ -154,8 +156,13 @@ function doConnect(toHyperty) {
     });
 }
 
+function doChatConnect(toHyperty) {
+  saveProfile();
+  chat.invite("TestChat", "steffen.druesedow@gmail.com", "rethink.tlabscloud.com");
+}
+
 function hangup() {
-  hyperty.disconnect();
+  hypertyWebRTC.disconnect();
 }
 
 function fillmodal(calleeInfo) {
@@ -173,7 +180,7 @@ function fillmodal(calleeInfo) {
 // receiving code here
 function initListeners() {
 
-  hyperty.addEventListener('incomingcall', (identity) => {
+  hypertyWebRTC.addEventListener('incomingcall', (identity) => {
     // preparing the modal dialog with the given identity info
     console.log('incomingcall event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
@@ -181,7 +188,7 @@ function initListeners() {
     prepareMediaOptions();
 
     $('#myModal').find('#btn-accept').on('click', () => {
-      hyperty.acceptCall();
+      hypertyWebRTC.acceptCall();
     });
     $('#myModal').find('#btn-reject').on('click', () => {
       hangup();
@@ -190,12 +197,12 @@ function initListeners() {
 
   });
 
-  hyperty.addEventListener('localvideo', (stream) => {
+  hypertyWebRTC.addEventListener('localvideo', (stream) => {
     console.log('local stream received');
     document.getElementById('localVideo').srcObject = stream;
   });
 
-  hyperty.addEventListener('remotevideo', (stream) => {
+  hypertyWebRTC.addEventListener('remotevideo', (stream) => {
     $('#info').addClass('hide');
     $('#video').removeClass('hide');
     let rv = document.getElementById('remoteVideo');
@@ -208,7 +215,7 @@ function initListeners() {
     status = STATUS_CONNECTED;
   });
 
-  hyperty.addEventListener('disconnected', () => {
+  hypertyWebRTC.addEventListener('disconnected', () => {
     console.log('>>>disconnected');
     $('.send-panel').removeClass('hide');
     $('.webrtcconnect').empty();
@@ -241,27 +248,30 @@ function discoverEmail(event) {
 
   $('.send-panel').html(msg);
 
-  hyperty.search.users([email], [domain], ['connection'], ['audio', 'video']).then( (result) => {
-		if ( result.length == 0 ) {
-			$('.send-panel').html(
-	      '<div>No hyperty found!</div>'
-	    );
-		}
-		else {
-			$('.send-panel').html(
-				'<br><form class="webrtcconnect">' +
-				'<input type="text" class="webrtc-hyperty-input form-control " style="font-size: 18px; font-size: bold;">' +
-				'<button type="submit" class="btn btn-default btn-sm btn-block ">webRTC to Hyperty </button>' +
-				'</form><br>');
-				$('.send-panel').find('.webrtc-hyperty-input').val(result[0].hypertyID);
-				$('.webrtcconnect').on('submit', webrtcconnectToHyperty);
-				$('.webrtcconnect').find("button").focus();
-		}
-  }).catch((err) => {
-    $('.send-panel').html(
-      '<div>No hyperty found!</div>'
-    );
-    console.error('Email Discovered Error: ', err);
+  // reset global search results
+  searchResults = [];
+
+  hypertyWebRTC.search.users([email], [domain], ['connection'], ['audio', 'video']).then( (webRTCResult) => {
+    searchResults = webRTCResult;
+    return hypertyWebRTC.search.users([email], [domain], ['comm'], ['chat']);
+  }).then( (chatResult) => {
+    chatResult.forEach( (element) => { searchResults.push(element)} );
+
+    resultHTML = "";
+    if ( searchResults.length == 0 ) {
+      resultHTML = '<div>No matching hyperties found!</div>';
+    }
+    else {
+      resultHTML = '</p><div>User "' + email + '" is accessible via following Hyperties: </div>'
+      for( i = 0; i < searchResults.length; i++ ) {
+        let h = searchResults[i];
+        let type = h.dataSchemes.indexOf("comm") >=0 ? "Chat" : "WebRTC";
+        resultHTML += '<br>' +
+        '<input type="text" class="hyperty-id" value="' + type + ":   " + h.hypertyID +'">' +
+        '<button class="btn btn-default btn-sm btn-block" value="' + i + '" onclick="connect(event)"> Start ' + type + '!</button>';
+      }
+    }
+    $('.send-panel').html( resultHTML );
   });
 }
 
@@ -294,7 +304,7 @@ function getIceServers() {
       username: turn_user,
       credential: turn_pass
     });
-  hyperty.setIceServer(iceServers, mode);
+  hypertyWebRTC.setIceServer(iceServers, mode);
 
 }
 
@@ -373,7 +383,7 @@ function prepareMediaOptions() {
       }
     };
   }
-  hyperty.setMediaOptions(mediaOptions);
+  hypertyWebRTC.setMediaOptions(mediaOptions);
 }
 
 function fillResoultionSelector() {

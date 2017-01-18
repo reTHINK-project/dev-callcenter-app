@@ -85,14 +85,13 @@
   <div class="main-content container">
     <!-- <div class="main-content container-fluid"> -->
     <div class="row">
-      <!--div class="col-sm-1"></div-->
       <div id="content" class="content col-sm-12 hide">
         <div id="info">
           <div class="hyperty-panel"></div>
           <div class="send-panel"></div>
           <div class="invitation-panel"></div>
         </div>
-        <div id="video" class="row hide">
+        <div id="video" class="row hide col-sm-8">
           <div class="col-sm-10">
             <video id="remoteVideo" class="smallVideo " autoplay poster="web/media/load3.gif" ></video>
             <video id="localVideo" class="fullVideo " muted autoplay poster="web/media/load3.gif" ></video>
@@ -119,8 +118,12 @@
             </fieldset>
           </div>
         </div>
+        <div id="chat" class="row hide col-sm-4">
+          Chat:</br>
+          <textarea id="chat-content"></textarea>
+          <input type="text" id="chat-input"></input>
+        </div>
       </div>
-      <!--div class="col-sm-1"></div-->
     </div>
   </div>
 
@@ -148,8 +151,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/js/bootstrap.js"></script>
 
   <script src="system.config.json"></script>
-  
+
   <script src=".well-known/runtime/rethink.js"></script>
+  <script src="web/js/chat.js"></script>
   <script src="web/js/main.js"></script>
   <script src="web/js/custom.js"></script>
 
