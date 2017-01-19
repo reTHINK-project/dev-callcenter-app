@@ -61,6 +61,17 @@ function hypertyFail(reason) {
   console.error(reason);
 }
 
+
+function setState(state) {
+  switch (state) {
+    case expression:
+
+      break;
+    default:
+
+  }
+}
+
 // ###################################################################################################################
 // ################################## DTCallCenter ###################################################################
 // ###################################################################################################################
@@ -120,12 +131,12 @@ function connect(event) {
   }
   let h = searchResults[resultIndex];
   if ( h.dataSchemes.indexOf("comm") >=0 ) {
-    console.log("CONNECT to TARGET HYPERTY via Chat: " + h);
+    console.log("CONNECT to TARGET HYPERTY via Chat: ", h);
     doChatConnect(h.hypertyID);
   }
   else {
-    console.log("CONNECT to TARGET HYPERTY via WebRTC: " + h);
-    doWebRTCConnect(h);
+    console.log("CONNECT to TARGET HYPERTY via WebRTC: ", h);
+    doWebRTCConnect(h.hypertyID);
   }
 
 }
@@ -158,7 +169,12 @@ function doWebRTCConnect(toHyperty) {
 
 function doChatConnect(toHyperty) {
   saveProfile();
-  chat.invite("TestChat", "steffen.druesedow@gmail.com", "rethink.tlabscloud.com");
+  chat.invite("TestChat", "steffen.druesedow@gmail.com", "matrix2.rethink.com");
+}
+
+function sendChatMessage() {
+  chat.submitMessage();
+  return false;
 }
 
 function hangup() {
@@ -265,6 +281,7 @@ function discoverEmail(event) {
       resultHTML = '</p><div>User "' + email + '" is accessible via following Hyperties: </div>'
       for( i = 0; i < searchResults.length; i++ ) {
         let h = searchResults[i];
+        console.log("SEARCH-RESULT: " + i, h.hypertyID);
         let type = h.dataSchemes.indexOf("comm") >=0 ? "Chat" : "WebRTC";
         resultHTML += '<br>' +
         '<input type="text" class="hyperty-id" value="' + type + ":   " + h.hypertyID +'">' +

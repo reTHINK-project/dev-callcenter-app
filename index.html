@@ -82,8 +82,7 @@
   </nav>
 
   <!-- Begin page content -->
-  <div class="main-content container">
-    <!-- <div class="main-content container-fluid"> -->
+  <div class="main-content container-fluid">
     <div class="row">
       <div id="content" class="content col-sm-12 hide">
         <div id="info">
@@ -118,10 +117,13 @@
             </fieldset>
           </div>
         </div>
-        <div id="chat" class="row hide col-sm-4">
-          Chat:</br>
-          <textarea id="chat-content"></textarea>
-          <input type="text" id="chat-input"></input>
+        <div id="chat" class="row  col-sm-4">
+          <!-- <form class="form-horizontal" role="form" id="chat-form" style="display:none;" class="chat"> -->
+          <form class="form-horizontal" role="form" id="chat-form" action="#" onsubmit="return sendChatMessage();">
+            Chat:</br>
+            <textarea id="chat-content" class="chat"></textarea>
+            <input type="text" id="chat-input" class="chat"></input>
+          </form>
         </div>
       </div>
     </div>
