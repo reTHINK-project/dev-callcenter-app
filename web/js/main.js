@@ -1,8 +1,17 @@
 
 window.KJUR = {};
 
-let STATUS_DISCONNECTED = 0;
-let STATUS_CONNECTED = 1;
+let STATE = {
+  INITIALIZING       : 0,
+  INITIALIZED        : 1,
+  DISCOVERY          : 2,
+  WEBRTC_CONNECTING  : 3,
+  WEBRTC_CONNECTED   : 4,
+  WEBRTC_DISCONNECTED: 5,
+  CHAT_CONNECTED     : 6,
+  CHAT_CLOSED        : 7,
+}
+let status = STATE.INITIALIZING;
 
 let HYPERTY_WEBRTC = "DTWebRTC";
 let HYPERTY_CHAT = "GroupChatManager";
@@ -12,8 +21,104 @@ let hypertyChatUrl;
 let chat;
 
 let runtimeLoader;
-let status = STATUS_DISCONNECTED;
 let searchResults = [];
+
+setState( STATE.INITIALIZING );
+
+function setState(newStatus) {
+  switch (newStatus) {
+    case STATE.INITIALIZING:
+      $('#info').addClass('hide');
+      $('#video').addClass('hide');
+      $('#chat').addClass('hide');
+      break;
+
+    case STATE.HYPERTIES_LOADED:
+      $('#info').removeClass('hide');
+      $('#video').addClass('hide');
+      $('#chat').addClass('hide');
+      break;
+
+    case STATE.DISCOVERY:
+      $('#info').removeClass('hide');
+      $('.send-panel').removeClass('hide');
+      $('#video').addClass('hide');
+      $('#chat').addClass('hide');
+      break;
+
+    case STATE.WEBRTC_CONNECTING:
+      $('#info').removeClass('hide');
+      $('.send-panel').addClass('hide');
+      $('#video').addClass('hide');
+      adjustWidth();
+      break;
+
+    case STATE.WEBRTC_CONNECTED:
+      $('#info').addClass('hide');
+      $('#video').removeClass('hide');
+      $('#remoteVideo').removeClass('smallVideo').addClass('fullVideo');
+      $('#localVideo').removeClass('fullVideo').addClass('smallVideo');
+      $('.invitation-panel').empty();
+      adjustWidth();
+      break;
+
+    case STATE.WEBRTC_DISCONNECTED:
+      console.log('>>>disconnected');
+      $('#info').removeClass('hide');
+      $('#video').addClass('hide');
+      $('#myModal').modal('hide');
+      $('.send-panel').addClass('hide');
+      $('.webrtcconnect').empty();
+      $('.invitation-panel').empty();
+      let rv = document.getElementById('remoteVideo');
+      let lv = document.getElementById('localVideo');
+      $('#localVideo').removeClass('smallVideo').addClass('fullVideo');
+      $('#remoteVideo').removeClass('fullVideo').addClass('smallVideo');
+      rv.src = "";
+      lv.src = "";
+      adjustWidth();
+      break;
+
+    case STATE.CHAT_CONNECTED:
+      $('#info').addClass('hide');
+      $('#chat').removeClass('hide');
+      adjustWidth();
+      break;
+
+    case STATE.CHAT_CLOSED:
+      $('#chat').addClass('hide');
+      adjustWidth();
+      break;
+
+    default:
+  }
+  status = newStatus;
+}
+
+function adjustWidth() {
+  let chat  = ! $('#chat').hasClass('hide')
+  let video = ! $('#video').hasClass('hide')
+  if ( chat && video ) {
+    $('#video').addClass('col-sm-8');
+    $('#chat').addClass('col-sm-4');
+  }
+  else if ( chat ) {
+    $('#video').removeClass('col-sm-12');
+    $('#video').removeClass('col-sm-8');
+    $('#chat').removeClass('col-sm-4');
+    $('#chat').addClass('col-sm-12');
+  }
+  else if ( video ) {
+    $('#video').removeClass('col-sm-8');
+    $('#video').addClass('col-sm-12');
+    $('#chat').removeClass('col-sm-4');
+    $('#chat').removeClass('col-sm-12');
+  }
+  else {
+    $('#info').removeClass('hide');
+  }
+}
+
 
 rethink.default.install(config).then(function(result) {
   runtimeLoader = result;
@@ -48,6 +153,12 @@ function loadHyperties() {
       hypertyChat =  result.instance;
       hypertyChatUrl = result.runtimeHypertyURL;
       chat = new Chat(result, document.getElementById("chat-content"), document.getElementById("chat-input") );
+      chat.onNewChat( (identity) => {
+        console.log("[DTWebRTC.main] onNewChat event with identity: ", identity);
+        onChatInvitation(identity)
+      });
+
+
       hypertiesLoaded();
     }).catch(
       hypertyFail
@@ -62,22 +173,15 @@ function hypertyFail(reason) {
 }
 
 
-function setState(state) {
-  switch (state) {
-    case expression:
-
-      break;
-    default:
-
-  }
-}
 
 // ###################################################################################################################
 // ################################## DTCallCenter ###################################################################
 // ###################################################################################################################
 
 function hypertiesLoaded() {
-  $('#content').removeClass('hide');
+  setState(STATE.HYPERTIES_LOADED);
+
+  // WEBRTC control listeners
   $('#hangup').on('click', hangup);
   $('#local-audio').on('click', () => {
     // let the hyperty switch stream-tracks
@@ -103,6 +207,11 @@ function hypertiesLoaded() {
       rv.pause();
   });
 
+  // CHAT control listeners
+  $('#leaveChat').on('click', () => {
+    chat.close();
+    setState(STATE.CHAT_CLOSED);
+  });
 
   // get registered user
   hypertyWebRTC.search.myIdentity().then(function(identity) {
@@ -124,18 +233,18 @@ function hypertiesLoaded() {
 function connect(event) {
   event.preventDefault();
   let resultIndex = event.currentTarget.value;
-  console.log("RESULT INDEX = " + resultIndex);
+  console.log("[DTWebRTC.chat] RESULT INDEX = " + resultIndex);
   if ( resultIndex > searchResults.length || resultIndex < 0 ) {
     console.log("[DTWebRTC.main] invalid search result index: " + resultIndex );
     return;
   }
   let h = searchResults[resultIndex];
   if ( h.dataSchemes.indexOf("comm") >=0 ) {
-    console.log("CONNECT to TARGET HYPERTY via Chat: ", h);
+    console.log("[DTWebRTC.chat] CONNECT to TARGET HYPERTY via Chat: ", h);
     doChatConnect(h.hypertyID);
   }
   else {
-    console.log("CONNECT to TARGET HYPERTY via WebRTC: ", h);
+    console.log("[DTWebRTC.chat] CONNECT to TARGET HYPERTY via WebRTC: ", h);
     doWebRTCConnect(h.hypertyID);
   }
 
@@ -146,35 +255,40 @@ function doWebRTCConnect(toHyperty) {
   getIceServers();
   prepareMediaOptions();
 
-  status = STATUS_DISCONNECTED;
+  setState(STATE.WEBRTC_CONNECTING);
   let connect_html = '<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>';
   $('.invitation-panel').html(connect_html);
 
   setTimeout( () => {
-    if ( status === STATUS_DISCONNECTED ) {
+    if ( status === STATE.WEBRTC_CONNECTING ) {
       $('.invitation-panel').append( '<button id="cancel"  class="btn btn-default btn-sm ">Cancel</button>' );
       $('#cancel').on('click', hangup );
     }
   }, 6000);
 
-  console.log(toHyperty);
-  $('.send-panel').addClass('hide');
   hypertyWebRTC.connect(toHyperty).then((obj) => {
-      console.log('Webrtc obj: ', obj);
-    })
-    .catch(function(reason) {
-      console.error(reason);
-    });
+    console.log('[DTWebRTC.chat] Webrtc obj: ', obj);
+  })
+  .catch(function(reason) {
+    console.error(reason);
+  });
 }
 
 function doChatConnect(toHyperty) {
   saveProfile();
-  chat.invite("TestChat", "steffen.druesedow@gmail.com", "matrix2.rethink.com");
+  chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "matrix2.rethink.com").then(()=>{
+    setState(STATE.CHAT_CONNECTED);
+  });
 }
 
 function sendChatMessage() {
   chat.submitMessage();
   return false;
+}
+
+function onChatInvitation(identity) {
+  console.log("[DTWebRTC.chat] received chat invitation from identity: ", identity);
+  setState(STATE.CHAT_CONNECTED);
 }
 
 function hangup() {
@@ -198,7 +312,7 @@ function initListeners() {
 
   hypertyWebRTC.addEventListener('incomingcall', (identity) => {
     // preparing the modal dialog with the given identity info
-    console.log('incomingcall event received from:', identity);
+    console.log('[DTWebRTC.chat] incomingcall event received from:', identity);
     $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
     fillmodal(identity);
     prepareMediaOptions();
@@ -214,38 +328,19 @@ function initListeners() {
   });
 
   hypertyWebRTC.addEventListener('localvideo', (stream) => {
-    console.log('local stream received');
+    console.log('[DTWebRTC.chat] local stream received');
     document.getElementById('localVideo').srcObject = stream;
   });
 
   hypertyWebRTC.addEventListener('remotevideo', (stream) => {
-    $('#info').addClass('hide');
-    $('#video').removeClass('hide');
+    console.log('[DTWebRTC.chat] remotevideo received');
     let rv = document.getElementById('remoteVideo');
-    let lv = document.getElementById('localVideo');
     rv.srcObject = stream;
-    $('#remoteVideo').removeClass('smallVideo').addClass('fullVideo');
-    $('#localVideo').removeClass('fullVideo').addClass('smallVideo');
-    console.log('remotevideo received');
-    $('.invitation-panel').empty();
-    status = STATUS_CONNECTED;
+    setState(STATE.WEBRTC_CONNECTED);
   });
 
   hypertyWebRTC.addEventListener('disconnected', () => {
-    console.log('>>>disconnected');
-    $('.send-panel').removeClass('hide');
-    $('.webrtcconnect').empty();
-    $('.invitation-panel').empty();
-    $('#myModal').modal('hide');
-    let rv = document.getElementById('remoteVideo');
-    let lv = document.getElementById('localVideo');
-    $('#localVideo').removeClass('smallVideo').addClass('fullVideo');
-    $('#remoteVideo').removeClass('fullVideo').addClass('smallVideo');
-    rv.src = "";
-    lv.src = "";
-
-    $('#info').removeClass('hide');
-    $('#video').addClass('hide');
+    setState(STATE.WEBRTC_DISCONNECTED);
   });
 }
 
@@ -253,10 +348,11 @@ function discoverEmail(event) {
   if (event) {
     event.preventDefault();
   }
+  setState(STATE.DISCOVERY);
 
   var email = $('.searchemail').find('.friend-email').val();
   var domain = $('.searchemail').find('.friend-domain').val();
-  console.log('>>>email', email, domain);
+  console.log('[DTWebRTC.chat] >>>email', email, domain);
 
   var msg = 'searching for:  ' + email + ' in domain:  ' + domain + ' ...';
   if ( ! domain )

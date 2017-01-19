@@ -84,8 +84,8 @@
   <!-- Begin page content -->
   <div class="main-content container-fluid">
     <div class="row">
-      <div id="content" class="content col-sm-12 hide">
-        <div id="info">
+      <div id="content" class="content col-sm-12">
+        <div id="info" class="hide">
           <div class="hyperty-panel"></div>
           <div class="send-panel"></div>
           <div class="invitation-panel"></div>
@@ -117,12 +117,15 @@
             </fieldset>
           </div>
         </div>
-        <div id="chat" class="row  col-sm-4">
-          <!-- <form class="form-horizontal" role="form" id="chat-form" style="display:none;" class="chat"> -->
+        <div id="chat" class="row  col-sm-4" class="hide">
           <form class="form-horizontal" role="form" id="chat-form" action="#" onsubmit="return sendChatMessage();">
             Chat:</br>
             <textarea id="chat-content" class="chat"></textarea>
             <input type="text" id="chat-input" class="chat"></input>
+            <div>
+              <button type="button" id="leaveChat" class=" btn btn-default">leave chat</button>
+              <button type="button" id="addWebrtc" class=" btn btn-default">WebRTC</button>
+            </div>
           </form>
         </div>
       </div>
