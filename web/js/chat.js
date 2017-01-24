@@ -47,13 +47,13 @@ Chat.prototype.submitMessage = function() {
 }
 
 Chat.prototype.close = function() {
+  this._chatArea.value = "";
+  this._chatInput.value = "";
+
   this._controller.close().then( (result) => {
     console.log('[DTWebRTC.chat] Chat closed: ', result);
-    this._chatArea.value = "";
-    this._chatInput.value = "";
-
-  }).catch(function(reason) {
-    console.log('[DTWebRTC.chat] An error occured:', reason);
+  }).catch( (reason) => {
+    console.log('[DTWebRTC.chat] An error occured - only the owner can close the chat:', reason);
   });
 }
 

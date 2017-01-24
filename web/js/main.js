@@ -50,7 +50,7 @@ function setState(newStatus) {
       $('#info').removeClass('hide');
       $('.send-panel').addClass('hide');
       $('#video').addClass('hide');
-      adjustWidth();
+      adjustChatAndWebRTCGui();
       break;
 
     case STATE.WEBRTC_CONNECTED:
@@ -59,7 +59,7 @@ function setState(newStatus) {
       $('#remoteVideo').removeClass('smallVideo').addClass('fullVideo');
       $('#localVideo').removeClass('fullVideo').addClass('smallVideo');
       $('.invitation-panel').empty();
-      adjustWidth();
+      adjustChatAndWebRTCGui();
       break;
 
     case STATE.WEBRTC_DISCONNECTED:
@@ -67,7 +67,7 @@ function setState(newStatus) {
       $('#info').removeClass('hide');
       $('#video').addClass('hide');
       $('#myModal').modal('hide');
-      $('.send-panel').addClass('hide');
+      // $('.send-panel').addClass('hide');
       $('.webrtcconnect').empty();
       $('.invitation-panel').empty();
       let rv = document.getElementById('remoteVideo');
@@ -76,18 +76,18 @@ function setState(newStatus) {
       $('#remoteVideo').removeClass('fullVideo').addClass('smallVideo');
       rv.src = "";
       lv.src = "";
-      adjustWidth();
+      adjustChatAndWebRTCGui();
       break;
 
     case STATE.CHAT_CONNECTED:
       $('#info').addClass('hide');
       $('#chat').removeClass('hide');
-      adjustWidth();
+      adjustChatAndWebRTCGui();
       break;
 
     case STATE.CHAT_CLOSED:
       $('#chat').addClass('hide');
-      adjustWidth();
+      adjustChatAndWebRTCGui();
       break;
 
     default:
@@ -95,30 +95,35 @@ function setState(newStatus) {
   status = newStatus;
 }
 
-function adjustWidth() {
+function adjustChatAndWebRTCGui() {
   let chat  = ! $('#chat').hasClass('hide')
   let video = ! $('#video').hasClass('hide')
   if ( chat && video ) {
     $('#video').addClass('col-sm-8');
     $('#chat').addClass('col-sm-4');
+    $('#addChat').addClass('hide');
+    $('#addWebRTC').addClass('hide');
   }
   else if ( chat ) {
     $('#video').removeClass('col-sm-12');
     $('#video').removeClass('col-sm-8');
     $('#chat').removeClass('col-sm-4');
     $('#chat').addClass('col-sm-12');
+    $('#addChat').addClass('hide');
+    $('#addWebRTC').removeClass('hide');
   }
   else if ( video ) {
     $('#video').removeClass('col-sm-8');
     $('#video').addClass('col-sm-12');
     $('#chat').removeClass('col-sm-4');
     $('#chat').removeClass('col-sm-12');
+    $('#addChat').removeClass('hide');
+    $('#addWebRTC').addClass('hide');
   }
   else {
     $('#info').removeClass('hide');
   }
 }
-
 
 rethink.default.install(config).then(function(result) {
   runtimeLoader = result;
@@ -128,7 +133,7 @@ rethink.default.install(config).then(function(result) {
 }).then( function(hyperties) {
 
   // init some click handlers
-  $('#gosearch').on('click', () => { discoverEmail() });
+  $('#gosearch').on('click', () => { discover() });
   $('#settings').on('submit', () => { saveProfile() });
   $('#settings').on('submit', toggleSettings);
 
@@ -183,6 +188,8 @@ function hypertiesLoaded() {
 
   // WEBRTC control listeners
   $('#hangup').on('click', hangup);
+  $('#addChat').on('click', () => {doChatConnect() });
+  $('#addWebRTC').on('click', () => {webRTCConnect() });
   $('#local-audio').on('click', () => {
     // let the hyperty switch stream-tracks
     hypertyWebRTC.switchLocalAudio( $('#local-audio').is(":checked") )
@@ -231,31 +238,24 @@ function hypertiesLoaded() {
 }
 
 
-function connect(event) {
-  event.preventDefault();
-  let resultIndex = event.currentTarget.value;
-  console.log("[DTWebRTC.chat] RESULT INDEX = " + resultIndex);
-  if ( resultIndex > searchResults.length || resultIndex < 0 ) {
-    console.log("[DTWebRTC.main] invalid search result index: " + resultIndex );
-    return;
-  }
-  let h = searchResults[resultIndex];
-  if ( h.dataSchemes.indexOf("comm") >=0 ) {
-    console.log("[DTWebRTC.chat] CONNECT to TARGET HYPERTY via Chat: ", h);
-    doChatConnect(h.hypertyID);
+function webRTCConnect(toHyperty) {
+  if ( ! toHyperty ) {
+    email = $('.searchemail').find('.friend-email').val();
+    domain = $('.searchemail').find('.friend-domain').val();
+    discoverWebRTC(email,domain).then( (result) => {
+      if ( result.length > 0 )
+        doWebRTCConnect( result[0].hypertyID );
+    });
   }
   else {
-    console.log("[DTWebRTC.chat] CONNECT to TARGET HYPERTY via WebRTC: ", h);
-    doWebRTCConnect(h.hypertyID);
+    doWebRTCConnect(toHyperty);
   }
-
 }
 
 function doWebRTCConnect(toHyperty) {
   saveProfile();
   getIceServers();
   prepareMediaOptions();
-
   setState(STATE.WEBRTC_CONNECTING);
   let connect_html = '<center><br><i style="color: #e20074;" class="center fa fa-cog fa-spin fa-5x fa-fw"></i></center><p>wait for answer...</p>';
   $('.invitation-panel').html(connect_html);
@@ -275,10 +275,15 @@ function doWebRTCConnect(toHyperty) {
   });
 }
 
-function doChatConnect(toHyperty) {
+function doChatConnect(email, domain) {
   saveProfile();
-  chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "rethink.tlabscloud.com").then(()=>{
-  // chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "matrix2.rethink.com").then(()=>{
+  if (! email) {
+    email = $('.searchemail').find('.friend-email').val();
+    domain = $('.searchemail').find('.friend-domain').val();
+  }
+
+  // chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "rethink.tlabscloud.com").then(()=>{
+  chat.create("[DTWebRTC.chat] TestChat", email, domain).then(()=>{
     setState(STATE.CHAT_CONNECTED);
   });
 }
@@ -346,45 +351,69 @@ function initListeners() {
   });
 }
 
-function discoverEmail(event) {
+function discoverWebRTC(email, domain ) {
+  if ( ! email ) {
+    email = $('.searchemail').find('.friend-email').val();
+    domain = $('.searchemail').find('.friend-domain').val();
+  }
+  // do webRTC hyperty search
+  return hypertyWebRTC.search.users([email], [domain], ['connection'], ['audio', 'video']);
+}
+
+function discover(event) {
   setState(STATE.DISCOVERY);
 
-  var email = $('.searchemail').find('.friend-email').val();
-  var domain = $('.searchemail').find('.friend-domain').val();
+  let email = $('.searchemail').find('.friend-email').val();
+  let domain = $('.searchemail').find('.friend-domain').val();
   console.log('[DTWebRTC.chat] >>>email', email, domain);
 
-  var msg = 'searching for:  ' + email + ' in domain:  ' + domain + ' ...';
+  let msg = 'searching for:  ' + email + ' in domain:  ' + domain + ' ...';
   if ( ! domain )
     msg = 'searching for:  ' + email + ' in the own domain ...';
 
   $('.send-panel').html(msg);
 
-  // reset global search results
-  searchResults = [];
+  let webRTCResult = [];
+  let chatResult = []
 
-  hypertyWebRTC.search.users([email], [domain], ['connection'], ['audio', 'video']).then( (webRTCResult) => {
-    searchResults = webRTCResult;
+  // do webRTC hyperty search
+  discoverWebRTC(email,domain).then( (result) => {
+    webRTCResult = result;
+    // do chat hyperty search
     return hypertyWebRTC.search.users([email], [domain], ['comm'], ['chat']);
-  }).then( (chatResult) => {
-    chatResult.forEach( (element) => { searchResults.push(element)} );
+  }).then( (result) => {
+    chatResult = result;
+    $('.send-panel').html("");
 
-    resultHTML = "";
-    if ( searchResults.length == 0 ) {
-      resultHTML = '<div>No matching hyperties found!</div>';
+    if ( webRTCResult.length == 0 && chatResult.length == 0 ) {
+      $('.send-panel').append('</br></br>User "' + email + '" is currently not available for chat or WebRTC!</div>');
     }
     else {
-      resultHTML = '</p><div>User "' + email + '" is accessible via following Hyperties: </div>'
-      for( i = 0; i < searchResults.length; i++ ) {
-        let h = searchResults[i];
-        console.log("SEARCH-RESULT: " + i, h.hypertyID);
-        let type = h.dataSchemes.indexOf("comm") >=0 ? "Chat" : "WebRTC";
-        resultHTML += '<br>' +
-        '<input type="text" class="hyperty-id" value="' + type + ":   " + h.hypertyID +'">' +
-        '<button class="btn btn-default btn-sm btn-block" value="' + i + '" onclick="connect(event)"> Start ' + type + '!</button>';
+
+      $('.send-panel').append( '</br></br>You can currently connect to "' + email + '" via: </nbsp>' );
+      console.log("########### DOMAIN: " + domain);
+      if ( chatResult.length > 0 ) {
+        $('.send-panel').append('</nbsp><button class="btn btn-default btn-sm" id="doChatConnect"> Chat </button>');
+        $('#doChatConnect').on('click', () => {
+          doChatConnect(email, domain);
+        });
+      }
+      if ( webRTCResult.length > 0 ) {
+        $('.send-panel').append('</nbsp><button class="btn btn-default btn-sm" id="doWebRTCConnect"> WebRTC </button>');
+        $('#doWebRTCConnect').on('click', () => {
+          webRTCConnect(webRTCResult[0].hypertyID);
+        });
+      }
+      if ( (chatResult.length > 0) && (webRTCResult.length > 0) ) {
+        $('.send-panel').append('</nbsp><button class="btn btn-default btn-sm" id="doBoth"> Both </button>');
+        $('#doBoth').on('click', () => {
+          doChatConnect(email, domain);
+          webRTCConnect(webRTCResult[0].hypertyID);
+        });
       }
     }
-    $('.send-panel').html( resultHTML );
   });
+
 }
 
 // ###################################################################################################################
