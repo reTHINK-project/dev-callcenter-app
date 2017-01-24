@@ -1,3 +1,4 @@
+
 function Chat(myHyperty, chatArea, chatInput) {
   this._manager = myHyperty.instance;
   this._hypertyURL = myHyperty.runtimeHypertyURL;

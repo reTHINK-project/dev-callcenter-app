@@ -128,7 +128,7 @@ rethink.default.install(config).then(function(result) {
 }).then( function(hyperties) {
 
   // init some click handlers
-  $('#gosearch').on('click', discoverEmail);
+  $('#gosearch').on('click', () => { discoverEmail() });
   $('#settings').on('submit', () => { saveProfile() });
   $('#settings').on('submit', toggleSettings);
 
@@ -217,7 +217,7 @@ function hypertiesLoaded() {
   hypertyWebRTC.search.myIdentity().then(function(identity) {
     console.log("[DTWebRTC.main]: registered user is: ", identity);
     hypertyWebRTC.myIdentity = identity;
-    let info = "Authenticated as:</br>" + identity.cn + ",  " + identity.username + '<img src="' + hypertyWebRTC.myIdentity.avatar + '" class="logo" /></br>' +
+    let info = "Authenticated as:</br>" + identity.cn + ",  " + identity.username + '<img src="' + identity.avatar + '" class="logo" /></br>' +
                "WebRTC Hyperty URL:  " + hypertyWebRTC.myUrl + "</br>" +
                "Chat Hyperty URL:  " + hypertyChatUrl + "</br>";
       $('.hyperty-panel').html( info );
@@ -229,6 +229,7 @@ function hypertiesLoaded() {
 
   initListeners();
 }
+
 
 function connect(event) {
   event.preventDefault();
@@ -276,7 +277,8 @@ function doWebRTCConnect(toHyperty) {
 
 function doChatConnect(toHyperty) {
   saveProfile();
-  chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "matrix2.rethink.com").then(()=>{
+  chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "rethink.tlabscloud.com").then(()=>{
+  // chat.create("[DTWebRTC.chat] TestChat", "steffen.druesedow@gmail.com", "matrix2.rethink.com").then(()=>{
     setState(STATE.CHAT_CONNECTED);
   });
 }
@@ -313,7 +315,7 @@ function initListeners() {
   hypertyWebRTC.addEventListener('incomingcall', (identity) => {
     // preparing the modal dialog with the given identity info
     console.log('[DTWebRTC.chat] incomingcall event received from:', identity);
-    $('.invitation-panel').html('<p> Invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
+    $('.invitation-panel').html('<p> WebRTC Call invitation received from:\n ' + identity.email ? identity.email : identity.username + '</p>');
     fillmodal(identity);
     prepareMediaOptions();
 
@@ -345,9 +347,6 @@ function initListeners() {
 }
 
 function discoverEmail(event) {
-  if (event) {
-    event.preventDefault();
-  }
   setState(STATE.DISCOVERY);
 
   var email = $('.searchemail').find('.friend-email').val();
