@@ -239,20 +239,6 @@ function hypertiesLoaded() {
 
 
 function webRTCConnect(toHyperty) {
-  if ( ! toHyperty ) {
-    email = $('.searchemail').find('.friend-email').val();
-    domain = $('.searchemail').find('.friend-domain').val();
-    discoverWebRTC(email,domain).then( (result) => {
-      if ( result.length > 0 )
-        doWebRTCConnect( result[0].hypertyID );
-    });
-  }
-  else {
-    doWebRTCConnect(toHyperty);
-  }
-}
-
-function doWebRTCConnect(toHyperty) {
   saveProfile();
   getIceServers();
   prepareMediaOptions();
@@ -351,14 +337,6 @@ function initListeners() {
   });
 }
 
-function discoverWebRTC(email, domain ) {
-  if ( ! email ) {
-    email = $('.searchemail').find('.friend-email').val();
-    domain = $('.searchemail').find('.friend-domain').val();
-  }
-  // do webRTC hyperty search
-  return hypertyWebRTC.search.users([email], [domain], ['connection'], ['audio', 'video']);
-}
 
 function discover(event) {
   setState(STATE.DISCOVERY);
@@ -376,14 +354,42 @@ function discover(event) {
   let webRTCResult = [];
   let chatResult = []
 
-  // do webRTC hyperty search
-  discoverWebRTC(email,domain).then( (result) => {
-    webRTCResult = result;
-    // do chat hyperty search
-    return hypertyWebRTC.search.users([email], [domain], ['comm'], ['chat']);
-  }).then( (result) => {
-    chatResult = result;
-    $('.send-panel').html("");
+
+  // > This leads to a 404 Response
+  // hypertyWebRTC.discovery.discoverHypertiesPerUser(email, domain).then((hyperties) => {
+
+  // > The search-util doesn't handle the String-array problem.
+  // hypertyWebRTC.search.users([email], [domain], [], []).then((hyperties) => {
+
+  // This one returns results, but as an Array of chars --> added handling for that
+  hypertyWebRTC.discovery.discoverHyperties(email, domain).then((hyperties) => {
+    console.log('[DTWebRTC] [discover] discovered these hyperties: \n', hyperties);
+    try {
+      // in all tests the discovery result body was an array of chars --> join it to a string
+      if ( hyperties instanceof Array ) {
+        hyperties = hyperties.join("");
+
+        // then parse it to an object
+        hyperties = JSON.parse(hyperties);
+      }
+    } catch (e) {
+      console.log('[DTWebRTC] [discover] result of discovery was unparsable');
+    }
+    for (url in hyperties) {
+      let hyperty = hyperties[url];
+      console.log('[DTWebRTC] [discover] hyperty object is: ', hyperty);
+      console.log('[DTWebRTC] [discover] checking url: ', url);
+
+      // ignore own hyperties
+      if ( url !== hypertyWebRTC.myUrl && url != hypertyChatUrl ) {
+        if ( hyperty.dataSchemes.indexOf("comm") > -1 ) {
+          chatResult.push(hyperty);
+        }
+        else if ( hyperty.dataSchemes.indexOf("connection") > -1 ) {
+          webRTCResult.push(hyperty);
+        }
+      }
+    }
 
     if ( webRTCResult.length == 0 && chatResult.length == 0 ) {
       $('.send-panel').append('</br></br>User "' + email + '" is currently not available for chat or WebRTC!</div>');
@@ -413,7 +419,6 @@ function discover(event) {
       }
     }
   });
-
 }
 
 // ###################################################################################################################

@@ -16,6 +16,6 @@
   "devDependencies": {
   },
   "dependencies": {
-    "runtime-browser": "github:reTHINK-project/dev-runtime-browser"
+    "runtime-browser": "github:reTHINK-project/dev-runtime-browser#v0.5.0"
   }
 }
