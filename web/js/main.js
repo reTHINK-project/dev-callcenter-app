@@ -351,8 +351,8 @@ function discover(event) {
 
   $('.send-panel').html(msg);
 
-  let webRTCResult = [];
-  let chatResult = []
+  let webRTCResult;
+  let chatResult;
 
 
   // > This leads to a 404 Response
@@ -362,59 +362,58 @@ function discover(event) {
   // hypertyWebRTC.search.users([email], [domain], [], []).then((hyperties) => {
 
   // This one returns results, but as an Array of chars --> added handling for that
-  hypertyWebRTC.discovery.discoverHyperties(email, domain).then((hyperties) => {
+  hypertyWebRTC.discovery.discoverHyperties(email, [], [],domain).then((hyperties) => {
     console.log('[DTWebRTC] [discover] discovered these hyperties: \n', hyperties);
-    try {
-      // in all tests the discovery result body was an array of chars --> join it to a string
-      if ( hyperties instanceof Array ) {
-        hyperties = hyperties.join("");
-
-        // then parse it to an object
-        hyperties = JSON.parse(hyperties);
-      }
-    } catch (e) {
-      console.log('[DTWebRTC] [discover] result of discovery was unparsable');
-    }
+    let dateWebrtc = new Date(0);
+    let dateChat = new Date(0);
     for (url in hyperties) {
       let hyperty = hyperties[url];
       console.log('[DTWebRTC] [discover] hyperty object is: ', hyperty);
-      console.log('[DTWebRTC] [discover] checking url: ', url);
 
       // ignore own hyperties
       if ( url !== hypertyWebRTC.myUrl && url != hypertyChatUrl ) {
-        if ( hyperty.dataSchemes.indexOf("comm") > -1 ) {
-          chatResult.push(hyperty);
+        let lastModified = new Date(hyperty.lastModified);
+        console.log('[DTWebRTC] [discover] hyperty.lastModified and dataChat are: ', lastModified, dateChat);
+        console.log('[DTWebRTC] [discover] hyperty.lastModified and datawebrtc are: ', lastModified, dateWebrtc);
+        if ( hyperty.dataSchemes.indexOf("comm") > -1  && (lastModified > dateChat) ) {
+          console.log('[DTWebRTC] [discover] adding to chatResults: ');
+          chatResult = hyperty;
+          dateChat = lastModified;
         }
-        else if ( hyperty.dataSchemes.indexOf("connection") > -1 ) {
-          webRTCResult.push(hyperty);
+        else if ( hyperty.dataSchemes.indexOf("connection") > -1 && (lastModified > dateWebrtc)) {
+          console.log('[DTWebRTC] [discover] adding to webrtcResults: ');
+          webRTCResult = hyperty;
+          dateWebrtc = lastModified;
         }
       }
     }
+    console.log('[DTWebRTC] [discover] webRTCResult is: ', webRTCResult);
+    console.log('[DTWebRTC] [discover] chatResult is: ', chatResult);
 
-    if ( webRTCResult.length == 0 && chatResult.length == 0 ) {
+    if ( ! webRTCResult && ! chatResult ) {
       $('.send-panel').append('</br></br>User "' + email + '" is currently not available for chat or WebRTC!</div>');
     }
     else {
 
       $('.send-panel').append( '</br></br>You can currently connect to "' + email + '" via: </nbsp>' );
       console.log("########### DOMAIN: " + domain);
-      if ( chatResult.length > 0 ) {
+      if ( chatResult ) {
         $('.send-panel').append('</nbsp><button class="btn btn-default btn-sm" id="doChatConnect"> Chat </button>');
         $('#doChatConnect').on('click', () => {
           doChatConnect(email, domain);
         });
       }
-      if ( webRTCResult.length > 0 ) {
+      if ( webRTCResult ) {
         $('.send-panel').append('</nbsp><button class="btn btn-default btn-sm" id="doWebRTCConnect"> WebRTC </button>');
         $('#doWebRTCConnect').on('click', () => {
-          webRTCConnect(webRTCResult[0].hypertyID);
+          webRTCConnect(webRTCResult.hypertyID);
         });
       }
-      if ( (chatResult.length > 0) && (webRTCResult.length > 0) ) {
+      if ( (chatResult) && (webRTCResult) ) {
         $('.send-panel').append('</nbsp><button class="btn btn-default btn-sm" id="doBoth"> Both </button>');
         $('#doBoth').on('click', () => {
           doChatConnect(email, domain);
-          webRTCConnect(webRTCResult[0].hypertyID);
+          webRTCConnect(webRTCResult.hypertyID);
         });
       }
     }
