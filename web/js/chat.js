@@ -73,14 +73,14 @@ Chat.prototype._onInvitation = function(event) {
       console.log("[DTWebRTC.chat] done: ");
     }
 
-    setTimeout(() => {
-      let users = event.value.participants;
-
-      users.forEach((user) => {
-        this._processNewUser(user.cn);
-      });
-
-    }, 500);
+    // setTimeout(() => {
+    //   let users = event.value.participants;
+    //
+    //   users.forEach((user) => {
+    //     this._processNewUser(user.cn);
+    //   });
+    //
+    // }, 500);
   }).catch(function(reason) {
     console.error('Error connectin to', reason);
   });
@@ -107,7 +107,7 @@ Chat.prototype._setupControllerListeners = function() {
   this._controller.onMessage( (m) => {
     console.info('[DTWebRTC.chat] new message received: ', m);
     let from = m.identity ? m.identity.userProfile.cn: "unknown";
-    this._appendText(from, m.value.message);
+    this._appendText(from, m.value.content);
   });
 
   this._controller.onChange((event) => {
@@ -116,11 +116,10 @@ Chat.prototype._setupControllerListeners = function() {
 
   this._controller.onUserAdded((event) => {
     console.log('[DTWebRTC.chat] App - onUserAdded Event:', event);
-    if ( ! event.data )
-      return
-    event.data.forEach( (data) => {
-      this._processNewUser(data.cn);
-    });
+    try {
+      let user = event.username ? event.username : "peer";
+      this._processNewUser(user);
+    } catch (e) {  }
   });
 
   this._controller.onUserRemoved((event) => {
