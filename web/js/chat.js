@@ -9,8 +9,29 @@ function Chat(myHyperty, chatArea, chatInput) {
 
   this._isInitiator = false;
 
+  this._chatActive = false;
+
   this._manager.onInvitation((event) => {
-    this._onInvitation(event);
+    let context = "";
+    try {
+        event.body.value.name;
+    } catch (e) {
+      console.log("[DTWebRTC.chat] onInviation: unable to get event.body.value.name from invitation event");
+    }
+    // do a special handling for the smart-contextual-assistence app
+    // only accept invitations of the sub-context
+    if ( context.startsWith("sca%") ) {
+      console.log("[DTWebRTC.chat] [onInvitation - SCA check]: context is: " + context);
+      if ( context.indexOf("%", 4) != -1 ) {
+        console.log("[DTWebRTC.chat] [onInvitation - SCA check]: this seems to be a SCA sub-context --> accepting invitation");
+        this._onInvitation(event);
+      }
+      else  {
+        console.log("[DTWebRTC.chat] [onInvitation - SCA check]: this seems to be a SCA layer0-context --> ignoring invitation");
+      }
+    }
+    else
+      this._onInvitation(event);
   });
 }
 
