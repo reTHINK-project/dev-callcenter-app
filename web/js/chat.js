@@ -14,9 +14,9 @@ function Chat(myHyperty, chatArea, chatInput) {
   this._manager.onInvitation((event) => {
     let context = "";
     try {
-        event.body.value.name;
+        context = event.value.name;
     } catch (e) {
-      console.log("[DTWebRTC.chat] onInviation: unable to get event.body.value.name from invitation event");
+      console.log("[DTWebRTC.chat] onInviation: unable to get event.value.name from invitation event");
     }
     // do a special handling for the smart-contextual-assistence app
     // only accept invitations of the sub-context
